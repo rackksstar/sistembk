@@ -31,7 +31,7 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="text-center py-16 bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
+    <section class="text-center py-16 bg-gradient-to-br from-blue-300 to-indigo-500 text-white">
         <h2 class="text-4xl font-bold mb-4">
             Sistem Informasi Bimbingan Konseling
         </h2>
