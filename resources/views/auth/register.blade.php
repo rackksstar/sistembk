@@ -1,4 +1,11 @@
-<x-guest-layout>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Sistem Informasi BK</title>
+    @vite('resources/css/app.css')
+</head>
+<body>
     <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-blue-600">
 
         <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
@@ -74,4 +81,5 @@
 
         </div>
     </div>
-</x-guest-layout>
+</body>
+</html>
