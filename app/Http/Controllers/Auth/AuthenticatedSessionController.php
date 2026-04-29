@@ -28,7 +28,19 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        if (! $request->user()->isApproved()) {
+            $message = $request->user()->status === 'pending'
+                ? 'Akun Anda masih menunggu persetujuan admin.'
+                : 'Pendaftaran akun Anda ditolak. Silakan hubungi admin sekolah.';
+
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors(['email' => $message]);
+        }
+
+        return redirect()->route($request->user()->dashboardRoute());
     }
 
     /**
