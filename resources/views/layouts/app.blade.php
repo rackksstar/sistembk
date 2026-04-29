@@ -26,6 +26,7 @@
         }
 
         if ($user?->role === 'guru') {
+            $menu[] = ['label' => 'Data Siswa', 'href' => route('guru.students.index'), 'active' => request()->routeIs('guru.students.*')];
             $menu[] = ['label' => 'Konseling', 'href' => route('guru.consultations.index'), 'active' => request()->routeIs('guru.consultations.*')];
         }
 
@@ -33,7 +34,9 @@
             $menu[] = ['label' => 'Informasi Karier', 'href' => route('siswa.careers.index'), 'active' => request()->routeIs('siswa.careers.*')];
         }
 
-        $menu[] = ['label' => 'Profil', 'href' => route('profile.edit'), 'active' => request()->routeIs('profile.*')];
+        if ($user?->role !== 'siswa') {
+            $menu[] = ['label' => 'Profil', 'href' => route('profile.edit'), 'active' => request()->routeIs('profile.*')];
+        }
     @endphp
 
     <div class="min-h-screen">

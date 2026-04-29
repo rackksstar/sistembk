@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\GuruRegistrationController;
 use App\Http\Controllers\Guru\ConsultationController as GuruConsultationController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
+use App\Http\Controllers\Guru\StudentController as GuruStudentController;
 use App\Http\Controllers\Siswa\ConsultationRequestController;
 use App\Http\Controllers\Siswa\CareerInfoController as SiswaCareerInfoController;
 use App\Http\Controllers\Siswa\ClassJoinController;
@@ -51,6 +52,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('guru')->name('guru.')->middleware('role:guru')->group(function () {
         Route::get('/dashboard', [GuruDashboardController::class, 'index'])->name('dashboard');
+        Route::post('/students/import', [GuruStudentController::class, 'import'])->name('students.import');
+        Route::resource('students', GuruStudentController::class)->except(['create', 'show', 'edit']);
         Route::get('/consultations', [GuruConsultationController::class, 'index'])->name('consultations.index');
         Route::patch('/consultations/{consultation}/approve', [GuruConsultationController::class, 'approve'])->name('consultations.approve');
         Route::patch('/consultations/{consultation}/schedule', [GuruConsultationController::class, 'schedule'])->name('consultations.schedule');
@@ -65,9 +68,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/careers', [SiswaCareerInfoController::class, 'index'])->name('careers.index');
     });
 
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::middleware('role:admin,guru')->group(function () {
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
 });
 
 require __DIR__.'/auth.php';
