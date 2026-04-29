@@ -39,7 +39,7 @@
                 <div>
                     <p
                         class="inline-flex rounded-full border border-blue-100 bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-blue-600 shadow-sm">
-                        SISTEM BK 
+                        SISTEM BK
                     </p>
 
                     <h1 class="mt-6 max-w-3xl text-4xl font-bold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
@@ -48,7 +48,7 @@
 
                     <p class="mt-6 max-w-2xl text-base leading-8 text-slate-600 sm:text-lg">
                         Kelola pengajuan konseling, approval Guru BK, jadwal, laporan, data siswa, kelas bimbingan, dan
-                        informasi karier dalam panel yang rapi.
+                        informasi karier.
                     </p>
 
                     <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
