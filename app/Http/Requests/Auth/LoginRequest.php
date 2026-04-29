@@ -28,8 +28,12 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
+            'name' => ['required_if:selected_role,siswa', 'nullable', 'string', 'max:255'],
+            'nisn' => ['required_if:selected_role,siswa', 'nullable', 'string', 'max:20'],
+            'birth_date' => ['required_if:selected_role,siswa', 'nullable', 'date', 'before:today'],
+            'email' => ['required_unless:selected_role,siswa', 'nullable', 'string', 'email'],
+            'password' => ['required_unless:selected_role,siswa', 'nullable', 'string'],
+            'selected_role' => ['nullable', 'string', 'in:admin,guru,siswa'],
         ];
     }
 

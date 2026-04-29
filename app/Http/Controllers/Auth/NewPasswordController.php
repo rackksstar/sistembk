@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -21,6 +22,8 @@ class NewPasswordController extends Controller
      */
     public function create(Request $request): View
     {
+        $this->logoutCurrentSession($request);
+
         return view('auth.reset-password', ['request' => $request]);
     }
 
@@ -31,6 +34,8 @@ class NewPasswordController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $this->logoutCurrentSession($request);
+
         $request->validate([
             'token' => ['required'],
             'email' => ['required', 'email'],
@@ -59,5 +64,17 @@ class NewPasswordController extends Controller
                     ? redirect()->route('login')->with('status', __($status))
                     : back()->withInput($request->only('email'))
                         ->withErrors(['email' => __($status)]);
+    }
+
+    private function logoutCurrentSession(Request $request): void
+    {
+        if (! Auth::check()) {
+            return;
+        }
+
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
     }
 }

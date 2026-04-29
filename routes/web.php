@@ -16,10 +16,13 @@ use App\Http\Controllers\Siswa\ConsultationRequestController;
 use App\Http\Controllers\Siswa\CareerInfoController as SiswaCareerInfoController;
 use App\Http\Controllers\Siswa\ClassJoinController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('welcome', [
+        'requiresLogoutConfirmation' => Auth::check(),
+    ]);
 });
 
 Route::middleware('guest')->group(function () {

@@ -45,7 +45,7 @@
             </div>
 
             <button class="w-full rounded-full bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">Kirim pendaftaran</button>
-            <p class="text-center text-sm text-slate-600">Sudah disetujui? <a href="{{ route('login') }}" class="font-semibold text-blue-600 hover:text-blue-500">Login</a></p>
+            <p class="text-center text-sm text-slate-600">Sudah disetujui? <a href="{{ route('login', ['role' => 'guru']) }}" class="font-semibold text-blue-600 hover:text-blue-500">Login</a></p>
         </form>
     </div>
 </x-guest-layout>
