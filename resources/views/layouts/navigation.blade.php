@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+<nav x-data="{ open: false, logoutOpen: false }" class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -73,13 +73,10 @@
                             Profile
                         </x-dropdown-link>
 
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
                             <x-dropdown-link :href="route('logout')"
-                                onclick="event.preventDefault(); this.closest('form').submit();">
+                                x-on:click.prevent="logoutOpen = true">
                                 Logout
                             </x-dropdown-link>
-                        </form>
 
                     </x-slot>
 
@@ -141,13 +138,10 @@
                     Profile
                 </x-responsive-nav-link>
 
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
                     <x-responsive-nav-link :href="route('logout')"
-                        onclick="event.preventDefault(); this.closest('form').submit();">
+                        x-on:click.prevent="logoutOpen = true">
                         Logout
                     </x-responsive-nav-link>
-                </form>
 
             </div>
         </div>
@@ -161,5 +155,37 @@
         @endguest
 
     </div>
+
+    @auth
+        <div
+            x-cloak
+            x-show="logoutOpen"
+            x-transition.opacity
+            class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="navigation-logout-confirmation-title"
+        >
+            <div x-on:click.outside="logoutOpen = false" class="w-full max-w-md rounded-2xl border border-white bg-white p-6 text-center shadow-2xl shadow-slate-950/20">
+                <p class="text-xs font-bold uppercase tracking-[0.24em] text-blue-600">Konfirmasi Logout</p>
+                <h2 id="navigation-logout-confirmation-title" class="mt-3 text-2xl font-bold text-slate-950">Yakin ingin keluar?</h2>
+                <p class="mt-3 text-sm leading-6 text-slate-600">
+                    Anda masih login sebagai {{ auth()->user()->name }}. Setelah logout, Anda harus login ulang untuk masuk dashboard.
+                </p>
+
+                <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                    <button type="button" x-on:click="logoutOpen = false" class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:text-blue-700">
+                        Batal
+                    </button>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="inline-flex w-full items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">
+                            Ya, logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endauth
 
 </nav>

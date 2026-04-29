@@ -3,22 +3,18 @@
         'login' => [
             'label' => 'Portal Akses',
             'accent' => 'from-blue-600 to-sky-400',
-            'note' => 'Siswa dan Guru BK masuk lewat halaman ini. Admin tetap bisa login dari akses kecil.',
         ],
         'siswa' => [
             'label' => 'Akun Siswa',
             'accent' => 'from-blue-600 to-indigo-400',
-            'note' => 'Validasi akun siswa memakai NISN dan tanggal lahir yang terdaftar.',
         ],
         'guru' => [
             'label' => 'Akun Guru BK',
             'accent' => 'from-sky-500 to-blue-600',
-            'note' => 'Akun Guru BK menunggu persetujuan admin sebelum aktif.',
         ],
     ][$role] ?? [
         'label' => 'BK System',
         'accent' => 'from-blue-600 to-sky-400',
-        'note' => 'Akses layanan bimbingan konseling sekolah.',
     ];
 @endphp
 
@@ -46,8 +42,8 @@
                 <div class="flex items-center gap-2 text-sm">
                     @if($role === 'login')
                         <span class="hidden rounded-full bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-500 sm:inline-flex">Admin</span>
+                        <a href="{{ route('login') }}" class="rounded-full bg-slate-100 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-200">Masuk</a>
                     @endif
-                    <a href="{{ route('login') }}" class="rounded-full bg-slate-100 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-200">Masuk</a>
                 </div>
             </nav>
         </header>
@@ -58,9 +54,6 @@
                     <span class="inline-flex rounded-full border border-white/80 bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-blue-600 shadow-sm">
                         {{ $roleConfig['label'] }}
                     </span>
-                    <p class="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-600">
-                        {{ $roleConfig['note'] }}
-                    </p>
                 </div>
 
                 <div class="overflow-hidden rounded-2xl border border-white bg-white shadow-lg shadow-blue-200/60">
