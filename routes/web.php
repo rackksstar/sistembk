@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\GuidanceClassController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\GuruRegistrationController;
+use App\Http\Controllers\Siswa\AssessmentController;
 use App\Http\Controllers\Guru\ConsultationController as GuruConsultationController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
 use App\Http\Controllers\Guru\StudentController as GuruStudentController;
@@ -63,6 +64,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('siswa')->name('siswa.')->middleware('role:siswa')->group(function () {
         Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/assessments', [AssessmentController::class, 'index'])->name('assessments.index');
+        Route::post('/assessments', [AssessmentController::class, 'store'])->name('assessments.store');
         Route::post('/consultation-requests', [ConsultationRequestController::class, 'store'])->name('consultation-requests.store');
         Route::post('/classes/join', [ClassJoinController::class, 'store'])->name('classes.join');
         Route::get('/careers', [SiswaCareerInfoController::class, 'index'])->name('careers.index');

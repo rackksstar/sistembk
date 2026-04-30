@@ -31,6 +31,7 @@
         }
 
         if ($user?->role === 'siswa') {
+            $menu[] = ['label' => 'Asesmen Mandiri', 'href' => route('siswa.assessments.index'), 'active' => request()->routeIs('siswa.assessments.*')];
             $menu[] = ['label' => 'Informasi Karier', 'href' => route('siswa.careers.index'), 'active' => request()->routeIs('siswa.careers.*')];
         }
 
