@@ -25,6 +25,17 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        User::query()->updateOrCreate(
+            ['email' => 'yola@gmail.com'],
+            [
+                'name' => 'yola',
+                'password' => Hash::make('123456'),
+                'role' => User::ROLE_ADMIN,
+                'status' => User::STATUS_APPROVED,
+                'email_verified_at' => now(),
+            ]
+        );
+
         $guru = User::query()->updateOrCreate(
             ['email' => 'guru@bk.test'],
             [
