@@ -23,6 +23,11 @@
             $menu[] = ['label' => 'Kelas Bimbingan', 'href' => route('admin.guidance-classes.index'), 'active' => request()->routeIs('admin.guidance-classes.*')];
             $menu[] = ['label' => 'Konseling & Laporan', 'href' => route('admin.consultations.index'), 'active' => request()->routeIs('admin.consultations.*')];
             $menu[] = ['label' => 'Informasi Karier', 'href' => route('admin.careers.index'), 'active' => request()->routeIs('admin.careers.*')];
+            $menu[] = ['label' => 'Sekolah', 'href' => route('admin.sekolah.index'), 'active' => request()->routeIs('admin.sekolah.*')];
+            $menu[] = ['label' => 'Kelas', 'href' => route('admin.kelas.index'), 'active' => request()->routeIs('admin.kelas.*')];
+            $menu[] = ['label' => 'Guru BK', 'href' => route('admin.guru-bk.index'), 'active' => request()->routeIs('admin.guru-bk.*')];
+            $menu[] = ['label' => 'Master Pertanyaan', 'href' => route('admin.master-pertanyaan.index'), 'active' => request()->routeIs('admin.master-pertanyaan.*')];
+            $menu[] = ['label' => 'Kategori Postingan', 'href' => route('admin.kategori-postingan.index'), 'active' => request()->routeIs('admin.kategori-postingan.*')];
         }
 
         if ($user?->role === 'guru') {

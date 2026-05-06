@@ -11,7 +11,17 @@ class Student extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'name', 'nisn', 'birth_date', 'school'];
+    protected $fillable = [
+        'user_id',
+        'kelas_id',
+        'name',
+        'nisn',
+        'birth_date',
+        'jenis_kelamin',
+        'alamat',
+        'status_biodata',
+        'school',
+    ];
 
     protected function casts(): array
     {
@@ -26,5 +36,10 @@ class Student extends Model
     public function guidanceClasses(): BelongsToMany
     {
         return $this->belongsToMany(GuidanceClass::class)->withTimestamps();
+    }
+
+    public function kelas(): BelongsTo
+    {
+        return $this->belongsTo(Kelas::class);
     }
 }

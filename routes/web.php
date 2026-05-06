@@ -6,7 +6,12 @@ use App\Http\Controllers\Admin\AdminApprovalController;
 use App\Http\Controllers\Admin\CareerInfoController;
 use App\Http\Controllers\Admin\ConsultationController as AdminConsultationController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\GuruBkController;
 use App\Http\Controllers\Admin\GuidanceClassController;
+use App\Http\Controllers\Admin\KelasController;
+use App\Http\Controllers\Admin\MasterQuestionController;
+use App\Http\Controllers\Admin\PostCategoryController;
+use App\Http\Controllers\Admin\SekolahController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\GuruRegistrationController;
@@ -49,6 +54,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/guidance-classes/{guidanceClass}/students', [GuidanceClassController::class, 'attachStudent'])->name('guidance-classes.students.attach');
         Route::delete('/guidance-classes/{guidanceClass}/students/{student}', [GuidanceClassController::class, 'detachStudent'])->name('guidance-classes.students.detach');
         Route::get('/consultations', [AdminConsultationController::class, 'index'])->name('consultations.index');
+
+        // Phase 2 — Data Master (tambahan di bawah route existing)
+        Route::resource('sekolah', SekolahController::class)->except(['create', 'show', 'edit']);
+        Route::resource('kelas', KelasController::class)->except(['create', 'show', 'edit']);
+        Route::resource('guru-bk', GuruBkController::class)
+            ->parameters(['guru-bk' => 'guruBk'])
+            ->except(['create', 'show', 'edit']);
+        Route::resource('master-pertanyaan', MasterQuestionController::class)
+            ->parameters(['master-pertanyaan' => 'masterPertanyaan'])
+            ->except(['create', 'show', 'edit']);
+        Route::resource('kategori-postingan', PostCategoryController::class)
+            ->parameters(['kategori-postingan' => 'kategoriPostingan'])
+            ->except(['create', 'show', 'edit']);
     });
 
     Route::prefix('guru')->name('guru.')->middleware('role:guru')->group(function () {

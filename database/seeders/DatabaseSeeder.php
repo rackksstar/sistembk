@@ -4,6 +4,9 @@ namespace Database\Seeders;
 
 use App\Models\ConsultationRequest;
 use App\Models\CareerInfo;
+use App\Models\GuruBk;
+use App\Models\Kelas;
+use App\Models\Sekolah;
 use App\Models\User;
 use App\Models\GuidanceClass;
 use App\Models\Student;
@@ -58,6 +61,33 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        $sekolah = Sekolah::query()->updateOrCreate(
+            ['nama' => 'SMA Negeri 1 Contoh'],
+            [
+                'paket_aktif' => 'Basic',
+                'tanggal_aktivasi' => now()->toDateString(),
+                'is_active' => true,
+            ]
+        );
+
+        $kelasXii = Kelas::query()->updateOrCreate(
+            ['sekolah_id' => $sekolah->id, 'nama' => 'XII IPA 1'],
+            [
+                'jenjang' => 'SMA',
+                'tingkatan' => 'XII',
+            ]
+        );
+
+        GuruBk::query()->updateOrCreate(
+            ['user_id' => $guru->id],
+            [
+                'sekolah_id' => $sekolah->id,
+                'nip' => '1987654321001',
+                'jabatan' => 'Guru BK',
+                'bidang_studi' => 'Bimbingan Konseling',
+            ]
+        );
+
         User::query()->updateOrCreate(
             ['email' => 'guru.pending@bk.test'],
             [
@@ -99,9 +129,12 @@ class DatabaseSeeder extends Seeder
             ['nisn' => '0061234567'],
             [
                 'user_id' => $siswa->id,
+                'kelas_id' => $kelasXii->id,
                 'name' => $siswa->name,
                 'birth_date' => '2008-05-14',
                 'school' => 'SMA Negeri 1 Contoh',
+                'jenis_kelamin' => 'L',
+                'status_biodata' => 'lengkap',
             ]
         );
 
@@ -115,14 +148,47 @@ class DatabaseSeeder extends Seeder
 
         $guidanceClass->students()->syncWithoutDetaching([$studentProfile->id]);
 
-        User::factory()
-            ->count(6)
-            ->sequence(
-                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED],
-                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED],
-                ['role' => User::ROLE_GURU, 'status' => User::STATUS_APPROVED],
-            )
-            ->create();
+        $extraStudents = [
+            [
+                'email' => 'siswa2@bk.test',
+                'name' => 'Budi Siswa',
+                'nisn' => '0061234568',
+                'birth_date' => '2008-06-20',
+            ],
+            [
+                'email' => 'siswa3@bk.test',
+                'name' => 'Citra Siswa',
+                'nisn' => '0061234569',
+                'birth_date' => '2008-08-02',
+            ],
+        ];
+
+        foreach ($extraStudents as $payload) {
+            $user = User::query()->updateOrCreate(
+                ['email' => $payload['email']],
+                [
+                    'name' => $payload['name'],
+                    'password' => Hash::make('password'),
+                    'role' => User::ROLE_SISWA,
+                    'status' => User::STATUS_APPROVED,
+                    'email_verified_at' => now(),
+                ]
+            );
+
+            $profile = Student::query()->updateOrCreate(
+                ['nisn' => $payload['nisn']],
+                [
+                    'user_id' => $user->id,
+                    'kelas_id' => $kelasXii->id,
+                    'name' => $user->name,
+                    'birth_date' => $payload['birth_date'],
+                    'school' => 'SMA Negeri 1 Contoh',
+                    'status_biodata' => 'lengkap',
+                ]
+            );
+
+            $guidanceClass->students()->syncWithoutDetaching([$profile->id]);
+        }
 
         CareerInfo::query()->updateOrCreate(
             ['title' => 'Software Engineer'],

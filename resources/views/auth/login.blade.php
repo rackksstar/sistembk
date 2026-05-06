@@ -34,12 +34,6 @@
 
             @if($selectedRole === 'siswa')
                 <div class="space-y-2">
-                    <label for="name" class="block text-sm font-semibold text-slate-900">Nama</label>
-                    <input id="name" name="name" type="text" value="{{ old('name') }}" required autofocus class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="Nama lengkap siswa" />
-                    <x-input-error :messages="$errors->get('name')" class="mt-1 text-sm text-red-600" />
-                </div>
-
-                <div class="space-y-2">
                     <label for="nisn" class="block text-sm font-semibold text-slate-900">NISN</label>
                     <input id="nisn" name="nisn" type="text" value="{{ old('nisn') }}" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="NISN siswa" />
                     <x-input-error :messages="$errors->get('nisn')" class="mt-1 text-sm text-red-600" />
