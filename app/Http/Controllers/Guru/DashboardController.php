@@ -39,6 +39,21 @@ class DashboardController extends Controller
             ],
         ];
 
-        return view('guru.dashboard', compact('metrics', 'requests'));
+        $caseStats = ConsultationRequest::query()
+            ->where('counselor_id', auth()->id())
+            ->whereNotNull('case_category')
+            ->selectRaw('case_category, count(*) as total')
+            ->groupBy('case_category')
+            ->pluck('total', 'case_category');
+
+        $recentStudentHistories = ConsultationRequest::query()
+            ->with(['student:id,name,class_id,school_id', 'student.classModel:id,name', 'student.schoolModel:id,name'])
+            ->where('counselor_id', auth()->id())
+            ->where('status', ConsultationRequest::STATUS_SELESAI)
+            ->latest('consultation_date')
+            ->limit(8)
+            ->get();
+
+        return view('guru.dashboard', compact('metrics', 'requests', 'caseStats', 'recentStudentHistories'));
     }
 }

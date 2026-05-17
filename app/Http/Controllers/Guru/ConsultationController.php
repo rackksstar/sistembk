@@ -7,6 +7,7 @@ use App\Http\Requests\Guru\ScheduleConsultationRequest;
 use App\Http\Requests\Guru\StoreConsultationReportRequest;
 use App\Models\ConsultationRequest;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -17,7 +18,7 @@ class ConsultationController extends Controller
     {
         $status = $request->string('status')->toString();
 
-        $consultations = ConsultationRequest::with(['student.studentProfile', 'counselor'])
+        $consultations = ConsultationRequest::with(['student.studentProfile', 'student.schoolModel', 'student.classModel', 'counselor'])
             ->where(function ($query) {
                 $query->whereNull('counselor_id')->orWhere('counselor_id', auth()->id());
             })
@@ -28,7 +29,12 @@ class ConsultationController extends Controller
 
         $students = User::where('role', User::ROLE_SISWA)->where('status', User::STATUS_APPROVED)->orderBy('name')->get();
 
-        return view('guru.consultations.index', compact('consultations', 'students', 'status'));
+        return view('guru.consultations.index', [
+            'consultations' => $consultations,
+            'students' => $students,
+            'status' => $status,
+            'caseCategories' => ConsultationRequest::CASE_CATEGORIES,
+        ]);
     }
 
     public function approve(ConsultationRequest $consultation): RedirectResponse
@@ -69,12 +75,14 @@ class ConsultationController extends Controller
         return back()->with('success', 'Laporan konseling berhasil disimpan.');
     }
 
-    public function print(ConsultationRequest $consultation): View
+    public function print(ConsultationRequest $consultation)
     {
         abort_unless($consultation->counselor_id === auth()->id() || auth()->user()->role === User::ROLE_ADMIN, 403);
 
-        $consultation->load(['student', 'counselor']);
+        $consultation->load(['student.schoolModel', 'student.classModel', 'counselor']);
 
-        return view('guru.consultations.print', compact('consultation'));
+        return Pdf::loadView('guru.consultations.print', compact('consultation'))
+            ->setPaper('a4')
+            ->stream('laporan-konseling-'.$consultation->id.'.pdf');
     }
 }
