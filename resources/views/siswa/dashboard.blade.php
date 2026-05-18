@@ -6,10 +6,10 @@
     $firstName = str($studentName)->before(' ');
     $actionCards = [
         [
-            'title' => 'Asesmen Mandiri',
-            'description' => 'Isi minat bakat dan sosiometri agar Guru BK dapat memahami kebutuhan pendampingan Anda dengan lebih tepat.',
-            'href' => route('siswa.assessments.index'),
-            'cta' => 'Mulai Isi Sekarang',
+            'title' => 'Instrumen Asesmen',
+            'description' => 'Isi instrumen minat bakat, gaya belajar, dan masalah agar Guru BK memahami kebutuhan pendampingan Anda.',
+            'href' => route('siswa.instruments.index'),
+            'cta' => 'Isi Instrumen',
             'color' => 'from-blue-50 via-white to-emerald-50',
             'accent' => 'bg-blue-600',
             'featured' => true,
@@ -56,11 +56,11 @@
                     Selamat datang, {{ $firstName }}. Ruang BK Anda siap digunakan.
                 </h1>
                 <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-                    Mulai dari asesmen mandiri, permintaan konseling, kelas bimbingan, hingga informasi karier tersedia dalam satu tempat yang aman.
+                    Mulai dari instrumen minat bakat, gaya belajar, masalah, sosiometri, permintaan konseling, hingga informasi karier tersedia dalam satu tempat yang aman.
                 </p>
                 <div class="mt-6 flex flex-col gap-3 sm:flex-row">
-                    <a href="{{ route('siswa.assessments.index') }}" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">
-                        Mulai Isi Sekarang
+                    <a href="{{ route('siswa.instruments.index') }}" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">
+                        Isi Instrumen Asesmen
                     </a>
                     <a href="#request-form" class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white/85 px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:text-blue-700">
                         Ajukan Konseling

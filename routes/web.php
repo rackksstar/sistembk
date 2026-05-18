@@ -15,14 +15,22 @@ use App\Http\Controllers\Admin\SekolahController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\GuruRegistrationController;
-use App\Http\Controllers\Siswa\AssessmentController;
 use App\Http\Controllers\Guru\ConsultationController as GuruConsultationController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
+use App\Http\Controllers\Guru\InstrumentQuestionController;
+use App\Http\Controllers\Guru\InstrumentResultController;
+use App\Http\Controllers\Guru\MonthlyJournalController;
+use App\Http\Controllers\Guru\RplController;
+use App\Http\Controllers\Guru\ServiceFeedbackController as GuruServiceFeedbackController;
+use App\Http\Controllers\Guru\SociometryMapController;
 use App\Http\Controllers\Guru\StudentController as GuruStudentController;
 use App\Http\Controllers\Siswa\ConsultationRequestController;
 use App\Http\Controllers\Siswa\CareerInfoController as SiswaCareerInfoController;
 use App\Http\Controllers\Siswa\ClassJoinController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
+use App\Http\Controllers\Siswa\InstrumentSubmissionController;
+use App\Http\Controllers\Siswa\ServiceFeedbackController;
+use App\Http\Controllers\Siswa\SociometryController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -73,6 +81,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dashboard', [GuruDashboardController::class, 'index'])->name('dashboard');
         Route::post('/students/import', [GuruStudentController::class, 'import'])->name('students.import');
         Route::resource('students', GuruStudentController::class)->except(['create', 'show', 'edit']);
+        Route::resource('instrument-questions', InstrumentQuestionController::class)
+            ->parameters(['instrument-questions' => 'question'])
+            ->except(['create', 'show', 'edit']);
+        Route::get('/instrument-results', [InstrumentResultController::class, 'index'])->name('instrument-results.index');
+        Route::get('/sociometry', [SociometryMapController::class, 'index'])->name('sociometry.index');
+        Route::resource('rpls', RplController::class)->except(['create', 'show', 'edit']);
+        Route::get('/rpls/{rpl}/print', [RplController::class, 'print'])->name('rpls.print');
+        Route::resource('journals', MonthlyJournalController::class)->parameters(['journals' => 'journal'])->except(['create', 'show', 'edit']);
+        Route::get('/journals/{journal}/print', [MonthlyJournalController::class, 'print'])->name('journals.print');
+        Route::get('/feedback', [GuruServiceFeedbackController::class, 'index'])->name('feedback.index');
         Route::get('/consultations', [GuruConsultationController::class, 'index'])->name('consultations.index');
         Route::patch('/consultations/{consultation}/approve', [GuruConsultationController::class, 'approve'])->name('consultations.approve');
         Route::patch('/consultations/{consultation}/schedule', [GuruConsultationController::class, 'schedule'])->name('consultations.schedule');
@@ -82,11 +100,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('siswa')->name('siswa.')->middleware('role:siswa')->group(function () {
         Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/assessments', [AssessmentController::class, 'index'])->name('assessments.index');
-        Route::post('/assessments', [AssessmentController::class, 'store'])->name('assessments.store');
+        Route::get('/instruments', [InstrumentSubmissionController::class, 'index'])->name('instruments.index');
+        Route::post('/instruments', [InstrumentSubmissionController::class, 'store'])->name('instruments.store');
+        Route::get('/sociometry', [SociometryController::class, 'index'])->name('sociometry.index');
+        Route::post('/sociometry', [SociometryController::class, 'store'])->name('sociometry.store');
         Route::post('/consultation-requests', [ConsultationRequestController::class, 'store'])->name('consultation-requests.store');
         Route::post('/classes/join', [ClassJoinController::class, 'store'])->name('classes.join');
         Route::get('/careers', [SiswaCareerInfoController::class, 'index'])->name('careers.index');
+        Route::get('/feedback', [ServiceFeedbackController::class, 'create'])->name('feedback.create');
+        Route::post('/feedback', [ServiceFeedbackController::class, 'store'])->name('feedback.store');
     });
 
     Route::middleware('role:admin,guru')->group(function () {

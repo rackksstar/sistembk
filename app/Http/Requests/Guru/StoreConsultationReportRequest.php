@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\Guru;
 
+use App\Models\ConsultationRequest;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreConsultationReportRequest extends FormRequest
 {
@@ -15,8 +17,10 @@ class StoreConsultationReportRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'case_category' => ['required', Rule::in(array_keys(ConsultationRequest::CASE_CATEGORIES))],
             'result' => ['required', 'string', 'max:3000'],
             'evaluation' => ['required', 'string', 'max:3000'],
+            'follow_up' => ['nullable', 'string', 'max:3000'],
         ];
     }
 }

@@ -9,9 +9,11 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['name', 'email', 'password', 'school', 'role', 'status'])]
+#[Fillable(['name', 'email', 'password', 'school', 'school_id', 'class_id', 'role', 'status'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -60,6 +62,46 @@ class User extends Authenticatable
     public function studentProfile(): HasOne
     {
         return $this->hasOne(Student::class);
+    }
+
+    public function schoolModel(): BelongsTo
+    {
+        return $this->belongsTo(School::class, 'school_id');
+    }
+
+    public function classModel(): BelongsTo
+    {
+        return $this->belongsTo(SchoolClass::class, 'class_id');
+    }
+
+    public function instrumentSubmissions(): HasMany
+    {
+        return $this->hasMany(InstrumentSubmission::class, 'student_id');
+    }
+
+    public function sociometryResponses(): HasMany
+    {
+        return $this->hasMany(SociometryResponse::class, 'student_id');
+    }
+
+    public function receivedSociometryChoices(): HasMany
+    {
+        return $this->hasMany(SociometryResponse::class, 'chosen_student_id');
+    }
+
+    public function rpls(): HasMany
+    {
+        return $this->hasMany(Rpl::class, 'teacher_id');
+    }
+
+    public function monthlyJournals(): HasMany
+    {
+        return $this->hasMany(MonthlyJournal::class, 'teacher_id');
+    }
+
+    public function serviceFeedback(): HasMany
+    {
+        return $this->hasMany(ServiceFeedback::class, 'student_id');
     }
 
     /**

@@ -17,10 +17,25 @@ class ConsultationRequest extends Model
     public const STATUS_MENUNGGU = self::STATUS_PENDING;
     public const STATUS_DIJADWALKAN = self::STATUS_APPROVED;
 
+    public const CASE_PRIBADI = 'pribadi';
+    public const CASE_SOSIAL = 'sosial';
+    public const CASE_BELAJAR = 'belajar';
+    public const CASE_KARIER = 'karier';
+    public const CASE_KEDISIPLINAN = 'kedisiplinan';
+
+    public const CASE_CATEGORIES = [
+        self::CASE_PRIBADI => 'Pribadi',
+        self::CASE_SOSIAL => 'Sosial',
+        self::CASE_BELAJAR => 'Belajar',
+        self::CASE_KARIER => 'Karier',
+        self::CASE_KEDISIPLINAN => 'Kedisiplinan',
+    ];
+
     protected $fillable = [
         'student_id',
         'counselor_id',
         'subject',
+        'case_category',
         'preferred_time',
         'consultation_date',
         'consultation_time',
@@ -30,6 +45,7 @@ class ConsultationRequest extends Model
         'notes',
         'result',
         'evaluation',
+        'follow_up',
     ];
 
     protected function casts(): array
@@ -48,5 +64,10 @@ class ConsultationRequest extends Model
     public function counselor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'counselor_id');
+    }
+
+    public function caseCategoryLabel(): string
+    {
+        return self::CASE_CATEGORIES[$this->case_category] ?? ($this->case_category ?: '-');
     }
 }

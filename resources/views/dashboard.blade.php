@@ -6,7 +6,7 @@
         <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div class="space-y-2">
                 <p class="text-sm font-semibold uppercase tracking-[0.2em] text-sky-600">Dasbor</p>
-                <h1 class="text-3xl font-semibold tracking-tight text-slate-900">Ringkasan bimbingan konseling</h1>
+                <h1 class="text-3xl font-semibold tracking-tight text-slate-900">Ringkasan Bimbingan Konseling</h1>
                 <p class="max-w-2xl text-sm leading-6 text-slate-600">Sistem bagi siswa, guru BK, dan admin untuk melihat status sesi, permintaan, dan rekomendasi secara cepat.</p>
             </div>
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
