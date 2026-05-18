@@ -17,7 +17,7 @@
         [
             'title' => 'Permintaan Konseling',
             'description' => 'Sampaikan hal yang ingin dibahas bersama Guru BK secara aman dan tertata.',
-            'href' => '#request-form',
+            'href' => route('siswa.consultations.index'),
             'cta' => 'Ajukan Konseling',
             'color' => 'from-indigo-50 via-white to-sky-50',
             'accent' => 'bg-indigo-500',
@@ -62,7 +62,7 @@
                     <a href="{{ route('siswa.instruments.index') }}" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">
                         Isi Instrumen Asesmen
                     </a>
-                    <a href="#request-form" class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white/85 px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:text-blue-700">
+                    <a href="{{ route('siswa.consultations.index') }}" class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white/85 px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:text-blue-700">
                         Ajukan Konseling
                     </a>
                 </div>
@@ -156,45 +156,32 @@
         <section id="request-form" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <x-section-title
                 title="Permintaan Konseling"
-                description="Kirim keluhan Anda kepada Guru BK."
+                description="Ajukan sesi baru atau lihat riwayat lengkap."
             />
-            <form action="{{ route('siswa.consultation-requests.store') }}" method="POST" class="mt-6 space-y-4" x-data="{ loading: false }" x-on:submit="loading = true">
-                @csrf
-                <div class="space-y-2">
-                    <x-input-label for="complaint" value="Keluhan" />
-                    <textarea id="complaint" name="complaint" rows="3" required class="w-full rounded-2xl border-slate-200 bg-slate-50 text-sm focus:ring-blue-500" placeholder="Apa yang ingin Anda ceritakan?"></textarea>
-                </div>
-                <div class="space-y-2">
-                    <x-input-label for="counselor_id" value="Pilih Guru BK" />
-                    <x-form-select id="counselor_id" name="counselor_id" required>
-                        <option value="">Pilih guru</option>
-                        @foreach($teachers as $teacher)
-                            <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
-                        @endforeach
-                    </x-form-select>
-                </div>
-                <x-primary-button class="w-full py-3" x-bind:disabled="loading">
-                    <span x-show="!loading">Kirim Permintaan</span>
-                    <span x-show="loading">Mengirim...</span>
-                </x-primary-button>
-            </form>
+            <p class="mt-4 text-sm leading-6 text-slate-600">Form memuat topik, kategori masalah, dan preferensi waktu.</p>
+            <a href="{{ route('siswa.consultations.index') }}" class="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-500">
+                Buka halaman konseling
+            </a>
         </section>
     </div>
 
     {{-- Riwayat Section --}}
     <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <x-section-title title="Riwayat Pengajuan" description="Status permintaan konseling Anda." />
+        <div class="flex items-end justify-between gap-4">
+            <x-section-title title="Riwayat Pengajuan" description="Ringkasan permintaan konseling terbaru." />
+            <a href="{{ route('siswa.consultations.index') }}" class="text-sm font-semibold text-blue-600 hover:text-blue-500">Lihat semua</a>
+        </div>
         <div class="mt-6 space-y-3">
-            @forelse($requests as $request)
-                <div class="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-4">
+            @forelse($requests->take(5) as $request)
+                <div class="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4">
                     <div>
-                        <p class="font-medium text-slate-900">{{ Str::limit($request->details, 60) }}</p>
-                        <p class="text-xs text-slate-500 mt-1">Guru: {{ $request->counselor?->name ?? 'Menunggu' }}</p>
+                        <p class="font-medium text-slate-900">{{ $request->subject }}</p>
+                        <p class="mt-1 text-xs text-slate-500">Guru: {{ $request->counselor?->name ?? 'Menunggu' }}</p>
                     </div>
-                    <span class="rounded-full bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm">{{ $request->status }}</span>
+                    <x-status-badge :status="$request->status" />
                 </div>
             @empty
-                <p class="text-center py-6 text-sm text-slate-500">Belum ada riwayat pengajuan.</p>
+                <p class="py-6 text-center text-sm text-slate-500">Belum ada riwayat pengajuan.</p>
             @endforelse
         </div>
     </section>

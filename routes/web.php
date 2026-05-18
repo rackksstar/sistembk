@@ -24,6 +24,7 @@ use App\Http\Controllers\Guru\RplController;
 use App\Http\Controllers\Guru\ServiceFeedbackController as GuruServiceFeedbackController;
 use App\Http\Controllers\Guru\SociometryMapController;
 use App\Http\Controllers\Guru\StudentController as GuruStudentController;
+use App\Http\Controllers\Siswa\ConsultationController as SiswaConsultationController;
 use App\Http\Controllers\Siswa\ConsultationRequestController;
 use App\Http\Controllers\Siswa\CareerInfoController as SiswaCareerInfoController;
 use App\Http\Controllers\Siswa\ClassJoinController;
@@ -92,7 +93,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/journals/{journal}/print', [MonthlyJournalController::class, 'print'])->name('journals.print');
         Route::get('/feedback', [GuruServiceFeedbackController::class, 'index'])->name('feedback.index');
         Route::get('/consultations', [GuruConsultationController::class, 'index'])->name('consultations.index');
+        Route::get('/consultations/events', [GuruConsultationController::class, 'events'])->name('consultations.events');
         Route::patch('/consultations/{consultation}/approve', [GuruConsultationController::class, 'approve'])->name('consultations.approve');
+        Route::patch('/consultations/{consultation}/reject', [GuruConsultationController::class, 'reject'])->name('consultations.reject');
         Route::patch('/consultations/{consultation}/schedule', [GuruConsultationController::class, 'schedule'])->name('consultations.schedule');
         Route::patch('/consultations/{consultation}/report', [GuruConsultationController::class, 'report'])->name('consultations.report');
         Route::get('/consultations/{consultation}/print', [GuruConsultationController::class, 'print'])->name('consultations.print');
@@ -104,6 +107,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/instruments', [InstrumentSubmissionController::class, 'store'])->name('instruments.store');
         Route::get('/sociometry', [SociometryController::class, 'index'])->name('sociometry.index');
         Route::post('/sociometry', [SociometryController::class, 'store'])->name('sociometry.store');
+        Route::get('/consultations', [SiswaConsultationController::class, 'index'])->name('consultations.index');
+        Route::post('/consultations', [SiswaConsultationController::class, 'store'])->name('consultations.store');
         Route::post('/consultation-requests', [ConsultationRequestController::class, 'store'])->name('consultation-requests.store');
         Route::post('/classes/join', [ClassJoinController::class, 'store'])->name('classes.join');
         Route::get('/careers', [SiswaCareerInfoController::class, 'index'])->name('careers.index');

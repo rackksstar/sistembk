@@ -3,7 +3,9 @@
 namespace App\Http\Requests\Guru;
 
 use App\Models\User;
+use App\Services\ConsultationScheduleService;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class ScheduleConsultationRequest extends FormRequest
 {
@@ -20,5 +22,29 @@ class ScheduleConsultationRequest extends FormRequest
             'student_id' => ['required', 'exists:users,id'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator) {
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
+
+            $consultation = $this->route('consultation');
+            $counselorId = (int) auth()->id();
+
+            if (app(ConsultationScheduleService::class)->hasConflict(
+                $counselorId,
+                $this->input('consultation_date'),
+                $this->input('consultation_time'),
+                $consultation?->id
+            )) {
+                $validator->errors()->add(
+                    'consultation_time',
+                    'Jadwal bentrok dengan sesi konseling lain pada tanggal dan jam yang sama.'
+                );
+            }
+        });
     }
 }
