@@ -2,22 +2,25 @@
 
 namespace Database\Seeders;
 
-use App\Models\ConsultationRequest;
 use App\Models\CareerInfo;
+use App\Models\ConsultationRequest;
+use App\Models\GuruBk;
+use App\Models\GuidanceClass;
 use App\Models\InstrumentAnswer;
 use App\Models\InstrumentQuestion;
 use App\Models\InstrumentSubmission;
+use App\Models\Kelas;
 use App\Models\MonthlyJournal;
 use App\Models\Rpl;
 use App\Models\School;
 use App\Models\SchoolClass;
+use App\Models\Sekolah;
 use App\Models\ServiceFeedback;
 use App\Models\SociometryResponse;
-use App\Models\User;
-use App\Models\GuidanceClass;
 use App\Models\Student;
-use Illuminate\Support\Facades\DB;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
@@ -42,11 +45,41 @@ class DatabaseSeeder extends Seeder
             ['level' => 'XI']
         );
 
+        $sekolah = Sekolah::query()->updateOrCreate(
+            ['nama' => 'SMA Negeri 1 Contoh'],
+            [
+                'paket_aktif' => 'Basic',
+                'tanggal_aktivasi' => now()->toDateString(),
+                'is_active' => true,
+            ]
+        );
+
+        $kelasXii = Kelas::query()->updateOrCreate(
+            ['sekolah_id' => $sekolah->id, 'nama' => 'XII IPA 1'],
+            [
+                'jenjang' => 'SMA',
+                'tingkatan' => 'XII',
+            ]
+        );
+
         $admin = User::query()->updateOrCreate(
             ['email' => 'admin@bk.test'],
             [
                 'name' => 'Admin BK',
                 'password' => Hash::make('password'),
+                'school' => $school->name,
+                'school_id' => $school->id,
+                'role' => User::ROLE_ADMIN,
+                'status' => User::STATUS_APPROVED,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        User::query()->updateOrCreate(
+            ['email' => 'yola@gmail.com'],
+            [
+                'name' => 'yola',
+                'password' => Hash::make('123456'),
                 'school' => $school->name,
                 'school_id' => $school->id,
                 'role' => User::ROLE_ADMIN,
@@ -65,6 +98,16 @@ class DatabaseSeeder extends Seeder
                 'role' => User::ROLE_GURU,
                 'status' => User::STATUS_APPROVED,
                 'email_verified_at' => now(),
+            ]
+        );
+
+        GuruBk::query()->updateOrCreate(
+            ['user_id' => $guru->id],
+            [
+                'sekolah_id' => $sekolah->id,
+                'nip' => '1987654321001',
+                'jabatan' => 'Guru BK',
+                'bidang_studi' => 'Bimbingan Konseling',
             ]
         );
 
@@ -148,9 +191,12 @@ class DatabaseSeeder extends Seeder
             ['nisn' => '0061234567'],
             [
                 'user_id' => $siswa->id,
+                'kelas_id' => $kelasXii->id,
                 'name' => $siswa->name,
                 'birth_date' => '2008-05-14',
-                'school' => 'SMA Negeri 1 Contoh',
+                'school' => $school->name,
+                'jenis_kelamin' => 'L',
+                'status_biodata' => 'lengkap',
             ]
         );
 
@@ -167,10 +213,10 @@ class DatabaseSeeder extends Seeder
         $studentUsers = collect([$siswa]);
 
         foreach ([
-            ['name' => 'Alya Putri', 'email' => 'alya@bk.test', 'nisn' => '0061234568'],
-            ['name' => 'Bima Pratama', 'email' => 'bima@bk.test', 'nisn' => '0061234569'],
-            ['name' => 'Citra Lestari', 'email' => 'citra@bk.test', 'nisn' => '0061234570'],
-            ['name' => 'Dimas Arya', 'email' => 'dimas@bk.test', 'nisn' => '0061234571'],
+            ['name' => 'Alya Putri', 'email' => 'alya@bk.test', 'nisn' => '0061234568', 'birth_date' => '2008-06-20', 'jenis_kelamin' => 'P'],
+            ['name' => 'Bima Pratama', 'email' => 'bima@bk.test', 'nisn' => '0061234569', 'birth_date' => '2008-08-02', 'jenis_kelamin' => 'L'],
+            ['name' => 'Citra Lestari', 'email' => 'citra@bk.test', 'nisn' => '0061234570', 'birth_date' => '2008-09-11', 'jenis_kelamin' => 'P'],
+            ['name' => 'Dimas Arya', 'email' => 'dimas@bk.test', 'nisn' => '0061234571', 'birth_date' => '2008-10-21', 'jenis_kelamin' => 'L'],
         ] as $index => $item) {
             $schoolClass = $index < 2 ? $classXiiIpa : $classXiIps;
 
@@ -192,9 +238,12 @@ class DatabaseSeeder extends Seeder
                 ['nisn' => $item['nisn']],
                 [
                     'user_id' => $studentUser->id,
+                    'kelas_id' => $kelasXii->id,
                     'name' => $studentUser->name,
-                    'birth_date' => now()->subYears(16)->subDays($index * 40)->toDateString(),
+                    'birth_date' => $item['birth_date'],
                     'school' => $school->name,
+                    'jenis_kelamin' => $item['jenis_kelamin'],
+                    'status_biodata' => 'lengkap',
                 ]
             );
 

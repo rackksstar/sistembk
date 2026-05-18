@@ -9,8 +9,6 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -84,29 +82,16 @@ class AuthenticatedSessionController extends Controller
 
         $user = $student->user;
 
-        if ($user && $user->role !== User::ROLE_SISWA) {
+        if (! $user) {
             throw ValidationException::withMessages([
-                'nisn' => 'Data siswa ini terhubung dengan akun yang tidak valid. Hubungi admin.',
+                'nisn' => 'Akun siswa belum aktif. Hubungi admin untuk menghubungkan data siswa dengan akun login.',
             ]);
         }
 
-        if (! $user) {
-            $user = User::create([
-                'name' => $request->input('name'),
-                'email' => 'siswa-'.$student->id.'@bk.local',
-                'email_verified_at' => now(),
-                'password' => Hash::make(Str::random(32)),
-                'role' => User::ROLE_SISWA,
-                'status' => User::STATUS_APPROVED,
+        if ($user->role !== User::ROLE_SISWA) {
+            throw ValidationException::withMessages([
+                'nisn' => 'Data siswa ini terhubung dengan akun yang tidak valid. Hubungi admin.',
             ]);
-
-            $student->update([
-                'user_id' => $user->id,
-                'name' => $request->input('name'),
-            ]);
-        } elseif ($user->name !== $request->input('name')) {
-            $user->update(['name' => $request->input('name')]);
-            $student->update(['name' => $request->input('name')]);
         }
 
         if (! $user->isApproved()) {

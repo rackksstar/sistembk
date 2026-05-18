@@ -28,7 +28,6 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required_if:selected_role,siswa', 'nullable', 'string', 'max:255'],
             'nisn' => ['required_if:selected_role,siswa', 'nullable', 'string', 'max:20'],
             'birth_date' => ['required_if:selected_role,siswa', 'nullable', 'date', 'before:today'],
             'email' => ['required_unless:selected_role,siswa', 'nullable', 'string', 'email'],
@@ -72,8 +71,10 @@ class LoginRequest extends FormRequest
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
+        $errorKey = $this->string('selected_role')->toString() === 'siswa' ? 'nisn' : 'email';
+
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
+            $errorKey => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -85,6 +86,10 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        $identifier = $this->string('selected_role')->toString() === 'siswa'
+            ? $this->string('nisn')->toString()
+            : $this->string('email')->toString();
+
+        return Str::transliterate(Str::lower($identifier).'|'.$this->ip());
     }
 }
