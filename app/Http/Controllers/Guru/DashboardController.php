@@ -27,7 +27,10 @@ class DashboardController extends Controller
             ],
             [
                 'title' => 'Dijadwalkan',
-                'value' => $requests->where('status', ConsultationRequest::STATUS_DIJADWALKAN)->count(),
+                'value' => $requests->whereIn('status', [
+                    ConsultationRequest::STATUS_DIJADWALKAN,
+                    ConsultationRequest::STATUS_RESCHEDULED,
+                ])->count(),
                 'description' => 'Sesi yang sudah punya jadwal.',
                 'color' => 'from-emerald-500 to-teal-400',
             ],

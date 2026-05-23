@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreStudentRequest;
 use App\Http\Requests\Admin\UpdateStudentRequest;
+use App\Models\Kelas;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -16,20 +17,25 @@ class StudentController extends Controller
     public function index(Request $request): View
     {
         $search = $request->string('search')->toString();
+        $kelasId = $request->integer('kelas_id') ?: null;
 
-        $students = Student::with('user')
+        $students = Student::with(['user', 'kelas'])
             ->when($search, function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('nisn', 'like', "%{$search}%")
-                    ->orWhere('school', 'like', "%{$search}%");
+                $query->where(function ($inner) use ($search) {
+                    $inner->where('name', 'like', "%{$search}%")
+                        ->orWhere('nisn', 'like', "%{$search}%")
+                        ->orWhere('school', 'like', "%{$search}%");
+                });
             })
+            ->when($kelasId, fn ($query) => $query->where('kelas_id', $kelasId))
             ->latest()
             ->paginate(10)
             ->withQueryString();
 
         $studentUsers = User::where('role', User::ROLE_SISWA)->orderBy('name')->get();
+        $kelasList = Kelas::with('sekolah')->orderBy('nama')->get();
 
-        return view('admin.students.index', compact('students', 'studentUsers', 'search'));
+        return view('admin.students.index', compact('students', 'studentUsers', 'search', 'kelasId', 'kelasList'));
     }
 
     public function store(StoreStudentRequest $request): RedirectResponse

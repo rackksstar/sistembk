@@ -12,6 +12,8 @@ class ConsultationRequest extends Model
 
     public const STATUS_PENDING = 'pending';
     public const STATUS_APPROVED = 'disetujui';
+    public const STATUS_REJECTED = 'ditolak';
+    public const STATUS_RESCHEDULED = 'dijadwalkan_ulang';
     public const STATUS_SELESAI = 'selesai';
 
     public const STATUS_MENUNGGU = self::STATUS_PENDING;
@@ -31,16 +33,26 @@ class ConsultationRequest extends Model
         self::CASE_KEDISIPLINAN => 'Kedisiplinan',
     ];
 
+    public const STATUS_LABELS = [
+        self::STATUS_PENDING => 'Menunggu',
+        self::STATUS_APPROVED => 'Disetujui',
+        self::STATUS_REJECTED => 'Ditolak',
+        self::STATUS_RESCHEDULED => 'Dijadwalkan ulang',
+        self::STATUS_SELESAI => 'Selesai',
+    ];
+
     protected $fillable = [
         'student_id',
         'counselor_id',
         'subject',
         'case_category',
         'preferred_time',
+        'preferred_date',
         'consultation_date',
         'consultation_time',
         'details',
         'status',
+        'rejection_reason',
         'scheduled_at',
         'notes',
         'result',
@@ -52,6 +64,7 @@ class ConsultationRequest extends Model
     {
         return [
             'consultation_date' => 'date',
+            'preferred_date' => 'date',
             'scheduled_at' => 'datetime',
         ];
     }
@@ -69,5 +82,32 @@ class ConsultationRequest extends Model
     public function caseCategoryLabel(): string
     {
         return self::CASE_CATEGORIES[$this->case_category] ?? ($this->case_category ?: '-');
+    }
+
+    public function statusLabel(): string
+    {
+        return self::STATUS_LABELS[$this->status] ?? $this->status;
+    }
+
+    public static function filterableStatuses(): array
+    {
+        return self::STATUS_LABELS;
+    }
+
+    public function isSchedulable(): bool
+    {
+        return in_array($this->status, [
+            self::STATUS_PENDING,
+            self::STATUS_APPROVED,
+            self::STATUS_RESCHEDULED,
+        ], true);
+    }
+
+    public function canBeRejected(): bool
+    {
+        return in_array($this->status, [
+            self::STATUS_PENDING,
+            self::STATUS_APPROVED,
+        ], true);
     }
 }

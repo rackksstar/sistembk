@@ -41,6 +41,7 @@
         }
 
         if ($user?->role === 'siswa') {
+            $menu[] = ['label' => 'Konseling', 'href' => route('siswa.consultations.index'), 'active' => request()->routeIs('siswa.consultations.*') || request()->routeIs('siswa.consultation-requests.*')];
             $menu[] = ['label' => 'Instrumen Asesmen', 'href' => route('siswa.instruments.index'), 'active' => request()->routeIs('siswa.instruments.*')];
             $menu[] = ['label' => 'Sosiometri', 'href' => route('siswa.sociometry.index'), 'active' => request()->routeIs('siswa.sociometry.*')];
             $menu[] = ['label' => 'Informasi Karier', 'href' => route('siswa.careers.index'), 'active' => request()->routeIs('siswa.careers.*')];
@@ -142,5 +143,6 @@
             </div>
         </div>
     </div>
+    @stack('scripts')
 </body>
 </html>
