@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\CareerInfoController;
 use App\Http\Controllers\Admin\ConsultationController as AdminConsultationController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\GuruBkController;
+use App\Http\Controllers\Admin\GuruProfileChangeController;
 use App\Http\Controllers\Admin\GuidanceClassController;
 use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\MasterQuestionController;
@@ -69,6 +70,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('guru-bk', GuruBkController::class)
             ->parameters(['guru-bk' => 'guruBk'])
             ->except(['create', 'show', 'edit']);
+        Route::get('/perubahan-profil-guru', [GuruProfileChangeController::class, 'index'])->name('guru-profile-changes.index');
+        Route::patch('/perubahan-profil-guru/{change}/dibaca', [GuruProfileChangeController::class, 'markReviewed'])->name('guru-profile-changes.reviewed');
         Route::resource('master-pertanyaan', MasterQuestionController::class)
             ->parameters(['master-pertanyaan' => 'masterPertanyaan'])
             ->except(['create', 'show', 'edit']);

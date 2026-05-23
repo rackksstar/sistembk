@@ -11,6 +11,7 @@
     @php
         $user = auth()->user();
         $roleLabel = ['admin' => 'Admin', 'guru' => 'Guru BK', 'siswa' => 'Siswa'][$user?->role] ?? 'Pengguna';
+        $userIdentity = $user?->role === 'guru' ? ($user?->username ?? '-') : ($user?->email ?? '-');
         $dashboardRoute = $user ? route($user->dashboardRoute()) : route('login');
         $menu = [
             ['label' => 'Dashboard', 'href' => $dashboardRoute, 'active' => request()->routeIs('*.dashboard') || request()->routeIs('dashboard')],
@@ -64,7 +65,7 @@
                 <div class="flex items-center gap-3">
                     <div class="hidden text-right sm:block">
                         <p class="text-sm font-medium text-slate-900">{{ $user?->name }}</p>
-                        <p class="text-xs text-slate-500">{{ $user?->email }}</p>
+                        <p class="text-xs text-slate-500">{{ $userIdentity }}</p>
                     </div>
                     <button type="button" x-on:click="logoutOpen = true" class="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Keluar</button>
                 </div>
@@ -128,13 +129,13 @@
                 Anda masih login sebagai {{ $user?->name }}. Setelah logout, Anda harus login ulang untuk masuk dashboard.
             </p>
 
-            <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <div class="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <button type="button" x-on:click="logoutOpen = false" class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:text-blue-700">
                     Batal
                 </button>
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}" class="inline-flex justify-center">
                     @csrf
-                    <button type="submit" class="inline-flex w-full items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">
+                    <button type="submit" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">
                         Ya, logout
                     </button>
                 </form>

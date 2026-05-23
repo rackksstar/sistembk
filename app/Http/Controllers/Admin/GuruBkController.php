@@ -24,8 +24,9 @@ class GuruBkController extends Controller
         $guruBks = GuruBk::query()
             ->with(['user', 'sekolah'])
             ->when($search, function ($q) use ($search) {
-                $q->whereHas('user', fn ($uq) => $uq->where('name', 'like', "%{$search}%")->orWhere('email', 'like', "%{$search}%"))
-                    ->orWhere('nip', 'like', "%{$search}%");
+                $q->whereHas('user', fn ($uq) => $uq->where('name', 'like', "%{$search}%")->orWhere('username', 'like', "%{$search}%"))
+                    ->orWhere('nip', 'like', "%{$search}%")
+                    ->orWhere('no_hp', 'like', "%{$search}%");
             })
             ->when($sekolahId, fn ($q) => $q->where('sekolah_id', $sekolahId))
             ->when($status, fn ($q) => $q->whereHas('user', fn ($uq) => $uq->where('status', $status)))
@@ -48,19 +49,22 @@ class GuruBkController extends Controller
     public function store(StoreGuruBkRequest $request): RedirectResponse
     {
         $data = $request->validated();
+        $sekolah = Sekolah::find($data['sekolah_id']);
+        $username = $data['no_hp'] ?: ($data['nip'] ?? null);
 
         $user = User::create([
             'name' => $data['name'],
-            'email' => $data['email'],
+            'username' => $username,
             'password' => Hash::make($data['password']),
+            'school' => $sekolah?->nama,
             'role' => User::ROLE_GURU,
             'status' => $data['status'],
-            'email_verified_at' => now(),
         ]);
 
         GuruBk::create([
             'user_id' => $user->id,
-            'sekolah_id' => $data['sekolah_id'] ?? null,
+            'sekolah_id' => $data['sekolah_id'],
+            'no_hp' => $data['no_hp'],
             'nip' => $data['nip'] ?? null,
             'jabatan' => $data['jabatan'] ?? null,
             'bidang_studi' => $data['bidang_studi'] ?? null,
@@ -72,10 +76,13 @@ class GuruBkController extends Controller
     public function update(UpdateGuruBkRequest $request, GuruBk $guruBk): RedirectResponse
     {
         $data = $request->validated();
+        $sekolah = Sekolah::find($data['sekolah_id']);
+        $username = $data['no_hp'] ?: ($data['nip'] ?? null);
 
         $payloadUser = [
             'name' => $data['name'],
-            'email' => $data['email'],
+            'username' => $username,
+            'school' => $sekolah?->nama,
             'status' => $data['status'],
         ];
 
@@ -86,7 +93,8 @@ class GuruBkController extends Controller
         $guruBk->user->update($payloadUser);
 
         $guruBk->update([
-            'sekolah_id' => $data['sekolah_id'] ?? null,
+            'sekolah_id' => $data['sekolah_id'],
+            'no_hp' => $data['no_hp'],
             'nip' => $data['nip'] ?? null,
             'jabatan' => $data['jabatan'] ?? null,
             'bidang_studi' => $data['bidang_studi'] ?? null,
@@ -105,4 +113,3 @@ class GuruBkController extends Controller
         return back()->with('success', 'Data Guru BK berhasil dihapus.');
     }
 }
-

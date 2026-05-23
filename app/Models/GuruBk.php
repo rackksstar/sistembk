@@ -15,6 +15,7 @@ class GuruBk extends Model
     protected $fillable = [
         'user_id',
         'sekolah_id',
+        'no_hp',
         'nip',
         'jabatan',
         'bidang_studi',
@@ -30,4 +31,3 @@ class GuruBk extends Model
         return $this->belongsTo(Sekolah::class);
     }
 }
-

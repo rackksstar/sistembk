@@ -28,7 +28,8 @@
                     <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                         <tr>
                             <th class="px-5 py-4">Nama</th>
-                            <th class="px-5 py-4">Email</th>
+                            <th class="px-5 py-4">Sekolah</th>
+                            <th class="px-5 py-4">No HP / NIP</th>
                             <th class="px-5 py-4">Status</th>
                             <th class="px-5 py-4 text-right">Aksi</th>
                         </tr>
@@ -37,7 +38,12 @@
                         @forelse($teachers as $teacher)
                             <tr>
                                 <td class="px-5 py-4 font-semibold text-slate-900">{{ $teacher->name }}</td>
-                                <td class="px-5 py-4 text-slate-600">{{ $teacher->email }}</td>
+                                <td class="px-5 py-4 text-slate-600">{{ $teacher->guruBkProfile?->sekolah?->nama ?? $teacher->school ?? '-' }}</td>
+                                <td class="px-5 py-4 text-slate-600">
+                                    {{ $teacher->guruBkProfile?->no_hp ?? '-' }}
+                                    <span class="text-slate-400">/</span>
+                                    {{ $teacher->guruBkProfile?->nip ?? '-' }}
+                                </td>
                                 <td class="px-5 py-4"><x-status-badge :status="$teacher->status" /></td>
                                 <td class="px-5 py-4">
                                     <div class="flex justify-end gap-2">

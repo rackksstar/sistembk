@@ -28,6 +28,8 @@
                         <x-nav-link :href="route('guru.rpls.index')" :active="request()->routeIs('guru.rpls.*')">RPL</x-nav-link>
                         <x-nav-link :href="route('guru.journals.index')" :active="request()->routeIs('guru.journals.*')">Jurnal</x-nav-link>
                         <x-nav-link :href="route('guru.feedback.index')" :active="request()->routeIs('guru.feedback.*')">Feedback</x-nav-link>
+                    @elseif(auth()->user()->isRole(\App\Models\User::ROLE_ADMIN))
+                        <x-nav-link :href="route('admin.guru-profile-changes.index')" :active="request()->routeIs('admin.guru-profile-changes.*')">Update Guru</x-nav-link>
                     @elseif(auth()->user()->isRole(\App\Models\User::ROLE_SISWA))
                         <x-nav-link :href="route('siswa.instruments.index')" :active="request()->routeIs('siswa.instruments.*')">Instrumen</x-nav-link>
                         <x-nav-link :href="route('siswa.sociometry.index')" :active="request()->routeIs('siswa.sociometry.*')">Sosiometri</x-nav-link>
@@ -124,6 +126,8 @@
                 <x-responsive-nav-link :href="route('guru.rpls.index')">RPL</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('guru.journals.index')">Jurnal</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('guru.feedback.index')">Feedback</x-responsive-nav-link>
+            @elseif(auth()->user()->isRole(\App\Models\User::ROLE_ADMIN))
+                <x-responsive-nav-link :href="route('admin.guru-profile-changes.index')">Update Guru</x-responsive-nav-link>
             @elseif(auth()->user()->isRole(\App\Models\User::ROLE_SISWA))
                 <x-responsive-nav-link :href="route('siswa.instruments.index')">Instrumen</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('siswa.sociometry.index')">Sosiometri</x-responsive-nav-link>
@@ -138,7 +142,7 @@
                     {{ auth()->user()->name }}
                 </div>
                 <div class="text-sm text-gray-500">
-                    {{ auth()->user()->email }}
+                    {{ auth()->user()->isRole(\App\Models\User::ROLE_GURU) ? (auth()->user()->username ?? '-') : auth()->user()->email }}
                 </div>
             </div>
 
@@ -183,13 +187,13 @@
                     Anda masih login sebagai {{ auth()->user()->name }}. Setelah logout, Anda harus login ulang untuk masuk dashboard.
                 </p>
 
-                <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                <div class="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
                     <button type="button" x-on:click="logoutOpen = false" class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-200 hover:text-blue-700">
                         Batal
                     </button>
-                    <form method="POST" action="{{ route('logout') }}">
+                    <form method="POST" action="{{ route('logout') }}" class="inline-flex justify-center">
                         @csrf
-                        <button type="submit" class="inline-flex w-full items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">
+                        <button type="submit" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">
                             Ya, logout
                         </button>
                     </form>

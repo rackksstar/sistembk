@@ -45,7 +45,7 @@ class AuthenticatedSessionController extends Controller
             $request->session()->regenerateToken();
 
             throw ValidationException::withMessages([
-                'email' => 'Akun ini tidak sesuai dengan role yang dipilih. Silakan pilih role yang benar di landing page.',
+                $request->input('selected_role') === User::ROLE_GURU ? 'login_id' : 'email' => 'Akun ini tidak sesuai dengan role yang dipilih. Silakan pilih role yang benar di landing page.',
             ]);
         }
 
@@ -58,7 +58,9 @@ class AuthenticatedSessionController extends Controller
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return back()->withErrors(['email' => $message]);
+            return back()->withErrors([
+                $request->input('selected_role') === User::ROLE_GURU ? 'login_id' : 'email' => $message,
+            ]);
         }
 
         return redirect()->route($request->user()->dashboardRoute());

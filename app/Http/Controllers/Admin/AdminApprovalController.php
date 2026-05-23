@@ -15,6 +15,7 @@ class AdminApprovalController extends Controller
         $status = $request->string('status', User::STATUS_PENDING)->toString();
 
         $teachers = User::query()
+            ->with('guruBkProfile.sekolah')
             ->where('role', User::ROLE_GURU)
             ->when($status !== 'semua', fn ($query) => $query->where('status', $status))
             ->latest()

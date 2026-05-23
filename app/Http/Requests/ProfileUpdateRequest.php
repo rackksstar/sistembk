@@ -16,6 +16,22 @@ class ProfileUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
+        if ($this->user()?->role === User::ROLE_GURU) {
+            $guruBk = $this->user()->guruBkProfile;
+
+            return [
+                'name' => ['required', 'string', 'max:255'],
+                'no_hp' => [
+                    'required',
+                    'string',
+                    'max:30',
+                    Rule::unique('guru_bks', 'no_hp')->ignore($guruBk),
+                    Rule::unique('users', 'username')->ignore($this->user()->id),
+                ],
+                'nip' => ['required', 'string', 'max:40', Rule::unique('guru_bks', 'nip')->ignore($guruBk)],
+            ];
+        }
+
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => [

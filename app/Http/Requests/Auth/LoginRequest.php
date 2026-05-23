@@ -6,6 +6,7 @@ use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -30,7 +31,8 @@ class LoginRequest extends FormRequest
         return [
             'nisn' => ['required_if:selected_role,siswa', 'nullable', 'string', 'max:20'],
             'birth_date' => ['required_if:selected_role,siswa', 'nullable', 'date', 'before:today'],
-            'email' => ['required_unless:selected_role,siswa', 'nullable', 'string', 'email'],
+            'login_id' => ['required_if:selected_role,guru', 'nullable', 'string', 'max:255'],
+            'email' => ['required_unless:selected_role,siswa,guru', 'nullable', 'string', 'max:255'],
             'password' => ['required_unless:selected_role,siswa', 'nullable', 'string'],
             'selected_role' => ['nullable', 'string', 'in:admin,guru,siswa'],
         ];
@@ -45,13 +47,34 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $isGuruLogin = $this->string('selected_role')->toString() === 'guru';
+        $identifier = $isGuruLogin
+            ? $this->string('login_id')->toString()
+            : $this->string('email')->toString();
+        $userQuery = \App\Models\User::query();
+
+        if ($isGuruLogin) {
+            $userQuery
+                ->where('username', $identifier)
+                ->orWhereHas('guruBkProfile', function ($query) use ($identifier) {
+                    $query->where('no_hp', $identifier)
+                        ->orWhere('nip', $identifier);
+                });
+        } else {
+            $userQuery->where('email', $identifier);
+        }
+
+        $user = $userQuery->first();
+
+        if (! $user || ! Hash::check($this->string('password')->toString(), $user->password)) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                $isGuruLogin ? 'login_id' : 'email' => trans('auth.failed'),
             ]);
         }
+
+        Auth::login($user, $this->boolean('remember'));
 
         RateLimiter::clear($this->throttleKey());
     }
@@ -71,7 +94,11 @@ class LoginRequest extends FormRequest
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
-        $errorKey = $this->string('selected_role')->toString() === 'siswa' ? 'nisn' : 'email';
+        $errorKey = match ($this->string('selected_role')->toString()) {
+            'siswa' => 'nisn',
+            'guru' => 'login_id',
+            default => 'email',
+        };
 
         throw ValidationException::withMessages([
             $errorKey => trans('auth.throttle', [
@@ -86,9 +113,11 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        $identifier = $this->string('selected_role')->toString() === 'siswa'
-            ? $this->string('nisn')->toString()
-            : $this->string('email')->toString();
+        $identifier = match ($this->string('selected_role')->toString()) {
+            'siswa' => $this->string('nisn')->toString(),
+            'guru' => $this->string('login_id')->toString(),
+            default => $this->string('email')->toString(),
+        };
 
         return Str::transliterate(Str::lower($identifier).'|'.$this->ip());
     }

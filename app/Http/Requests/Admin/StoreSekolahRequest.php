@@ -16,10 +16,13 @@ class StoreSekolahRequest extends FormRequest
     {
         return [
             'nama' => ['required', 'string', 'max:255', 'unique:sekolahs,nama'],
+            'npsn' => ['required', 'string', 'max:20', 'unique:sekolahs,npsn'],
+            'alamat' => ['required', 'string'],
+            'logo' => ['nullable', 'image', 'max:2048'],
+            'is_mou' => ['required', 'boolean'],
             'paket_aktif' => ['nullable', 'string', 'max:120'],
             'tanggal_aktivasi' => ['nullable', 'date'],
             'is_active' => ['required', 'boolean'],
         ];
     }
 }
-
