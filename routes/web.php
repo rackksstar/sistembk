@@ -126,4 +126,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
+// ─── Phase 4 — Penilaian Pelayanan ──────────────────────────────────────────
+Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
+    Route::get('penilaian', [\App\Http\Controllers\Siswa\PenilaianController::class, 'index'])->name('penilaian.index');
+    Route::get('penilaian/buat', [\App\Http\Controllers\Siswa\PenilaianController::class, 'create'])->name('penilaian.create');
+    Route::post('penilaian', [\App\Http\Controllers\Siswa\PenilaianController::class, 'store'])->name('penilaian.store');
+});
+Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
+    Route::get('penilaian', [\App\Http\Controllers\Guru\PenilaianController::class, 'index'])->name('penilaian.index');
+});
+
+// ─── Phase 4 — Angket BK ────────────────────────────────────────────────────
+Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
+    Route::get('angket', [\App\Http\Controllers\Siswa\AngketController::class, 'index'])->name('angket.index');
+    Route::get('angket/isi', [\App\Http\Controllers\Siswa\AngketController::class, 'show'])->name('angket.show');
+    Route::post('angket', [\App\Http\Controllers\Siswa\AngketController::class, 'store'])->name('angket.store');
+});
+Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
+    Route::get('angket', [\App\Http\Controllers\Guru\AngketController::class, 'index'])->name('angket.index');
+    Route::get('angket/{student}/pdf', [\App\Http\Controllers\Guru\AngketController::class, 'exportPdf'])->name('angket.pdf');
+    Route::get('angket/{student}', [\App\Http\Controllers\Guru\AngketController::class, 'show'])->name('angket.show');
+});
+
 require __DIR__.'/auth.php';

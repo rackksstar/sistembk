@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @deprecated Phase 4 (2026-05-30) — Gunakan PenilaianPelayanan sebagai gantinya.
+ * Model ini tetap aktif. Penghapusan: Phase 9.
+ */
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;

@@ -38,13 +38,17 @@
             $menu[] = ['label' => 'Peta Sosiometri', 'href' => route('guru.sociometry.index'), 'active' => request()->routeIs('guru.sociometry.*')];
             $menu[] = ['label' => 'RPL', 'href' => route('guru.rpls.index'), 'active' => request()->routeIs('guru.rpls.*')];
             $menu[] = ['label' => 'Konseling', 'href' => route('guru.consultations.index'), 'active' => request()->routeIs('guru.consultations.*')];
+            $menu[] = ['label' => 'Laporan Penilaian', 'href' => route('guru.penilaian.index'), 'active' => request()->routeIs('guru.penilaian.*')];
+            $menu[] = ['label' => 'Laporan Angket', 'href' => route('guru.angket.index'), 'active' => request()->routeIs('guru.angket.*')];
         }
 
         if ($user?->role === 'siswa') {
             $menu[] = ['label' => 'Konseling', 'href' => route('siswa.consultations.index'), 'active' => request()->routeIs('siswa.consultations.*') || request()->routeIs('siswa.consultation-requests.*')];
+            $menu[] = ['label' => 'Penilaian Layanan', 'href' => route('siswa.penilaian.index'), 'active' => request()->routeIs('siswa.penilaian.*')];
             $menu[] = ['label' => 'Instrumen Asesmen', 'href' => route('siswa.instruments.index'), 'active' => request()->routeIs('siswa.instruments.*')];
             $menu[] = ['label' => 'Sosiometri', 'href' => route('siswa.sociometry.index'), 'active' => request()->routeIs('siswa.sociometry.*')];
             $menu[] = ['label' => 'Informasi Karier', 'href' => route('siswa.careers.index'), 'active' => request()->routeIs('siswa.careers.*')];
+            $menu[] = ['label' => 'Angket BK', 'href' => route('siswa.angket.index'), 'active' => request()->routeIs('siswa.angket.*')];
         }
 
         if ($user?->role !== 'siswa') {
