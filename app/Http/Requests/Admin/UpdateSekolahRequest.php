@@ -17,10 +17,13 @@ class UpdateSekolahRequest extends FormRequest
     {
         return [
             'nama' => ['required', 'string', 'max:255', Rule::unique('sekolahs', 'nama')->ignore($this->route('sekolah'))],
+            'npsn' => ['required', 'string', 'max:20', Rule::unique('sekolahs', 'npsn')->ignore($this->route('sekolah'))],
+            'alamat' => ['required', 'string'],
+            'logo' => ['nullable', 'image', 'max:2048'],
+            'is_mou' => ['required', 'boolean'],
             'paket_aktif' => ['nullable', 'string', 'max:120'],
             'tanggal_aktivasi' => ['nullable', 'date'],
             'is_active' => ['required', 'boolean'],
         ];
     }
 }
-

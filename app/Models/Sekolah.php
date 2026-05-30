@@ -14,6 +14,10 @@ class Sekolah extends Model
 
     protected $fillable = [
         'nama',
+        'npsn',
+        'alamat',
+        'logo_path',
+        'is_mou',
         'paket_aktif',
         'tanggal_aktivasi',
         'is_active',
@@ -23,6 +27,7 @@ class Sekolah extends Model
     {
         return [
             'tanggal_aktivasi' => 'date',
+            'is_mou' => 'boolean',
             'is_active' => 'boolean',
         ];
     }
@@ -37,4 +42,3 @@ class Sekolah extends Model
         return $this->hasMany(GuruBk::class);
     }
 }
-

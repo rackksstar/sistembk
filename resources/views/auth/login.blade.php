@@ -17,7 +17,7 @@
             </h1>
             <p class="text-sm leading-6 text-slate-600">
                 @if($selectedRole === 'guru')
-                    Jika sudah memiliki akun Guru BK, masukkan email dan password untuk melanjutkan ke dashboard.
+                    Jika sudah disetujui admin, masukkan no HP atau NIP untuk melanjutkan ke dashboard.
                 @else
                     {{ $roleLabel ? 'Masukkan akun '.$roleLabel.' untuk melanjutkan ke dashboard.' : 'Pilih role dari landing page, lalu login ulang untuk masuk ke dashboard.' }}
                 @endif
@@ -46,9 +46,9 @@
                 </div>
             @else
                 <div class="space-y-2">
-                    <label for="email" class="block text-sm font-semibold text-slate-900">Email</label>
-                    <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="email@sekolah.id" />
-                    <x-input-error :messages="$errors->get('email')" class="mt-1 text-sm text-red-600" />
+                    <label for="{{ $selectedRole === 'guru' ? 'login_id' : 'email' }}" class="block text-sm font-semibold text-slate-900">{{ $selectedRole === 'guru' ? 'No HP / NIP' : 'Email' }}</label>
+                    <input id="{{ $selectedRole === 'guru' ? 'login_id' : 'email' }}" name="{{ $selectedRole === 'guru' ? 'login_id' : 'email' }}" type="text" value="{{ old($selectedRole === 'guru' ? 'login_id' : 'email') }}" required autofocus class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="{{ $selectedRole === 'guru' ? 'No HP atau NIP' : 'email@sekolah.id' }}" />
+                    <x-input-error :messages="$errors->get($selectedRole === 'guru' ? 'login_id' : 'email')" class="mt-1 text-sm text-red-600" />
                 </div>
 
                 <div class="space-y-2">

@@ -48,6 +48,9 @@ class DatabaseSeeder extends Seeder
         $sekolah = Sekolah::query()->updateOrCreate(
             ['nama' => 'SMA Negeri 1 Contoh'],
             [
+                'npsn' => '20260001',
+                'alamat' => 'Jl. Pendidikan No. 10',
+                'is_mou' => true,
                 'paket_aktif' => 'Basic',
                 'tanggal_aktivasi' => now()->toDateString(),
                 'is_active' => true,
@@ -89,15 +92,16 @@ class DatabaseSeeder extends Seeder
         );
 
         $guru = User::query()->updateOrCreate(
-            ['email' => 'guru@bk.test'],
+            ['username' => '081234567890'],
             [
                 'name' => 'Ibu Rina Guru BK',
+                'email' => null,
                 'password' => Hash::make('password'),
                 'school' => $school->name,
                 'school_id' => $school->id,
                 'role' => User::ROLE_GURU,
                 'status' => User::STATUS_APPROVED,
-                'email_verified_at' => now(),
+                'email_verified_at' => null,
             ]
         );
 
@@ -105,6 +109,7 @@ class DatabaseSeeder extends Seeder
             ['user_id' => $guru->id],
             [
                 'sekolah_id' => $sekolah->id,
+                'no_hp' => '081234567890',
                 'nip' => '1987654321001',
                 'jabatan' => 'Guru BK',
                 'bidang_studi' => 'Bimbingan Konseling',
@@ -125,16 +130,28 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        User::query()->updateOrCreate(
-            ['email' => 'guru.pending@bk.test'],
+        $pendingGuru = User::query()->updateOrCreate(
+            ['username' => '081234567891'],
             [
                 'name' => 'Pak Dimas Guru Pending',
+                'email' => null,
                 'password' => Hash::make('password'),
                 'school' => $school->name,
                 'school_id' => $school->id,
                 'role' => User::ROLE_GURU,
                 'status' => User::STATUS_PENDING,
-                'email_verified_at' => now(),
+                'email_verified_at' => null,
+            ]
+        );
+
+        GuruBk::query()->updateOrCreate(
+            ['user_id' => $pendingGuru->id],
+            [
+                'sekolah_id' => $sekolah->id,
+                'no_hp' => '081234567891',
+                'nip' => '1987654321002',
+                'jabatan' => 'Guru BK',
+                'bidang_studi' => 'Bimbingan Konseling',
             ]
         );
 
@@ -445,7 +462,7 @@ class DatabaseSeeder extends Seeder
             ->sequence(
                 ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED],
                 ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED],
-                ['role' => User::ROLE_GURU, 'status' => User::STATUS_APPROVED],
+                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED],
             )
             ->create();
 

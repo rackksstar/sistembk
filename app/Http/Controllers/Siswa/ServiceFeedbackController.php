@@ -1,5 +1,16 @@
 <?php
 
+/**
+ * @deprecated Phase 4 (2026-05-30) — Digantikan oleh PenilaianController.
+ *
+ * JANGAN tambahkan fitur baru ke controller ini.
+ * Data lama tetap dapat dibaca. Tabel tidak di-drop.
+ * Rencana penghapusan: Phase 9.
+ *
+ * Pengganti: App\Http\Controllers\Siswa\PenilaianController
+ * Tabel baru: penilaian_pelayanan
+ */
+
 namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;

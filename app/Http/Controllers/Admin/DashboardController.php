@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\CareerInfo;
 use App\Models\ConsultationRequest;
 use App\Models\GuidanceClass;
+use App\Models\GuruProfileChange;
+use App\Models\Sekolah;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\View\View;
@@ -34,9 +36,9 @@ class DashboardController extends Controller
                 'color' => 'from-amber-500 to-orange-400',
             ],
             [
-                'title' => 'Guru pending',
-                'value' => User::where('role', User::ROLE_GURU)->where('status', User::STATUS_PENDING)->count(),
-                'description' => 'Pendaftaran Guru BK yang menunggu approval.',
+                'title' => 'Update profil guru',
+                'value' => GuruProfileChange::whereNull('reviewed_at')->count(),
+                'description' => 'Perubahan profil Guru BK yang belum dibaca.',
                 'color' => 'from-violet-500 to-fuchsia-400',
             ],
         ];
@@ -54,6 +56,8 @@ class DashboardController extends Controller
 
         $modules = [
             ['title' => 'Approval Guru BK', 'description' => 'Setujui atau tolak pendaftaran Guru BK.', 'href' => route('admin.approvals.index'), 'count' => User::where('role', User::ROLE_GURU)->where('status', User::STATUS_PENDING)->count()],
+            ['title' => 'Sekolah MOU', 'description' => 'Input dan kelola sekolah yang sudah MOU dengan PCR.', 'href' => route('admin.sekolah.index'), 'count' => Sekolah::where('is_mou', true)->count()],
+            ['title' => 'Perubahan Profil Guru', 'description' => 'Lihat perubahan no HP, NIP, dan nama Guru BK.', 'href' => route('admin.guru-profile-changes.index'), 'count' => GuruProfileChange::whereNull('reviewed_at')->count()],
             ['title' => 'Manajemen Pengguna', 'description' => 'Atur akun admin, Guru BK, dan siswa.', 'href' => route('admin.users.index'), 'count' => User::count()],
             ['title' => 'Data Siswa', 'description' => 'Kelola NISN, tanggal lahir, dan profil siswa.', 'href' => route('admin.students.index'), 'count' => Student::count()],
             ['title' => 'Kelas Bimbingan', 'description' => 'Buat kelas dan tambahkan siswa ke kelas.', 'href' => route('admin.guidance-classes.index'), 'count' => GuidanceClass::count()],

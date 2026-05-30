@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['name', 'email', 'password', 'school', 'school_id', 'class_id', 'role', 'status'])]
+#[Fillable(['name', 'username', 'email', 'password', 'school', 'school_id', 'class_id', 'role', 'status'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -62,6 +62,16 @@ class User extends Authenticatable
     public function studentProfile(): HasOne
     {
         return $this->hasOne(Student::class);
+    }
+
+    public function guruBkProfile(): HasOne
+    {
+        return $this->hasOne(GuruBk::class);
+    }
+
+    public function guruProfileChanges(): HasMany
+    {
+        return $this->hasMany(GuruProfileChange::class);
     }
 
     public function schoolModel(): BelongsTo

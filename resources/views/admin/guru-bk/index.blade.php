@@ -4,7 +4,7 @@
 <div class="space-y-6" x-data="{ createOpen: {{ $errors->any() ? 'true' : 'false' }}, editOpen: null }">
     <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <x-section-title title="Manajemen Guru BK" description="CRUD Guru BK sekaligus akun user (role=guru)." />
+            <x-section-title title="Manajemen Guru BK" description="Input manual Guru BK langsung menjadi akun aktif sesuai status yang dipilih." />
             <button type="button" x-on:click="createOpen = true" class="w-fit rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">Tambah Guru BK</button>
         </div>
 
@@ -12,7 +12,7 @@
         <x-alert class="mt-5" type="error" :message="session('error')" />
 
         <form method="GET" action="{{ route('admin.guru-bk.index') }}" class="mt-6 grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px_180px_auto]">
-            <input name="search" value="{{ $search }}" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="Cari nama/email/NIP..." />
+            <input name="search" value="{{ $search }}" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="Cari nama/no HP/NIP..." />
             <select name="sekolah_id" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100">
                 <option value="">Semua sekolah</option>
                 @foreach($sekolahs as $s)
@@ -34,7 +34,8 @@
                     <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                         <tr>
                             <th class="px-5 py-4">Nama</th>
-                            <th class="px-5 py-4">Email</th>
+                            <th class="px-5 py-4">Username</th>
+                            <th class="px-5 py-4">No HP</th>
                             <th class="px-5 py-4">NIP</th>
                             <th class="px-5 py-4">Sekolah</th>
                             <th class="px-5 py-4">Status</th>
@@ -45,7 +46,8 @@
                         @forelse($guruBks as $item)
                             <tr>
                                 <td class="px-5 py-4 font-semibold text-slate-900">{{ $item->user?->name }}</td>
-                                <td class="px-5 py-4 text-slate-600">{{ $item->user?->email }}</td>
+                                <td class="px-5 py-4 text-slate-600">{{ $item->user?->username ?? '-' }}</td>
+                                <td class="px-5 py-4 text-slate-600">{{ $item->no_hp ?? '-' }}</td>
                                 <td class="px-5 py-4 text-slate-600">{{ $item->nip ?? '-' }}</td>
                                 <td class="px-5 py-4 text-slate-600">{{ $item->sekolah?->nama ?? '-' }}</td>
                                 <td class="px-5 py-4"><x-status-badge :status="$item->user?->status" /></td>
@@ -62,7 +64,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-5 py-6">
+                                <td colspan="7" class="px-5 py-6">
                                     <x-empty-state title="Belum ada data Guru BK" description="Tambahkan Guru BK untuk mulai mengelola sesi konseling." />
                                 </td>
                             </tr>
@@ -99,4 +101,3 @@
     @endforeach
 </div>
 @endsection
-

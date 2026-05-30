@@ -17,14 +17,13 @@ class UpdateGuruBkRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->route('guruBk')?->user_id)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'status' => ['required', 'in:'.implode(',', User::STATUSES)],
-            'sekolah_id' => ['nullable', 'exists:sekolahs,id'],
+            'sekolah_id' => ['required', 'exists:sekolahs,id'],
+            'no_hp' => ['required', 'string', 'max:30', Rule::unique('guru_bks', 'no_hp')->ignore($this->route('guruBk')), Rule::unique('users', 'username')->ignore($this->route('guruBk')?->user_id)],
             'nip' => ['nullable', 'string', 'max:40', Rule::unique('guru_bks', 'nip')->ignore($this->route('guruBk'))],
             'jabatan' => ['nullable', 'string', 'max:120'],
             'bidang_studi' => ['nullable', 'string', 'max:120'],
         ];
     }
 }
-

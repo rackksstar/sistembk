@@ -8,12 +8,6 @@
     <x-input-error :messages="$errors->get('name')" class="text-sm text-red-600" />
 </div>
 
-<div class="space-y-2">
-    <label class="block text-sm font-semibold text-slate-900" for="email-{{ $guruBk?->id ?? 'create' }}">Email</label>
-    <input id="email-{{ $guruBk?->id ?? 'create' }}" name="email" type="email" value="{{ old('email', $user?->email) }}" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
-    <x-input-error :messages="$errors->get('email')" class="text-sm text-red-600" />
-</div>
-
 <div class="grid gap-4 sm:grid-cols-2">
     <div class="space-y-2">
         <label class="block text-sm font-semibold text-slate-900" for="password-{{ $guruBk?->id ?? 'create' }}">Password</label>
@@ -38,10 +32,10 @@
 
 <div class="space-y-2">
     <label class="block text-sm font-semibold text-slate-900" for="sekolah-{{ $guruBk?->id ?? 'create' }}">Sekolah</label>
-    <select id="sekolah-{{ $guruBk?->id ?? 'create' }}" name="sekolah_id" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100">
-        <option value="">(Opsional)</option>
+    <select id="sekolah-{{ $guruBk?->id ?? 'create' }}" name="sekolah_id" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100">
+        <option value="">Pilih sekolah</option>
         @foreach($sekolahs as $s)
-            <option value="{{ $s->id }}" @selected((string) old('sekolah_id', $guruBk?->sekolah_id) === (string) $s->id)>{{ $s->nama }}</option>
+            <option value="{{ $s->id }}" @selected((string) old('sekolah_id', $guruBk?->sekolah_id) === (string) $s->id)>{{ $s->nama }}{{ $s->is_mou ? ' - MOU' : '' }}</option>
         @endforeach
     </select>
     <x-input-error :messages="$errors->get('sekolah_id')" class="text-sm text-red-600" />
@@ -49,10 +43,18 @@
 
 <div class="grid gap-4 sm:grid-cols-2">
     <div class="space-y-2">
+        <label class="block text-sm font-semibold text-slate-900" for="no-hp-{{ $guruBk?->id ?? 'create' }}">No HP / Username</label>
+        <input id="no-hp-{{ $guruBk?->id ?? 'create' }}" name="no_hp" value="{{ old('no_hp', $guruBk?->no_hp) }}" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+        <x-input-error :messages="$errors->get('no_hp')" class="text-sm text-red-600" />
+    </div>
+    <div class="space-y-2">
         <label class="block text-sm font-semibold text-slate-900" for="nip-{{ $guruBk?->id ?? 'create' }}">NIP</label>
         <input id="nip-{{ $guruBk?->id ?? 'create' }}" name="nip" value="{{ old('nip', $guruBk?->nip) }}" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
         <x-input-error :messages="$errors->get('nip')" class="text-sm text-red-600" />
     </div>
+</div>
+
+<div class="grid gap-4 sm:grid-cols-2">
     <div class="space-y-2">
         <label class="block text-sm font-semibold text-slate-900" for="jabatan-{{ $guruBk?->id ?? 'create' }}">Jabatan</label>
         <input id="jabatan-{{ $guruBk?->id ?? 'create' }}" name="jabatan" value="{{ old('jabatan', $guruBk?->jabatan) }}" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
@@ -69,4 +71,3 @@
 <button type="submit" class="w-full rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">
     {{ $submit }}
 </button>
-

@@ -42,5 +42,10 @@ class MasterQuestion extends Model
             'is_active' => 'boolean',
         ];
     }
+
+    public function responAngket(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\ResponsAngket::class);
+    }
 }
 

@@ -110,4 +110,9 @@ class ConsultationRequest extends Model
             self::STATUS_APPROVED,
         ], true);
     }
+
+    public function penilaianPelayanan(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\PenilaianPelayanan::class);
+    }
 }
