@@ -21,8 +21,8 @@
 
     <table class="meta">
         <tr><td>Nama Siswa</td><td>{{ $consultation->student?->name }}</td></tr>
-        <tr><td>Kelas</td><td>{{ $consultation->student?->classModel?->name ?? '-' }}</td></tr>
-        <tr><td>Sekolah</td><td>{{ $consultation->student?->schoolModel?->name ?? $consultation->student?->school ?? '-' }}</td></tr>
+        <tr><td>Kelas</td><td>{{ $consultation->student?->studentProfile?->kelas?->nama ?? '-' }}</td></tr>
+        <tr><td>Sekolah</td><td>{{ $consultation->student?->studentProfile?->kelas?->sekolah?->nama ?? $consultation->student?->school ?? '-' }}</td></tr>
         <tr><td>Guru BK</td><td>{{ $consultation->counselor?->name }}</td></tr>
         <tr><td>Topik</td><td>{{ $consultation->subject }}</td></tr>
         <tr><td>Kategori Kasus</td><td>{{ $consultation->caseCategoryLabel() }}</td></tr>

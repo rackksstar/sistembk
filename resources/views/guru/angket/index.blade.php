@@ -5,8 +5,13 @@
     <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <x-section-title
             title="Laporan Angket BK"
-            description="Pantau progress pengisian angket seluruh siswa."
+            description="Progress angket siswa di sekolah Anda atau yang pernah konseling dengan Anda."
         />
+
+        <form method="GET" class="mt-6 max-w-md">
+            <input type="search" name="search" value="{{ $search ?? '' }}" placeholder="Cari nama atau NISN..."
+                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+        </form>
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200">
             <div class="overflow-x-auto">
@@ -61,7 +66,7 @@
                         @empty
                             <tr>
                                 <td colspan="6" class="px-5 py-8">
-                                    <x-empty-state title="Belum ada data siswa" description="Data siswa akan muncul setelah terdaftar di sistem." />
+                                    <x-empty-state title="Belum ada siswa dalam cakupan" description="Hubungkan profil Guru BK ke sekolah atau tunggu siswa mengajukan konseling." />
                                 </td>
                             </tr>
                         @endforelse

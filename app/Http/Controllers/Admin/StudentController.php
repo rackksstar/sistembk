@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\UpdateStudentRequest;
 use App\Models\Kelas;
 use App\Models\Student;
 use App\Models\User;
+use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -32,7 +33,15 @@ class StudentController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $studentUsers = User::where('role', User::ROLE_SISWA)->orderBy('name')->get();
+        $linkedUserIds = $students->pluck('user_id')->filter()->values();
+
+        $studentUsers = User::query()
+            ->where('role', User::ROLE_SISWA)
+            ->where(fn ($query) => $query
+                ->whereDoesntHave('studentProfile')
+                ->orWhereIn('id', $linkedUserIds))
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
         $kelasList = Kelas::with('sekolah')->orderBy('nama')->get();
 
         return view('admin.students.index', compact('students', 'studentUsers', 'search', 'kelasId', 'kelasList'));
@@ -40,20 +49,39 @@ class StudentController extends Controller
 
     public function store(StoreStudentRequest $request): RedirectResponse
     {
-        Student::create($request->validated());
+        $student = Student::create($this->payload($request->validated()));
+
+        ActivityLogger::log('student.created', $student);
 
         return back()->with('success', 'Data siswa berhasil dibuat.');
     }
 
     public function update(UpdateStudentRequest $request, Student $student): RedirectResponse
     {
-        $student->update($request->validated());
+        $student->update($this->payload($request->validated()));
+
+        ActivityLogger::log('student.updated', $student);
 
         return back()->with('success', 'Data siswa berhasil diperbarui.');
     }
 
+    /**
+     * @param  array<string, mixed>  $validated
+     * @return array<string, mixed>
+     */
+    private function payload(array $validated): array
+    {
+        $validated['status_biodata'] = (! empty($validated['jenis_kelamin']) && ! empty($validated['alamat']))
+            ? 'lengkap'
+            : 'belum_lengkap';
+
+        return $validated;
+    }
+
     public function destroy(Student $student): RedirectResponse
     {
+        ActivityLogger::log('student.deleted', $student, ['name' => $student->name]);
+
         $student->delete();
 
         return back()->with('success', 'Data siswa berhasil dihapus.');

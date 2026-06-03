@@ -86,5 +86,36 @@
             @endforelse
         </div>
     </section>
+
+    @if(isset($coreSummary))
+        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <x-section-title title="Ringkasan layanan BK (Core)" description="Metrik modul tim inti." />
+            <div class="mt-4 grid gap-4 sm:grid-cols-3">
+                @foreach($coreSummary as $item)
+                    <a href="{{ $item['href'] }}" class="rounded-2xl border border-blue-100 bg-blue-50/50 p-4 transition hover:bg-blue-50">
+                        <p class="text-xs font-bold uppercase tracking-widest text-slate-500">{{ $item['label'] }}</p>
+                        <p class="mt-2 text-2xl font-bold text-slate-900">{{ $item['value'] }}</p>
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    @if(isset($postinganTerbaru) && $postinganTerbaru->isNotEmpty())
+        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-end justify-between gap-4">
+                <x-section-title title="Postingan terbaru" description="Artikel BK yang baru disimpan." />
+                <a href="{{ route('admin.postingan.index') }}" class="text-sm font-semibold text-blue-600">Kelola postingan</a>
+            </div>
+            <ul class="mt-4 space-y-2 text-sm text-slate-700">
+                @foreach($postinganTerbaru as $artikel)
+                    <li class="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+                        <span class="font-semibold text-slate-900">{{ $artikel->judul }}</span>
+                        <span class="mt-1 block text-xs text-slate-500">{{ $artikel->kategori?->name }} · {{ $artikel->statusLabel() }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
 </div>
 @endsection

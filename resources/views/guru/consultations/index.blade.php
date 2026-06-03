@@ -136,11 +136,10 @@
                     @csrf @method('PATCH')
                     <input type="date" name="consultation_date" value="{{ old('consultation_date', $consultation->consultation_date?->format('Y-m-d')) }}" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm" />
                     <input type="time" name="consultation_time" value="{{ old('consultation_time', $consultation->consultation_time ? substr($consultation->consultation_time, 0, 5) : '') }}" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm" />
-                    <select name="student_id" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
-                        @foreach($students as $student)
-                            <option value="{{ $student->id }}" @selected($consultation->student_id === $student->id)>{{ $student->name }}</option>
-                        @endforeach
-                    </select>
+                    <input type="hidden" name="student_id" value="{{ $consultation->student_id }}">
+                    <p class="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                        Siswa: <span class="font-semibold text-slate-900">{{ $consultation->student?->name ?? '—' }}</span>
+                    </p>
                     <textarea name="notes" rows="3" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm" placeholder="Catatan jadwal">{{ old('notes', $consultation->notes) }}</textarea>
                     <button class="w-full rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white">Simpan jadwal</button>
                 </form>

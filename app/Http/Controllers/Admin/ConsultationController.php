@@ -13,7 +13,10 @@ class ConsultationController extends Controller
     {
         $status = $request->string('status')->toString();
 
-        $consultations = ConsultationRequest::with(['student', 'counselor'])
+        $consultations = ConsultationRequest::with([
+            'student:id,name',
+            'counselor:id,name',
+        ])
             ->when($status, fn ($query) => $query->where('status', $status))
             ->latest()
             ->paginate(10)

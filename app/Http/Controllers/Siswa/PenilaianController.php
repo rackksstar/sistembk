@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Siswa;
 use App\Http\Controllers\Controller;
 use App\Models\ConsultationRequest;
 use App\Models\PenilaianPelayanan;
+use App\Support\ActivityLogger;
+use App\Support\AuthenticatedStudent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -13,8 +15,7 @@ class PenilaianController extends Controller
 {
     public function index(): View
     {
-        $student = auth()->user()->studentProfile;
-        abort_unless($student, 404);
+        AuthenticatedStudent::profileOrFail();
 
         $konseling = ConsultationRequest::query()
             ->where('student_id', auth()->id())
@@ -28,8 +29,7 @@ class PenilaianController extends Controller
 
     public function create(Request $request): View
     {
-        $student = auth()->user()->studentProfile;
-        abort_unless($student, 404);
+        $student = AuthenticatedStudent::profileOrFail();
 
         $konseling = ConsultationRequest::query()
             ->where('id', $request->query('consultation'))
@@ -57,8 +57,7 @@ class PenilaianController extends Controller
             'catatan' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $student = auth()->user()->studentProfile;
-        abort_unless($student, 404);
+        $student = AuthenticatedStudent::profileOrFail();
 
         $konseling = ConsultationRequest::query()
             ->where('id', $validated['consultation_request_id'])
@@ -75,13 +74,17 @@ class PenilaianController extends Controller
             'Penilaian sudah diberikan.'
         );
 
-        PenilaianPelayanan::create([
+        $penilaian = PenilaianPelayanan::create([
             'consultation_request_id' => $konseling->id,
             'student_id' => $student->id,
             'skor_materi' => $validated['skor_materi'],
             'skor_cara' => $validated['skor_cara'],
             'skor_manfaat' => $validated['skor_manfaat'],
             'catatan' => $validated['catatan'] ?? null,
+        ]);
+
+        ActivityLogger::log('penilaian_pelayanan.submitted', $penilaian, [
+            'consultation_request_id' => $konseling->id,
         ]);
 
         return redirect()

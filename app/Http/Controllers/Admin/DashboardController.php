@@ -7,7 +7,10 @@ use App\Models\CareerInfo;
 use App\Models\ConsultationRequest;
 use App\Models\GuidanceClass;
 use App\Models\GuruProfileChange;
+use App\Models\Postingan;
+use App\Models\RaporBk;
 use App\Models\Sekolah;
+use App\Models\TryOut;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\View\View;
@@ -65,6 +68,18 @@ class DashboardController extends Controller
             ['title' => 'Konseling & Laporan', 'description' => 'Pantau pengajuan, jadwal, hasil, dan evaluasi.', 'href' => route('admin.consultations.index'), 'count' => ConsultationRequest::count()],
         ];
 
-        return view('admin.dashboard', compact('metrics', 'recentRequests', 'roleSummary', 'modules'));
+        $postinganTerbaru = Postingan::query()
+            ->with('kategori')
+            ->latest()
+            ->take(3)
+            ->get();
+
+        $coreSummary = [
+            ['label' => 'Rapor BK', 'value' => RaporBk::count(), 'href' => route('admin.rapor.index')],
+            ['label' => 'Postingan', 'value' => Postingan::count(), 'href' => route('admin.postingan.index')],
+            ['label' => 'Tryout', 'value' => TryOut::count(), 'href' => route('admin.dashboard')],
+        ];
+
+        return view('admin.dashboard', compact('metrics', 'recentRequests', 'roleSummary', 'modules', 'postinganTerbaru', 'coreSummary'));
     }
 }

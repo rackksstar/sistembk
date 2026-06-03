@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Siswa;
 use App\Http\Controllers\Controller;
 use App\Models\MasterQuestion;
 use App\Models\ResponsAngket;
+use App\Support\ActivityLogger;
+use App\Support\AngketQuestions;
+use App\Support\AuthenticatedStudent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,18 +17,17 @@ class AngketController extends Controller
 {
     public function index(): View
     {
-        $student = auth()->user()->studentProfile;
-        abort_unless($student, 404);
+        $student = AuthenticatedStudent::profileOrFail();
 
         $studentId = $student->id;
+        $activeSoalIds = AngketQuestions::activeIds();
 
         $pertanyaan = MasterQuestion::query()
             ->where('kategori', MasterQuestion::KATEGORI_ANGKET)
             ->where('is_active', true)
+            ->when($activeSoalIds->isNotEmpty(), fn ($q) => $q->whereIn('id', $activeSoalIds))
             ->withCount([
-                'responAngket as sudah_dijawab' => function ($q) use ($studentId) {
-                    $q->where('student_id', $studentId);
-                },
+                'responAngket as sudah_dijawab' => fn ($q) => $q->where('student_id', $studentId),
             ])
             ->orderBy('id')
             ->get();
@@ -41,21 +43,24 @@ class AngketController extends Controller
 
     public function show(): View
     {
-        $student = auth()->user()->studentProfile;
-        abort_unless($student, 404);
+        $student = AuthenticatedStudent::profileOrFail();
 
         $studentId = $student->id;
+        $activeSoalIds = AngketQuestions::activeIds();
+
+        $jawabanBySoal = ResponsAngket::query()
+            ->where('student_id', $studentId)
+            ->when($activeSoalIds->isNotEmpty(), fn ($q) => $q->whereIn('master_question_id', $activeSoalIds))
+            ->pluck('jawaban', 'master_question_id');
 
         $pertanyaan = MasterQuestion::query()
             ->where('kategori', MasterQuestion::KATEGORI_ANGKET)
             ->where('is_active', true)
-            ->with([
-                'responAngket' => fn ($q) => $q->where('student_id', $studentId),
-            ])
+            ->when($activeSoalIds->isNotEmpty(), fn ($q) => $q->whereIn('id', $activeSoalIds))
             ->orderBy('id')
             ->get();
 
-        return view('siswa.angket.show', compact('pertanyaan'));
+        return view('siswa.angket.show', compact('pertanyaan', 'jawabanBySoal'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -65,9 +70,7 @@ class AngketController extends Controller
             'jawaban.*' => ['required', 'string', 'max:500'],
         ]);
 
-        $student = auth()->user()->studentProfile;
-        abort_unless($student, 404);
-
+        $student = AuthenticatedStudent::profileOrFail();
         $studentId = $student->id;
 
         $soalIds = array_keys($validated['jawaban']);
@@ -93,6 +96,15 @@ class AngketController extends Controller
                 );
             }
         });
+
+        $savedCount = collect($validated['jawaban'])
+            ->keys()
+            ->filter(fn ($soalId) => in_array((int) $soalId, $validSoal, true))
+            ->count();
+
+        ActivityLogger::log('angket.submitted', $student, [
+            'jumlah_jawaban' => $savedCount,
+        ]);
 
         return redirect()
             ->route('siswa.angket.index')

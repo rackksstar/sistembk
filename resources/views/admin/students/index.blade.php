@@ -68,7 +68,7 @@
             <x-section-title title="Tambah Siswa" description="Isi identitas siswa dengan NISN unik." />
             <form method="POST" action="{{ route('admin.students.store') }}" class="mt-6 space-y-4">
                 @csrf
-                @include('admin.students.partials.form', ['student' => null, 'studentUsers' => $studentUsers, 'submit' => 'Simpan siswa'])
+                @include('admin.students.partials.form', ['student' => null, 'studentUsers' => $studentUsers, 'kelasList' => $kelasList, 'submit' => 'Simpan siswa'])
             </form>
         </div>
     </div>
@@ -79,7 +79,7 @@
                 <x-section-title title="Edit Siswa" description="Perbarui identitas siswa." />
                 <form method="POST" action="{{ route('admin.students.update', $student) }}" class="mt-6 space-y-4">
                     @csrf @method('PUT')
-                    @include('admin.students.partials.form', ['student' => $student, 'studentUsers' => $studentUsers, 'submit' => 'Update siswa'])
+                    @include('admin.students.partials.form', ['student' => $student, 'studentUsers' => $studentUsers, 'kelasList' => $kelasList, 'submit' => 'Update siswa'])
                 </form>
             </div>
         </div>

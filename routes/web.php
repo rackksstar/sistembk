@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\GuidanceClassController;
 use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\MasterQuestionController;
 use App\Http\Controllers\Admin\PostCategoryController;
+use App\Http\Controllers\Admin\PostinganController;
+use App\Http\Controllers\Admin\RaporController as AdminRaporController;
 use App\Http\Controllers\Admin\SekolahController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\UserController;
@@ -31,6 +33,7 @@ use App\Http\Controllers\Siswa\CareerInfoController as SiswaCareerInfoController
 use App\Http\Controllers\Siswa\ClassJoinController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
 use App\Http\Controllers\Siswa\InstrumentSubmissionController;
+use App\Http\Controllers\Siswa\PostinganController as SiswaPostinganController;
 use App\Http\Controllers\Siswa\ServiceFeedbackController;
 use App\Http\Controllers\Siswa\SociometryController;
 use Illuminate\Support\Facades\Auth;
@@ -64,6 +67,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/guidance-classes/{guidanceClass}/students', [GuidanceClassController::class, 'attachStudent'])->name('guidance-classes.students.attach');
         Route::delete('/guidance-classes/{guidanceClass}/students/{student}', [GuidanceClassController::class, 'detachStudent'])->name('guidance-classes.students.detach');
         Route::get('/consultations', [AdminConsultationController::class, 'index'])->name('consultations.index');
+        Route::get('/rapor', [AdminRaporController::class, 'index'])->name('rapor.index');
+        Route::get('/rapor/{rapor}', [AdminRaporController::class, 'show'])->name('rapor.show');
 
         // Phase 2 — Data Master (tambahan di bawah route existing)
         Route::resource('sekolah', SekolahController::class)->except(['create', 'show', 'edit']);
@@ -79,6 +84,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('kategori-postingan', PostCategoryController::class)
             ->parameters(['kategori-postingan' => 'kategoriPostingan'])
             ->except(['create', 'show', 'edit']);
+        Route::resource('postingan', PostinganController::class)
+            ->except(['create', 'show', 'edit']);
+        Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
     });
 
     Route::prefix('guru')->name('guru.')->middleware('role:guru')->group(function () {
@@ -102,6 +110,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/consultations/{consultation}/schedule', [GuruConsultationController::class, 'schedule'])->name('consultations.schedule');
         Route::patch('/consultations/{consultation}/report', [GuruConsultationController::class, 'report'])->name('consultations.report');
         Route::get('/consultations/{consultation}/print', [GuruConsultationController::class, 'print'])->name('consultations.print');
+
+        // Phase 4–6 — Core (guru)
+        Route::get('penilaian', [\App\Http\Controllers\Guru\PenilaianController::class, 'index'])->name('penilaian.index');
+        Route::get('angket', [\App\Http\Controllers\Guru\AngketController::class, 'index'])->name('angket.index');
+        Route::get('angket/{student}/pdf', [\App\Http\Controllers\Guru\AngketController::class, 'exportPdf'])->name('angket.pdf');
+        Route::get('angket/{student}', [\App\Http\Controllers\Guru\AngketController::class, 'show'])->name('angket.show');
+        Route::get('rapor', [\App\Http\Controllers\Guru\RaporController::class, 'index'])->name('rapor.index');
+        Route::get('rapor/{student}/edit', [\App\Http\Controllers\Guru\RaporController::class, 'edit'])->name('rapor.edit');
+        Route::put('rapor/{student}', [\App\Http\Controllers\Guru\RaporController::class, 'update'])->name('rapor.update');
+        Route::get('rapor-cetak/{rapor}/pdf', [\App\Http\Controllers\Guru\RaporController::class, 'exportPdf'])->name('rapor.pdf');
+        Route::get('tryout', [\App\Http\Controllers\Guru\TryoutController::class, 'index'])->name('tryout.index');
+        Route::get('tryout/buat', [\App\Http\Controllers\Guru\TryoutController::class, 'create'])->name('tryout.create');
+        Route::post('tryout', [\App\Http\Controllers\Guru\TryoutController::class, 'store'])->name('tryout.store');
+        Route::get('tryout/{tryout}', [\App\Http\Controllers\Guru\TryoutController::class, 'show'])->name('tryout.show');
     });
 
     Route::prefix('siswa')->name('siswa.')->middleware('role:siswa')->group(function () {
@@ -115,8 +137,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/consultation-requests', [ConsultationRequestController::class, 'store'])->name('consultation-requests.store');
         Route::post('/classes/join', [ClassJoinController::class, 'store'])->name('classes.join');
         Route::get('/careers', [SiswaCareerInfoController::class, 'index'])->name('careers.index');
+        Route::get('/postingan', [SiswaPostinganController::class, 'index'])->name('postingan.index');
+        Route::get('/postingan/{postingan}', [SiswaPostinganController::class, 'show'])->name('postingan.show');
         Route::get('/feedback', [ServiceFeedbackController::class, 'create'])->name('feedback.create');
         Route::post('/feedback', [ServiceFeedbackController::class, 'store'])->name('feedback.store');
+
+        // Phase 4–6 — Core (siswa)
+        Route::get('penilaian', [\App\Http\Controllers\Siswa\PenilaianController::class, 'index'])->name('penilaian.index');
+        Route::get('penilaian/buat', [\App\Http\Controllers\Siswa\PenilaianController::class, 'create'])->name('penilaian.create');
+        Route::post('penilaian', [\App\Http\Controllers\Siswa\PenilaianController::class, 'store'])->name('penilaian.store');
+        Route::get('angket', [\App\Http\Controllers\Siswa\AngketController::class, 'index'])->name('angket.index');
+        Route::get('angket/isi', [\App\Http\Controllers\Siswa\AngketController::class, 'show'])->name('angket.show');
+        Route::post('angket', [\App\Http\Controllers\Siswa\AngketController::class, 'store'])->name('angket.store');
+        Route::get('tryout', [\App\Http\Controllers\Siswa\TryoutController::class, 'index'])->name('tryout.index');
+        Route::get('tryout/{tryout}', [\App\Http\Controllers\Siswa\TryoutController::class, 'show'])->name('tryout.show');
+        Route::post('tryout/{tryout}', [\App\Http\Controllers\Siswa\TryoutController::class, 'store'])->name('tryout.store');
     });
 
     Route::middleware('role:admin,guru')->group(function () {
@@ -124,28 +159,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     });
-});
-
-// ─── Phase 4 — Penilaian Pelayanan ──────────────────────────────────────────
-Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
-    Route::get('penilaian', [\App\Http\Controllers\Siswa\PenilaianController::class, 'index'])->name('penilaian.index');
-    Route::get('penilaian/buat', [\App\Http\Controllers\Siswa\PenilaianController::class, 'create'])->name('penilaian.create');
-    Route::post('penilaian', [\App\Http\Controllers\Siswa\PenilaianController::class, 'store'])->name('penilaian.store');
-});
-Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
-    Route::get('penilaian', [\App\Http\Controllers\Guru\PenilaianController::class, 'index'])->name('penilaian.index');
-});
-
-// ─── Phase 4 — Angket BK ────────────────────────────────────────────────────
-Route::middleware(['auth', 'role:siswa'])->prefix('siswa')->name('siswa.')->group(function () {
-    Route::get('angket', [\App\Http\Controllers\Siswa\AngketController::class, 'index'])->name('angket.index');
-    Route::get('angket/isi', [\App\Http\Controllers\Siswa\AngketController::class, 'show'])->name('angket.show');
-    Route::post('angket', [\App\Http\Controllers\Siswa\AngketController::class, 'store'])->name('angket.store');
-});
-Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(function () {
-    Route::get('angket', [\App\Http\Controllers\Guru\AngketController::class, 'index'])->name('angket.index');
-    Route::get('angket/{student}/pdf', [\App\Http\Controllers\Guru\AngketController::class, 'exportPdf'])->name('angket.pdf');
-    Route::get('angket/{student}', [\App\Http\Controllers\Guru\AngketController::class, 'show'])->name('angket.show');
 });
 
 require __DIR__.'/auth.php';

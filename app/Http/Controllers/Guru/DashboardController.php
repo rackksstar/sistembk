@@ -10,24 +10,23 @@ class DashboardController extends Controller
 {
     public function index(): View
     {
-        $requests = ConsultationRequest::with('student')
-            ->where(function ($query) {
-                $query->whereNull('counselor_id')
-                    ->orWhere('counselor_id', auth()->id());
-            })
-            ->latest()
-            ->get();
+        $counselorId = (int) auth()->id();
+
+        $baseQuery = ConsultationRequest::query()
+            ->where(fn ($query) => $query
+                ->whereNull('counselor_id')
+                ->orWhere('counselor_id', $counselorId));
 
         $metrics = [
             [
                 'title' => 'Antrian baru',
-                'value' => $requests->where('status', ConsultationRequest::STATUS_MENUNGGU)->count(),
+                'value' => (clone $baseQuery)->where('status', ConsultationRequest::STATUS_MENUNGGU)->count(),
                 'description' => 'Permintaan konseling yang belum diproses.',
                 'color' => 'from-blue-600 to-sky-400',
             ],
             [
                 'title' => 'Dijadwalkan',
-                'value' => $requests->whereIn('status', [
+                'value' => (clone $baseQuery)->whereIn('status', [
                     ConsultationRequest::STATUS_DIJADWALKAN,
                     ConsultationRequest::STATUS_RESCHEDULED,
                 ])->count(),
@@ -36,22 +35,35 @@ class DashboardController extends Controller
             ],
             [
                 'title' => 'Selesai',
-                'value' => $requests->where('status', ConsultationRequest::STATUS_SELESAI)->count(),
+                'value' => (clone $baseQuery)->where('status', ConsultationRequest::STATUS_SELESAI)->count(),
                 'description' => 'Sesi konseling yang sudah ditutup.',
                 'color' => 'from-violet-500 to-fuchsia-400',
             ],
         ];
 
         $caseStats = ConsultationRequest::query()
-            ->where('counselor_id', auth()->id())
+            ->where('counselor_id', $counselorId)
             ->whereNotNull('case_category')
             ->selectRaw('case_category, count(*) as total')
             ->groupBy('case_category')
             ->pluck('total', 'case_category');
 
+        $requests = ConsultationRequest::query()
+            ->with(['student:id,name'])
+            ->where(fn ($query) => $query
+                ->whereNull('counselor_id')
+                ->orWhere('counselor_id', $counselorId))
+            ->latest()
+            ->limit(20)
+            ->get();
+
         $recentStudentHistories = ConsultationRequest::query()
-            ->with(['student:id,name,class_id,school_id', 'student.classModel:id,name', 'student.schoolModel:id,name'])
-            ->where('counselor_id', auth()->id())
+            ->with([
+                'student:id,name',
+                'student.studentProfile:id,user_id,kelas_id',
+                'student.studentProfile.kelas:id,nama',
+            ])
+            ->where('counselor_id', $counselorId)
             ->where('status', ConsultationRequest::STATUS_SELESAI)
             ->latest('consultation_date')
             ->limit(8)
