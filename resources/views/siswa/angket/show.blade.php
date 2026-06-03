@@ -28,7 +28,7 @@
                 @csrf
 
                 @foreach($pertanyaan as $index => $soal)
-                    @php($jawabanLama = $soal->responAngket->first()?->jawaban)
+                    @php($jawabanLama = $jawabanBySoal[$soal->id] ?? null)
                     <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
                         <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Soal {{ $index + 1 }}</p>
                         <p class="mt-2 text-sm font-semibold text-slate-900">{{ $soal->teks_pertanyaan }}</p>

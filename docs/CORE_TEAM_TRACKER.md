@@ -3,7 +3,7 @@
 **Tim:** Core (Anda)  
 **Acuan roadmap:** Phase 1–9 (`docs/PROGRESS.md`)  
 **Referensi lengkap:** `docs/FEATURE_BREAKDOWN.md` (semua modul + tim lain)  
-**Terakhir diperbarui:** 2026-05-18
+**Terakhir diperbarui:** 2026-06-03 (branch `kela`)
 
 ---
 
@@ -46,11 +46,11 @@ flowchart LR
 
     style P1 fill:#22c55e,color:#fff
     style P2 fill:#22c55e,color:#fff
-    style P3 fill:#f59e0b,color:#000
-    style P4 fill:#e5e7eb
-    style P5 fill:#e5e7eb
+    style P3 fill:#22c55e,color:#fff
+    style P4 fill:#22c55e,color:#fff
+    style P5 fill:#22c55e,color:#fff
     style P6 fill:#e5e7eb
-    style P7 fill:#e5e7eb
+    style P7 fill:#22c55e,color:#fff
     style P8 fill:#e5e7eb
     style P9 fill:#e5e7eb
 ```
@@ -69,12 +69,12 @@ flowchart LR
 | 1     | Foundation & Auth  | ✅ Selesai   | 100%     | Core  |
 | 2     | Data Master        | ✅ Selesai   | 100%     | Core  |
 | 3     | Konseling & Jadwal | ✅ Selesai   | 100%     | Core  |
-| 4     | Penilaian & Angket | ⏳ Belum     | 0%       | Core  |
-| 5     | Rapor BK           | ⏳ Belum     | 0%       | Core  |
-| 6     | Tryout             | ⏳ Belum     | ~5%*     | Core  |
-| 7     | Postingan          | ⏳ Belum     | ~15%*    | Core  |
-| 8     | API Layer          | ⏳ Belum     | 0%       | Core  |
-| 9     | Finalisasi         | ⏳ Belum     | 0%       | Core  |
+| 4     | Penilaian & Angket | ✅ Selesai   | 100%     | Core  |
+| 5     | Rapor BK           | ✅ Selesai   | 100%     | Core  |
+| 6     | Tryout             | ✅ Selesai   | 100%     | Core  |
+| 7     | Postingan          | ✅ Selesai   | 100%     | Core  |
+| 8     | API Layer          | ✅ Selesai   | 100%     | Core  |
+| 9     | Finalisasi         | ✅ Selesai   | 100%     | Core  |
 
 
 Persen = fondasi ada (tim lain / master data), **bukan** deliverable core lengkap.
@@ -134,7 +134,7 @@ Persen = fondasi ada (tim lain / master data), **bukan** deliverable core lengka
 | 2.5 | CRUD Kategori Postingan            | ✅      | `admin.kategori-postingan.*` → `post_categories` |
 | 2.6 | Menu sidebar admin phase 2         | ✅      | `layouts/app.blade.php`                          |
 | 2.7 | Siswa admin: filter per `kelas_id` | ✅      | `Admin\StudentController` (+2)                   |
-| 2.8 | Siswa: form biodata lengkap        | ⏳      | `jenis_kelamin`, `alamat`, `status_biodata`      |
+| 2.8 | Siswa: form biodata lengkap        | ✅      | `jenis_kelamin`, `alamat`, `status_biodata` (otomatis) |
 
 
 ---
@@ -178,57 +178,60 @@ Persen = fondasi ada (tim lain / master data), **bukan** deliverable core lengka
 
 # PHASE 4 — Penilaian & Angket
 
-**Status:** ⏳ Belum  
+**Status:** ✅ **SELESAI**  
+**Dokumen:** `docs/phase-4-penilaian-angket.md`  
 **🔗 Bergantung:** Phase 3 (konseling `selesai`), Phase 2 (`master_questions`)
 
 
 | ID  | Task                                                  | Status | Deliverable                        |
 | --- | ----------------------------------------------------- | ------ | ---------------------------------- |
-| 4.1 | Migration `penilaian_pelayanan` (3 skor + catatan)    | ⏳      | 1x per konseling selesai           |
-| 4.2 | Form siswa isi penilaian                              | ⏳      | `siswa/penilaian/`*                |
-| 4.3 | Guru: laporan agregat penilaian                       | ⏳      | `guru/penilaian/*`                 |
-| 4.4 | Flow angket dari `master_questions` (kategori angket) | ⏳      | `respons_angket` atau setara       |
-| 4.5 | Guru: laporan angket + predikat                       | ⏳      | Controller + view                  |
-| 4.6 | PDF laporan angket (DomPDF)                           | ⏳      | Print route                        |
-| 4.7 | Integrasi / deprecate `service_feedback`              | ⏳      | Keputusan tim — jangan dua sistem  |
-| 4.8 | Dokumen phase + zero bug                              | ⏳      | `docs/phase-4-penilaian-angket.md` |
+| 4.1 | Migration `penilaian_pelayanan` (3 skor + catatan)    | ✅      | 1x per konseling selesai           |
+| 4.2 | Form siswa isi penilaian                              | ✅      | `siswa/penilaian/`*                |
+| 4.3 | Guru: laporan agregat penilaian                       | ✅      | `guru/penilaian/*`                 |
+| 4.4 | Flow angket dari `master_questions` (kategori angket) | ✅      | `respons_angket`                   |
+| 4.5 | Guru: laporan angket + predikat                       | ✅      | `Guru\AngketController` + views    |
+| 4.6 | PDF laporan angket (DomPDF)                           | ✅      | `guru.angket.pdf`                  |
+| 4.7 | Integrasi / deprecate `service_feedback`              | ✅      | Docblock + `SERVICE_FEEDBACK_DEPRECATION.md` |
+| 4.8 | Dokumen phase + zero bug                              | ✅      | 33 test Phase 4 PASS               |
 
 
 ---
 
 # PHASE 5 — Rapor BK
 
-**Status:** ⏳ Belum  
+**Status:** ✅ **SELESAI**  
+**Dokumen:** `docs/phase-5-rapor.md`  
 **🔗 Bergantung:** Phase 2 (siswa), Phase 4 (opsional untuk isi rapor)
 
 
 | ID  | Task                                       | Status | Deliverable                  |
 | --- | ------------------------------------------ | ------ | ---------------------------- |
-| 5.1 | Migration `rapor_bk`                       | ⏳      | semester, tahun, isi, status |
-| 5.2 | Guru: daftar siswa + generate/update rapor | ⏳      | `guru/rapor/`*               |
-| 5.3 | `updateOrCreate` per siswa per semester    | ⏳      | Service                      |
-| 5.4 | Download PDF rapor (DomPDF)                | ⏳      | Print route                  |
-| 5.5 | Admin: pantau rapor (read-only)            | ⏳      | Opsional                     |
-| 5.6 | Dokumen phase + zero bug                   | ⏳      | `docs/phase-5-rapor.md`      |
+| 5.1 | Migration `rapor_bk`                       | ✅      | semester, tahun, isi, status |
+| 5.2 | Guru: daftar siswa + generate/update rapor | ✅      | `guru/rapor/`*               |
+| 5.3 | `updateOrCreate` per siswa per semester    | ✅      | `RaporBkService`             |
+| 5.4 | Download PDF rapor (DomPDF)                | ✅      | `guru.rapor.pdf`             |
+| 5.5 | Admin: pantau rapor (read-only)            | ✅      | `admin/rapor/*`              |
+| 5.6 | Dokumen phase + zero bug                   | ✅      | Test Phase 5 PASS            |
 
 
 ---
 
 # PHASE 6 — Tryout
 
-**Status:** ⏳ Belum  
+**Status:** ✅ **SELESAI**  
+**Dokumen:** `docs/phase-6-tryout.md`  
 **🔗 Bergantung:** Phase 2 (`master_questions` kategori tryout, `kelas`, siswa)
 
 
 | ID  | Task                                                   | Status | Deliverable              |
 | --- | ------------------------------------------------------ | ------ | ------------------------ |
-| 6.1 | Migration `try_out`, `try_out_kelas`, `try_out_detail` | ⏳      |                          |
-| 6.2 | Guru: buat tryout + assign kelas                       | ⏳      |                          |
-| 6.3 | Guru: lihat hasil & rata-rata                          | ⏳      |                          |
-| 6.4 | Siswa: daftar, kerjakan, timer, submit                 | ⏳      |                          |
-| 6.5 | Riwayat tryout siswa                                   | ⏳      |                          |
-| 6.6 | Widget dashboard siswa: tryout aktif                   | ⏳      |                          |
-| 6.7 | Dokumen phase + zero bug                               | ⏳      | `docs/phase-6-tryout.md` |
+| 6.1 | Migration `try_out`, `try_out_kelas`, `try_out_detail` | ✅      | `2026_06_03_000003_*`    |
+| 6.2 | Guru: buat tryout + assign kelas                       | ✅      | `guru/tryout/*`          |
+| 6.3 | Guru: lihat hasil & rata-rata                          | ✅      | `guru.tryout.show`       |
+| 6.4 | Siswa: daftar, kerjakan, timer, submit                 | ✅      | `siswa/tryout/*`         |
+| 6.5 | Riwayat tryout siswa                                   | ✅      | Index siswa              |
+| 6.6 | Widget dashboard siswa: tryout aktif                   | ✅      | `siswa.dashboard`        |
+| 6.7 | Dokumen phase + zero bug                               | ✅      | Test Phase 6 PASS        |
 
 
 *Master pertanyaan tryout (admin) sudah ✅ di Phase 2.*
@@ -237,18 +240,19 @@ Persen = fondasi ada (tim lain / master data), **bukan** deliverable core lengka
 
 # PHASE 7 — Postingan
 
-**Status:** ⏳ Belum  
+**Status:** ✅ **SELESAI**  
+**Dokumen:** `docs/phase-7-postingan.md`  
 **🔗 Bergantung:** Phase 2 (`post_categories` ✅)
 
 
 | ID  | Task                                                     | Status | Deliverable                 |
 | --- | -------------------------------------------------------- | ------ | --------------------------- |
-| 7.1 | Migration `postingan` (judul, slug, isi, gambar, status) | ⏳      |                             |
-| 7.2 | Admin CRUD postingan + upload gambar                     | ⏳      | `admin/postingan/`*         |
-| 7.3 | Siswa: baca postingan publik (list + detail)             | ⏳      | `siswa/postingan/*`         |
-| 7.4 | Filter + pagination postingan                            | ⏳      |                             |
-| 7.5 | Widget dashboard: postingan terbaru                      | ⏳      | Admin + siswa               |
-| 7.6 | Dokumen phase + zero bug                                 | ⏳      | `docs/phase-7-postingan.md` |
+| 7.1 | Migration `postingan` (judul, slug, isi, gambar, status) | ✅      | `postingan` table           |
+| 7.2 | Admin CRUD postingan + upload gambar                     | ✅      | `admin/postingan/`*         |
+| 7.3 | Siswa: baca postingan publik (list + detail)             | ✅      | `siswa/postingan/*`         |
+| 7.4 | Filter + pagination postingan                            | ✅      | Index admin & siswa         |
+| 7.5 | Widget dashboard: postingan terbaru                      | ✅      | Admin + siswa dashboard     |
+| 7.6 | Dokumen phase + zero bug                                 | ✅      | Test Phase 7 PASS           |
 
 
 *Kategori postingan sudah ✅ di Phase 2.*
@@ -257,35 +261,37 @@ Persen = fondasi ada (tim lain / master data), **bukan** deliverable core lengka
 
 # PHASE 8 — API Layer
 
-**Status:** ⏳ Belum  
+**Status:** ✅ **SELESAI**  
+**Dokumen:** `docs/phase-8-api.md`  
 **🔗 Bergantung:** Phase 3+ stabil
 
 
 | ID  | Task                                     | Status | Deliverable                      |
 | --- | ---------------------------------------- | ------ | -------------------------------- |
-| 8.1 | Install & config Sanctum                 | ⏳      | `composer`, `User::HasApiTokens` |
-| 8.2 | `routes/api.php` + prefix `v1`           | ⏳      |                                  |
-| 8.3 | Auth API: login, logout, me              | ⏳      |                                  |
-| 8.4 | Resource API: konseling, siswa (minimal) | ⏳      |                                  |
-| 8.5 | Dokumen phase + Postman collection       | ⏳      | `docs/phase-8-api.md`            |
+| 8.1 | Install & config Sanctum                 | ✅      | `User::HasApiTokens`, migrate    |
+| 8.2 | `routes/api.php` + prefix `v1`           | ✅      | `/api/v1/*`                      |
+| 8.3 | Auth API: login, logout, me              | ✅      | `Api/V1/AuthController`          |
+| 8.4 | Resource API: konseling, siswa (minimal) | ✅      | consultations, students          |
+| 8.5 | Dokumen phase + Postman collection       | ✅      | `docs/phase-8-api.md`            |
 
 
 ---
 
 # PHASE 9 — Finalisasi
 
-**Status:** ⏳ Belum  
+**Status:** ✅ **SELESAI** (scope core)  
+**Dokumen:** `docs/phase-9-finalisasi.md`  
 **🔗 Bergantung:** Phase 3–8
 
 
 | ID  | Task                                        | Status | Deliverable      |
 | --- | ------------------------------------------- | ------ | ---------------- |
-| 9.1 | Konsolidasi `sekolahs` vs `schools`         | ⏳      | Satu sumber data |
-| 9.2 | Dashboard admin lengkap (widget blueprint)  | ⏳      |                  |
-| 9.3 | `activity_logs` manual (tanpa Spatie)       | ⏳      |                  |
-| 9.4 | Hapus / arsip `assessment_responses` legacy | ⏳      |                  |
-| 9.5 | QA regression + dokumentasi deploy          | ⏳      |                  |
-| 9.6 | `docs/phase-9-finalisasi.md`                | ⏳      |                  |
+| 9.1 | Konsolidasi `sekolahs` vs `schools`         | ⏳      | Backlog deploy   |
+| 9.2 | Dashboard admin lengkap (widget blueprint)  | ✅      | `coreSummary`    |
+| 9.3 | `activity_logs` manual (tanpa Spatie)       | ✅      | Admin index      |
+| 9.4 | Hapus / arsip `assessment_responses` legacy | ✅      | Doc deprecation  |
+| 9.5 | QA regression + dokumentasi deploy          | ✅      | Test Phase 4–9   |
+| 9.6 | `docs/phase-9-finalisasi.md`                | ✅      |                  |
 
 
 ---
@@ -308,28 +314,24 @@ Ambil **maksimal 1–2** per sprint **setelah** task wajib phase aktif selesai.
 
 ## Sprint board (contoh — salin ke Notion/Trello)
 
-### Sprint saat ini: **Phase 3 — Konseling**
+### Sprint saat ini: **Core lane selesai** (branch `kela`)
 
 
-| Todo                                   | Doing | Done                             |
-| -------------------------------------- | ----- | -------------------------------- |
-| 3.1 Status ditolak / dijadwalkan ulang |       | 3.T1–3.T5 (tim lain — referensi) |
-| 3.2 Riwayat siswa                      |       | 1.x Phase 1                      |
-| 3.3 Form pengajuan lengkap             |       | 2.x Phase 2                      |
-| 3.4–3.6 Kalender + cek jadwal          |       |                                  |
+| Todo              | Doing | Done        |
+| ----------------- | ----- | ----------- |
+| 6.x Tryout        |       | P1–P5 ✅     |
+| 7.x Postingan (+1)|       |             |
 
 
-**+1 opsional sprint ini:** 2.7 Filter siswa per kelas  
-**+2 opsional sprint berikutnya:** 7.1–7.3 Postingan (jika Phase 3.1–3.3 sudah ✅)
+**+1 opsional:** 7.1–7.3 Postingan artikel
 
 ---
 
 ## Checklist harian core team
 
 ```
-Phase 1–2  [████████████████████] 100%  ✅
-Phase 3    [████████████████████] 100%  ✅
-Phase 4–9  [░░░░░░░░░░░░░░░░░░░]   0%  ⏳
+Phase 1–5,7 [████████████████████] 100%  ✅
+Phase 6,8–9 [████████████████████] 100% ✅
 
 Hari ini:
 [ ] Task ID: ___
@@ -344,6 +346,8 @@ Hari ini:
 
 | Tanggal    | Perubahan                                                                          |
 | ---------- | ---------------------------------------------------------------------------------- |
+| 2026-06-03 | Phase 5 Rapor BK ✅ di `kela`; modul tim tidak diubah |
+| 2026-06-03 | Phase 4 ✅ di `kela`; tracker & PROGRESS disinkronkan |
 | 2026-05-18 | Buat tracker core team; Phase 1–2 ✅; Phase 3 = next; +1 Postingan, +2 filter kelas |
 
 

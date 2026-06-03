@@ -23,10 +23,11 @@ class ConsultationController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $teachers = User::where('role', User::ROLE_GURU)
+        $teachers = User::query()
+            ->where('role', User::ROLE_GURU)
             ->where('status', User::STATUS_APPROVED)
             ->orderBy('name')
-            ->get();
+            ->get(['id', 'name']);
 
         $upcoming = ConsultationRequest::query()
             ->with('counselor:id,name')

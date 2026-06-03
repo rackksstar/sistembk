@@ -13,47 +13,9 @@
         $roleLabel = ['admin' => 'Admin', 'guru' => 'Guru BK', 'siswa' => 'Siswa'][$user?->role] ?? 'Pengguna';
         $userIdentity = $user?->role === 'guru' ? ($user?->username ?? '-') : ($user?->email ?? '-');
         $dashboardRoute = $user ? route($user->dashboardRoute()) : route('login');
-        $menu = [
-            ['label' => 'Dashboard', 'href' => $dashboardRoute, 'active' => request()->routeIs('*.dashboard') || request()->routeIs('dashboard')],
-        ];
-
-        if ($user?->role === 'admin') {
-            $menu[] = ['label' => 'Approval Guru BK', 'href' => route('admin.approvals.index'), 'active' => request()->routeIs('admin.approvals.*')];
-            $menu[] = ['label' => 'Manajemen Pengguna', 'href' => route('admin.users.index'), 'active' => request()->routeIs('admin.users.*')];
-            $menu[] = ['label' => 'Data Siswa', 'href' => route('admin.students.index'), 'active' => request()->routeIs('admin.students.*')];
-            $menu[] = ['label' => 'Kelas Bimbingan', 'href' => route('admin.guidance-classes.index'), 'active' => request()->routeIs('admin.guidance-classes.*')];
-            $menu[] = ['label' => 'Konseling & Laporan', 'href' => route('admin.consultations.index'), 'active' => request()->routeIs('admin.consultations.*')];
-            $menu[] = ['label' => 'Informasi Karier', 'href' => route('admin.careers.index'), 'active' => request()->routeIs('admin.careers.*')];
-            $menu[] = ['label' => 'Sekolah', 'href' => route('admin.sekolah.index'), 'active' => request()->routeIs('admin.sekolah.*')];
-            $menu[] = ['label' => 'Kelas', 'href' => route('admin.kelas.index'), 'active' => request()->routeIs('admin.kelas.*')];
-            $menu[] = ['label' => 'Guru BK', 'href' => route('admin.guru-bk.index'), 'active' => request()->routeIs('admin.guru-bk.*')];
-            $menu[] = ['label' => 'Master Pertanyaan', 'href' => route('admin.master-pertanyaan.index'), 'active' => request()->routeIs('admin.master-pertanyaan.*')];
-            $menu[] = ['label' => 'Kategori Postingan', 'href' => route('admin.kategori-postingan.index'), 'active' => request()->routeIs('admin.kategori-postingan.*')];
-        }
-
-        if ($user?->role === 'guru') {
-            $menu[] = ['label' => 'Data Siswa', 'href' => route('guru.students.index'), 'active' => request()->routeIs('guru.students.*')];
-            $menu[] = ['label' => 'Soal Instrumen', 'href' => route('guru.instrument-questions.index'), 'active' => request()->routeIs('guru.instrument-questions.*')];
-            $menu[] = ['label' => 'Hasil Instrumen', 'href' => route('guru.instrument-results.index'), 'active' => request()->routeIs('guru.instrument-results.*')];
-            $menu[] = ['label' => 'Peta Sosiometri', 'href' => route('guru.sociometry.index'), 'active' => request()->routeIs('guru.sociometry.*')];
-            $menu[] = ['label' => 'RPL', 'href' => route('guru.rpls.index'), 'active' => request()->routeIs('guru.rpls.*')];
-            $menu[] = ['label' => 'Konseling', 'href' => route('guru.consultations.index'), 'active' => request()->routeIs('guru.consultations.*')];
-            $menu[] = ['label' => 'Laporan Penilaian', 'href' => route('guru.penilaian.index'), 'active' => request()->routeIs('guru.penilaian.*')];
-            $menu[] = ['label' => 'Laporan Angket', 'href' => route('guru.angket.index'), 'active' => request()->routeIs('guru.angket.*')];
-        }
-
-        if ($user?->role === 'siswa') {
-            $menu[] = ['label' => 'Konseling', 'href' => route('siswa.consultations.index'), 'active' => request()->routeIs('siswa.consultations.*') || request()->routeIs('siswa.consultation-requests.*')];
-            $menu[] = ['label' => 'Penilaian Layanan', 'href' => route('siswa.penilaian.index'), 'active' => request()->routeIs('siswa.penilaian.*')];
-            $menu[] = ['label' => 'Instrumen Asesmen', 'href' => route('siswa.instruments.index'), 'active' => request()->routeIs('siswa.instruments.*')];
-            $menu[] = ['label' => 'Sosiometri', 'href' => route('siswa.sociometry.index'), 'active' => request()->routeIs('siswa.sociometry.*')];
-            $menu[] = ['label' => 'Informasi Karier', 'href' => route('siswa.careers.index'), 'active' => request()->routeIs('siswa.careers.*')];
-            $menu[] = ['label' => 'Angket BK', 'href' => route('siswa.angket.index'), 'active' => request()->routeIs('siswa.angket.*')];
-        }
-
-        if ($user?->role !== 'siswa') {
-            $menu[] = ['label' => 'Profil', 'href' => route('profile.edit'), 'active' => request()->routeIs('profile.*')];
-        }
+        $menuGroups = $user && isset(config('navigation')[$user->role])
+            ? config('navigation')[$user->role]
+            : [];
     @endphp
 
     <div class="min-h-screen">
@@ -84,14 +46,22 @@
                     <p class="mt-2 text-xs leading-5 text-blue-50">Navigasi cepat untuk pekerjaan harian BK.</p>
                 </div>
                 <div class="p-4">
-                <nav class="space-y-2" aria-label="Menu utama">
-                    @foreach($menu as $item)
-                        <a href="{{ $item['href'] }}" class="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold transition {{ $item['active'] ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-100' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
-                            <span>{{ $item['label'] }}</span>
-                            @if($item['active'])
-                                <span class="h-2 w-2 rounded-full bg-blue-600"></span>
-                            @endif
-                        </a>
+                <nav class="space-y-1" aria-label="Menu utama">
+                    @foreach($menuGroups as $group)
+                        <p class="px-4 pb-1 pt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 first:pt-0">{{ $group['group'] }}</p>
+                        @foreach($group['items'] as $item)
+                            @php
+                                $patterns = (array) ($item['active'] ?? $item['route'] ?? '');
+                                $isActive = collect($patterns)->contains(fn ($pattern) => request()->routeIs($pattern));
+                                $href = isset($item['route']) ? route($item['route']) : $dashboardRoute;
+                            @endphp
+                            <a href="{{ $href }}" class="flex items-center justify-between rounded-2xl px-4 py-2.5 text-sm font-semibold transition {{ $isActive ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-100' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                                <span>{{ $item['label'] }}</span>
+                                @if($isActive)
+                                    <span class="h-2 w-2 rounded-full bg-blue-600"></span>
+                                @endif
+                            </a>
+                        @endforeach
                     @endforeach
                 </nav>
 

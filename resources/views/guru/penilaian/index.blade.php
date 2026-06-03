@@ -46,6 +46,7 @@
                         <tr>
                             <th class="px-5 py-4">Tanggal</th>
                             <th class="px-5 py-4">Nama Siswa</th>
+                            <th class="px-5 py-4">Kelas</th>
                             <th class="px-5 py-4">Skor Materi</th>
                             <th class="px-5 py-4">Skor Cara</th>
                             <th class="px-5 py-4">Skor Manfaat</th>
@@ -61,6 +62,7 @@
                                     {{ $item->scheduled_at?->format('d M Y') ?? '—' }}
                                 </td>
                                 <td class="px-5 py-4 font-semibold text-slate-900">{{ $item->student?->name ?? '—' }}</td>
+                                <td class="px-5 py-4 text-slate-600">{{ $item->student?->studentProfile?->kelas?->nama ?? '—' }}</td>
                                 <td class="px-5 py-4 text-slate-600">{{ $penilaian?->skor_materi ?? '—' }}</td>
                                 <td class="px-5 py-4 text-slate-600">{{ $penilaian?->skor_cara ?? '—' }}</td>
                                 <td class="px-5 py-4 text-slate-600">{{ $penilaian?->skor_manfaat ?? '—' }}</td>
@@ -77,7 +79,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-5 py-8">
+                                <td colspan="8" class="px-5 py-8">
                                     <x-empty-state
                                         title="Tidak ada data"
                                         description="Belum ada konseling selesai pada bulan dan tahun yang dipilih."

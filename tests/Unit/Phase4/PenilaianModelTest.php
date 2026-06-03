@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Phase4;
 
-use App\Http\Controllers\Guru\AngketController;
+use App\Support\AngketProgress;
 use App\Models\PenilaianPelayanan;
 use Tests\TestCase;
 
@@ -73,14 +73,12 @@ class PenilaianModelTest extends TestCase
 
     public function test_predikat_angket_dihitung_benar(): void
     {
-        $controller = new AngketController;
-
-        $this->assertEquals('Lengkap', $controller->hitungPredikat(10, 10));
-        $this->assertEquals('Lengkap', $controller->hitungPredikat(8, 10));
-        $this->assertEquals('Sebagian', $controller->hitungPredikat(5, 10));
-        $this->assertEquals('Sebagian', $controller->hitungPredikat(6, 10));
-        $this->assertEquals('Belum Lengkap', $controller->hitungPredikat(4, 10));
-        $this->assertEquals('Belum Lengkap', $controller->hitungPredikat(0, 10));
-        $this->assertEquals('Belum Ada Soal', $controller->hitungPredikat(0, 0));
+        $this->assertEquals('Lengkap', AngketProgress::predikat(10, 10));
+        $this->assertEquals('Lengkap', AngketProgress::predikat(8, 10));
+        $this->assertEquals('Sebagian', AngketProgress::predikat(5, 10));
+        $this->assertEquals('Sebagian', AngketProgress::predikat(6, 10));
+        $this->assertEquals('Belum Lengkap', AngketProgress::predikat(4, 10));
+        $this->assertEquals('Belum Lengkap', AngketProgress::predikat(0, 10));
+        $this->assertEquals('Belum Ada Soal', AngketProgress::predikat(0, 0));
     }
 }

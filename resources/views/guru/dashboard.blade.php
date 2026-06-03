@@ -45,7 +45,7 @@
                 @forelse($recentStudentHistories as $history)
                     <article class="rounded-2xl bg-slate-50 p-4 text-sm">
                         <p class="font-semibold text-slate-950">{{ $history->student?->name }} - {{ $history->caseCategoryLabel() }}</p>
-                        <p class="mt-1 text-slate-600">{{ $history->student?->classModel?->name ?? '-' }} | {{ $history->student?->schoolModel?->name ?? '-' }}</p>
+                        <p class="mt-1 text-slate-600">{{ $history->student?->studentProfile?->kelas?->nama ?? '-' }}</p>
                         <p class="mt-2 line-clamp-2 text-slate-500">{{ $history->result }}</p>
                     </article>
                 @empty

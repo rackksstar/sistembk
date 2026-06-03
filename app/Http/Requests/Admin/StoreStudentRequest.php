@@ -18,6 +18,9 @@ class StoreStudentRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'nisn' => ['required', 'string', 'max:20', 'unique:students,nisn'],
             'birth_date' => ['required', 'date', 'before:today'],
+            'kelas_id' => ['required', 'exists:kelas,id'],
+            'jenis_kelamin' => ['nullable', 'string', 'in:L,P'],
+            'alamat' => ['nullable', 'string', 'max:2000'],
             'school' => ['nullable', 'string', 'max:255'],
             'user_id' => ['nullable', 'exists:users,id'],
         ];

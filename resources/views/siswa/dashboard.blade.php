@@ -185,5 +185,39 @@
             @endforelse
         </div>
     </section>
+
+    @if(isset($tryoutAktif) && $tryoutAktif->isNotEmpty())
+        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-end justify-between gap-4">
+                <x-section-title title="Tryout aktif" description="Kerjakan sebelum batas waktu berakhir." />
+                <a href="{{ route('siswa.tryout.index') }}" class="text-sm font-semibold text-blue-600">Lihat semua</a>
+            </div>
+            <ul class="mt-4 space-y-2">
+                @foreach($tryoutAktif as $tryout)
+                    <li class="flex items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-blue-50/60 px-4 py-3 text-sm">
+                        <span class="font-medium text-slate-900">{{ $tryout->judul }}</span>
+                        <a href="{{ route('siswa.tryout.show', $tryout) }}" class="text-xs font-semibold text-blue-600">Kerjakan</a>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
+    @if(isset($postinganTerbaru) && $postinganTerbaru->isNotEmpty())
+        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-end justify-between gap-4">
+                <x-section-title title="Artikel terbaru" description="Informasi BK yang baru dipublikasikan." />
+                <a href="{{ route('siswa.postingan.index') }}" class="text-sm font-semibold text-blue-600">Lihat semua</a>
+            </div>
+            <ul class="mt-4 space-y-2">
+                @foreach($postinganTerbaru as $artikel)
+                    <li class="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm">
+                        <span class="font-medium text-slate-900">{{ $artikel->judul }}</span>
+                        <a href="{{ route('siswa.postingan.show', $artikel) }}" class="text-xs font-semibold text-blue-600">Baca</a>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
 </div>
 @endsection

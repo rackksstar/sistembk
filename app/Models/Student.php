@@ -47,4 +47,9 @@ class Student extends Model
     {
         return $this->hasMany(\App\Models\ResponsAngket::class);
     }
+
+    public function raporBk(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RaporBk::class);
+    }
 }

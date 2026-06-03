@@ -20,10 +20,10 @@ class PenilaianController extends Controller
             ->whereMonth('scheduled_at', $bulan)
             ->whereYear('scheduled_at', $tahun)
             ->with([
-                'penilaianPelayanan',
-                'student:id,name,class_id,school_id',
-                'student.classModel:id,name',
-                'student.schoolModel:id,name',
+                'penilaianPelayanan:id,consultation_request_id,skor_materi,skor_cara,skor_manfaat,catatan',
+                'student:id,name',
+                'student.studentProfile:id,user_id,kelas_id',
+                'student.studentProfile.kelas:id,nama',
             ])
             ->latest('scheduled_at')
             ->paginate(20)

@@ -25,7 +25,12 @@ class ConsultationController extends Controller
     {
         $status = $request->string('status')->toString();
 
-        $consultations = ConsultationRequest::with(['student.studentProfile', 'student.schoolModel', 'student.classModel', 'counselor'])
+        $consultations = ConsultationRequest::with([
+            'student:id,name',
+            'student.studentProfile:id,user_id,kelas_id',
+            'student.studentProfile.kelas:id,nama',
+            'counselor:id,name',
+        ])
             ->where(function ($query) {
                 $query->whereNull('counselor_id')->orWhere('counselor_id', auth()->id());
             })
@@ -33,8 +38,6 @@ class ConsultationController extends Controller
             ->latest()
             ->paginate(10)
             ->withQueryString();
-
-        $students = User::where('role', User::ROLE_SISWA)->where('status', User::STATUS_APPROVED)->orderBy('name')->get();
 
         $upcomingWeek = ConsultationRequest::query()
             ->with('student:id,name')
@@ -52,7 +55,6 @@ class ConsultationController extends Controller
 
         return view('guru.consultations.index', [
             'consultations' => $consultations,
-            'students' => $students,
             'status' => $status,
             'statuses' => ConsultationRequest::filterableStatuses(),
             'caseCategories' => ConsultationRequest::CASE_CATEGORIES,
@@ -138,7 +140,13 @@ class ConsultationController extends Controller
     {
         abort_unless($consultation->counselor_id === auth()->id() || auth()->user()->role === User::ROLE_ADMIN, 403);
 
-        $consultation->load(['student.schoolModel', 'student.classModel', 'counselor']);
+        $consultation->load([
+            'student:id,name,school',
+            'student.studentProfile:id,user_id,kelas_id',
+            'student.studentProfile.kelas:id,nama,sekolah_id',
+            'student.studentProfile.kelas.sekolah:id,nama',
+            'counselor:id,name',
+        ]);
 
         return Pdf::loadView('guru.consultations.print', compact('consultation'))
             ->setPaper('a4')

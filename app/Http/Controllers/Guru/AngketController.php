@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
-use App\Models\MasterQuestion;
 use App\Models\Student;
+use App\Services\CounselorStudentService;
+use App\Support\AngketProgress;
+use App\Support\AngketQuestions;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -12,27 +14,40 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AngketController extends Controller
 {
+    public function __construct(
+        private readonly CounselorStudentService $counselorStudentService
+    ) {}
+
     public function index(Request $request): View
     {
-        $totalSoalAktif = MasterQuestion::query()
-            ->where('kategori', MasterQuestion::KATEGORI_ANGKET)
-            ->where('is_active', true)
-            ->count();
+        $activeSoalIds = AngketQuestions::activeIds();
+        $totalSoalAktif = $activeSoalIds->count();
 
-        $students = Student::query()
-            ->with(['user', 'kelas'])
+        $search = $request->string('search')->toString();
+
+        $students = $this->counselorStudentService
+            ->queryForCounselor(auth()->user())
+            ->with(['user:id,name', 'kelas:id,nama'])
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('nisn', 'like', "%{$search}%")
+                        ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"));
+                });
+            })
             ->withCount([
-                'responsAngket as total_dijawab' => function ($q) {
-                    $q->whereHas('masterQuestion', fn ($mq) => $mq
-                        ->where('kategori', MasterQuestion::KATEGORI_ANGKET)
-                        ->where('is_active', true)
-                    );
+                'responsAngket as total_dijawab' => function ($q) use ($activeSoalIds) {
+                    if ($activeSoalIds->isNotEmpty()) {
+                        $q->whereIn('master_question_id', $activeSoalIds);
+                    } else {
+                        $q->whereRaw('0 = 1');
+                    }
                 },
             ])
             ->paginate(25);
 
         $students->getCollection()->transform(function ($student) use ($totalSoalAktif) {
-            $student->predikat = $this->hitungPredikat(
+            $student->predikat = AngketProgress::predikat(
                 $student->total_dijawab,
                 $totalSoalAktif
             );
@@ -40,54 +55,45 @@ class AngketController extends Controller
             return $student;
         });
 
-        return view('guru.angket.index', compact('students', 'totalSoalAktif'));
+        return view('guru.angket.index', compact('students', 'totalSoalAktif', 'search'));
     }
 
     public function show(Student $student): View
     {
+        abort_unless($this->counselorStudentService->canAccess($student, auth()->user()), 403);
+
         $student->load([
             'user',
             'kelas',
             'responsAngket' => fn ($q) => $q
-                ->with('masterQuestion')
-                ->whereHas('masterQuestion', fn ($mq) => $mq
-                    ->where('kategori', MasterQuestion::KATEGORI_ANGKET)
-                )
+                ->with('masterQuestion:id,teks_pertanyaan,kategori')
+                ->whereIn('master_question_id', AngketQuestions::activeIds())
                 ->orderBy('master_question_id'),
         ]);
 
-        $totalSoalAktif = MasterQuestion::query()
-            ->where('kategori', MasterQuestion::KATEGORI_ANGKET)
-            ->where('is_active', true)
-            ->count();
+        $totalSoalAktif = AngketQuestions::activeCount();
 
-        $predikat = $this->hitungPredikat(
-            $student->responsAngket->count(),
-            $totalSoalAktif
-        );
+        $predikat = AngketProgress::predikat($student->responsAngket->count(), $totalSoalAktif);
 
         return view('guru.angket.show', compact('student', 'predikat', 'totalSoalAktif'));
     }
 
     public function exportPdf(Student $student): Response
     {
+        abort_unless($this->counselorStudentService->canAccess($student, auth()->user()), 403);
+
         $student->load([
             'user',
             'kelas',
             'responsAngket' => fn ($q) => $q
-                ->with('masterQuestion')
-                ->whereHas('masterQuestion', fn ($mq) => $mq
-                    ->where('kategori', MasterQuestion::KATEGORI_ANGKET)
-                )
+                ->with('masterQuestion:id,teks_pertanyaan,kategori')
+                ->whereIn('master_question_id', AngketQuestions::activeIds())
                 ->orderBy('master_question_id'),
         ]);
 
-        $totalSoalAktif = MasterQuestion::query()
-            ->where('kategori', MasterQuestion::KATEGORI_ANGKET)
-            ->where('is_active', true)
-            ->count();
+        $totalSoalAktif = AngketQuestions::activeCount();
 
-        $predikat = $this->hitungPredikat($student->responsAngket->count(), $totalSoalAktif);
+        $predikat = AngketProgress::predikat($student->responsAngket->count(), $totalSoalAktif);
         $tanggalCetak = now()->format('d M Y');
 
         $pdf = Pdf::loadView('guru.angket.pdf', compact(
@@ -99,18 +105,4 @@ class AngketController extends Controller
         return $pdf->download($namaFile);
     }
 
-    public function hitungPredikat(int $dijawab, int $total): string
-    {
-        if ($total === 0) {
-            return 'Belum Ada Soal';
-        }
-
-        $persen = ($dijawab / $total) * 100;
-
-        return match (true) {
-            $persen >= 80 => 'Lengkap',
-            $persen >= 50 => 'Sebagian',
-            default => 'Belum Lengkap',
-        };
-    }
 }
