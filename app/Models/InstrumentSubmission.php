@@ -2,38 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
-class InstrumentSubmission extends Model
+class InstrumentSubmission extends HasilInstrumen
 {
-    protected $fillable = [
-        'student_id',
-        'category',
-        'total_score',
-        'result_label',
-        'result_description',
-        'submitted_at',
-    ];
-
-    protected function casts(): array
-    {
-        return ['submitted_at' => 'datetime'];
-    }
-
-    public function student(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'student_id');
-    }
-
-    public function answers(): HasMany
-    {
-        return $this->hasMany(InstrumentAnswer::class);
-    }
-
-    public function categoryLabel(): string
-    {
-        return InstrumentQuestion::CATEGORIES[$this->category] ?? $this->category;
-    }
 }

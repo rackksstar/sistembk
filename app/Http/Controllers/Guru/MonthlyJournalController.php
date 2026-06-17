@@ -7,20 +7,34 @@ use App\Models\MonthlyJournal;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class MonthlyJournalController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $year = $request->integer('year');
+        $year = $year > 0 ? $year : null;
+
+        $years = MonthlyJournal::query()
+            ->where('teacher_id', auth()->id())
+            ->distinct()
+            ->orderByDesc('year')
+            ->pluck('year');
+
         $journals = MonthlyJournal::query()
             ->where('teacher_id', auth()->id())
+            ->when($year, fn ($query) => $query->where('year', $year))
             ->latest('year')
             ->latest('month')
-            ->paginate(10);
+            ->paginate(10)
+            ->appends($request->only('year'));
 
-        return view('guru.journals.index', compact('journals'));
+        $groupedJournals = $journals->getCollection()
+            ->groupBy('year')
+            ->sortKeysDesc();
+
+        return view('guru.journals.index', compact('journals', 'years', 'year', 'groupedJournals'));
     }
 
     public function store(Request $request): RedirectResponse

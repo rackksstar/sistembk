@@ -6,11 +6,11 @@ use App\Models\CareerInfo;
 use App\Models\ConsultationRequest;
 use App\Models\GuruBk;
 use App\Models\GuidanceClass;
-use App\Models\InstrumentAnswer;
-use App\Models\InstrumentQuestion;
-use App\Models\InstrumentSubmission;
+use App\Models\HasilInstrumen;
+use App\Models\JawabanInstrumen;
 use App\Models\Kelas;
 use App\Models\MonthlyJournal;
+use App\Models\PertanyaanInstrumen;
 use App\Models\Rpl;
 use App\Models\School;
 use App\Models\SchoolClass;
@@ -252,27 +252,37 @@ class DatabaseSeeder extends Seeder
         }
 
         $instrumentQuestions = [
-            InstrumentQuestion::CATEGORY_MINAT_BAKAT => [
+            PertanyaanInstrumen::KATEGORI_MINAT_BAKAT => [
                 'Saya bersemangat saat mengerjakan aktivitas yang membutuhkan ide baru.',
                 'Saya mudah menikmati pelajaran atau kegiatan yang menantang kemampuan berpikir.',
                 'Saya memiliki aktivitas favorit yang ingin saya dalami sebagai rencana masa depan.',
             ],
-            InstrumentQuestion::CATEGORY_GAYA_BELAJAR => [
+            PertanyaanInstrumen::KATEGORI_GAYA_BELAJAR => [
                 'Saya lebih mudah memahami materi ketika melihat gambar, diagram, atau warna.',
                 'Saya lebih cepat mengingat materi setelah mendengar penjelasan atau diskusi.',
                 'Saya senang belajar dengan praktik langsung atau membuat contoh nyata.',
             ],
-            InstrumentQuestion::CATEGORY_KEPRIBADIAN => [
+            PertanyaanInstrumen::KATEGORI_KEPRIBADIAN => [
                 'Saya mampu menenangkan diri ketika menghadapi situasi yang menekan.',
                 'Saya nyaman bekerja sama dengan teman yang berbeda pendapat.',
                 'Saya berani menyampaikan kebutuhan saya dengan cara yang sopan.',
             ],
-            InstrumentQuestion::CATEGORY_SOSIOMETRI => [
+            PertanyaanInstrumen::KATEGORI_KARIER => [
+                'Saya mengetahui jenis pekerjaan yang cocok dengan kemampuan dan minat saya.',
+                'Saya merasa siap membuat rencana karier atau pilihan studi ke depan.',
+                'Saya tertarik mencari informasi tentang profesi yang sesuai dengan diri saya.',
+            ],
+            PertanyaanInstrumen::KATEGORI_AKADEMIK => [
+                'Saya sering mengetahui topik pelajaran yang paling saya kuasai.',
+                'Saya merasa mampu mengatur waktu belajar untuk mencapai target akademik.',
+                'Saya mengerti cara belajar yang paling efektif untuk mendapatkan hasil yang baik.',
+            ],
+            PertanyaanInstrumen::KATEGORI_SOSIOMETRI => [
                 'Saya mudah memilih teman untuk bekerja sama dalam kelompok belajar.',
                 'Saya merasa diterima dalam pergaulan kelas.',
                 'Saya memiliki teman yang dapat dipercaya saat mengalami kesulitan.',
             ],
-            InstrumentQuestion::CATEGORY_ANGKET_MASALAH => [
+            PertanyaanInstrumen::KATEGORI_ANGKET_MASALAH => [
                 'Saya sering merasa sulit berkonsentrasi saat belajar.',
                 'Saya merasa cemas ketika menghadapi tugas atau ujian.',
                 'Saya mengalami kesulitan berkomunikasi dengan teman di sekolah.',
@@ -288,7 +298,7 @@ class DatabaseSeeder extends Seeder
 
         foreach ($instrumentQuestions as $category => $questions) {
             foreach ($questions as $questionText) {
-                InstrumentQuestion::query()->updateOrCreate(
+                PertanyaanInstrumen::query()->updateOrCreate(
                     ['category' => $category, 'question' => $questionText],
                     [
                         'options' => $defaultOptions,
@@ -299,14 +309,14 @@ class DatabaseSeeder extends Seeder
             }
         }
 
-        $sampleQuestions = InstrumentQuestion::query()
-            ->where('category', InstrumentQuestion::CATEGORY_MINAT_BAKAT)
+        $sampleQuestions = PertanyaanInstrumen::query()
+            ->where('category', PertanyaanInstrumen::KATEGORI_MINAT_BAKAT)
             ->get();
 
         if ($sampleQuestions->isNotEmpty()) {
             DB::transaction(function () use ($sampleQuestions, $siswa) {
-                $submission = InstrumentSubmission::query()->updateOrCreate(
-                    ['student_id' => $siswa->id, 'category' => InstrumentQuestion::CATEGORY_MINAT_BAKAT],
+                $submission = HasilInstrumen::query()->updateOrCreate(
+                    ['student_id' => $siswa->id, 'category' => PertanyaanInstrumen::KATEGORI_MINAT_BAKAT],
                     [
                         'total_score' => 10,
                         'result_label' => 'Sangat Menonjol',
@@ -316,7 +326,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 foreach ($sampleQuestions as $question) {
-                    InstrumentAnswer::query()->updateOrCreate(
+                    JawabanInstrumen::query()->updateOrCreate(
                         [
                             'instrument_submission_id' => $submission->id,
                             'instrument_question_id' => $question->id,
@@ -330,14 +340,14 @@ class DatabaseSeeder extends Seeder
             });
         }
 
-        $personalityQuestions = InstrumentQuestion::query()
-            ->where('category', InstrumentQuestion::CATEGORY_KEPRIBADIAN)
+        $personalityQuestions = PertanyaanInstrumen::query()
+            ->where('category', PertanyaanInstrumen::KATEGORI_KEPRIBADIAN)
             ->get();
 
         if ($personalityQuestions->isNotEmpty()) {
             foreach ($studentUsers->take(3) as $studentUser) {
-                $submission = InstrumentSubmission::query()->updateOrCreate(
-                    ['student_id' => $studentUser->id, 'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN],
+                $submission = HasilInstrumen::query()->updateOrCreate(
+                    ['student_id' => $studentUser->id, 'category' => PertanyaanInstrumen::KATEGORI_KEPRIBADIAN],
                     [
                         'total_score' => 9,
                         'result_label' => 'Cukup Berkembang',
@@ -347,7 +357,7 @@ class DatabaseSeeder extends Seeder
                 );
 
                 foreach ($personalityQuestions as $question) {
-                    InstrumentAnswer::query()->updateOrCreate(
+                    JawabanInstrumen::query()->updateOrCreate(
                         [
                             'instrument_submission_id' => $submission->id,
                             'instrument_question_id' => $question->id,
@@ -472,6 +482,9 @@ class DatabaseSeeder extends Seeder
                 'category' => 'Kreatif',
             ]
         );
+
+        // Jalankan seeder Paket Instrumen
+        $this->call(PaketInstrumenSeeder::class);
 
         unset($admin);
     }

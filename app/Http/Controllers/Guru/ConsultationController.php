@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Guru\ScheduleConsultationRequest;
 use App\Http\Requests\Guru\StoreConsultationReportRequest;
 use App\Models\ConsultationRequest;
+use App\Models\Rpl;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -18,7 +19,7 @@ class ConsultationController extends Controller
     {
         $status = $request->string('status')->toString();
 
-        $consultations = ConsultationRequest::with(['student.studentProfile', 'student.schoolModel', 'student.classModel', 'counselor'])
+        $consultations = ConsultationRequest::with(['student.studentProfile', 'student.schoolModel', 'student.classModel', 'counselor', 'rpl'])
             ->where(function ($query) {
                 $query->whereNull('counselor_id')->orWhere('counselor_id', auth()->id());
             })
@@ -28,10 +29,17 @@ class ConsultationController extends Controller
             ->withQueryString();
 
         $students = User::where('role', User::ROLE_SISWA)->where('status', User::STATUS_APPROVED)->orderBy('name')->get();
+        $individualRpls = Rpl::query()
+            ->where('teacher_id', auth()->id())
+            ->where('type', Rpl::TYPE_INDIVIDU)
+            ->with(['student:id,name', 'classRoom:id,name'])
+            ->latest()
+            ->get();
 
         return view('guru.consultations.index', [
             'consultations' => $consultations,
             'students' => $students,
+            'individualRpls' => $individualRpls,
             'status' => $status,
             'caseCategories' => ConsultationRequest::CASE_CATEGORIES,
         ]);
@@ -67,8 +75,20 @@ class ConsultationController extends Controller
     {
         abort_unless($consultation->counselor_id === auth()->id(), 403);
 
+        $data = $request->validated();
+
+        if (! empty($data['rpl_id'])) {
+            $rpl = Rpl::query()
+                ->where('teacher_id', auth()->id())
+                ->where('type', Rpl::TYPE_INDIVIDU)
+                ->where('student_id', $consultation->student_id)
+                ->findOrFail($data['rpl_id']);
+
+            $data['rpl_id'] = $rpl->id;
+        }
+
         $consultation->update([
-            ...$request->validated(),
+            ...$data,
             'status' => ConsultationRequest::STATUS_SELESAI,
         ]);
 
@@ -79,7 +99,7 @@ class ConsultationController extends Controller
     {
         abort_unless($consultation->counselor_id === auth()->id() || auth()->user()->role === User::ROLE_ADMIN, 403);
 
-        $consultation->load(['student.schoolModel', 'student.classModel', 'counselor']);
+        $consultation->load(['student.schoolModel', 'student.classModel', 'counselor', 'rpl']);
 
         return Pdf::loadView('guru.consultations.print', compact('consultation'))
             ->setPaper('a4')

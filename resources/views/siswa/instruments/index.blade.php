@@ -3,7 +3,7 @@
 @section('content')
 <div class="space-y-6">
     <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <x-section-title title="Instrumen Asesmen" description="Isi instrumen minat bakat, gaya belajar, kepribadian, sosiometri, dan masalah sesuai kondisi diri." />
+        <x-section-title title="Instrumen Asesmen" description="Isi instrumen minat bakat, karier, akademik, kepribadian, sosiometri, dan masalah sesuai kondisi diri." />
         <x-alert class="mt-5" type="success" :message="session('success')" />
 
         <div class="mt-6 flex flex-wrap gap-2">
@@ -20,7 +20,11 @@
                 <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
                     <p class="text-sm font-semibold text-slate-950">{{ $label }}</p>
                     <p class="mt-1 text-xs leading-5 text-slate-500">
-                        {{ $submission ? $submission->result_label.' - '.$submission->submitted_at?->format('d M Y') : 'Belum diisi' }}
+                        @if($submission)
+                            {{ $submission->result_label }} ({{ number_format($submission->percentage ?? 0, 2) }}%) - {{ $submission->submitted_at?->format('d M Y') }}
+                        @else
+                            Belum diisi
+                        @endif
                     </p>
                 </div>
             @endforeach

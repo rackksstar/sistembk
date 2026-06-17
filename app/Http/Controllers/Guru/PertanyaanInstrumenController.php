@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
-use App\Models\InstrumentQuestion;
+use App\Models\PertanyaanInstrumen;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
-class InstrumentQuestionController extends Controller
+class PertanyaanInstrumenController extends Controller
 {
     /**
      * Menampilkan daftar soal instrumen
@@ -20,7 +20,7 @@ class InstrumentQuestionController extends Controller
         $category = $request->string('category')->toString();
 
         // Query data soal dengan filter kategori dan pagination
-        $questions = InstrumentQuestion::query()
+        $questions = PertanyaanInstrumen::query()
             ->when($category, fn ($query) => $query->where('category', $category))
             ->latest() // Urutkan dari yang terbaru
             ->paginate(10) // Batasi 10 data per halaman
@@ -28,7 +28,7 @@ class InstrumentQuestionController extends Controller
 
         return view('guru.instruments.questions.index', [
             'questions' => $questions,
-            'categories' => InstrumentQuestion::CATEGORIES, // Ambil daftar kategori dari model
+            'categories' => PertanyaanInstrumen::CATEGORIES, // Ambil daftar kategori dari model
             'category' => $category,
         ]);
     }
@@ -39,7 +39,7 @@ class InstrumentQuestionController extends Controller
     public function store(Request $request): RedirectResponse
     {
         // Gabungkan data tervalidasi dengan ID user yang sedang login
-        InstrumentQuestion::create($this->validatedData($request) + [
+        PertanyaanInstrumen::create($this->validatedData($request) + [
             'created_by' => auth()->id(),
         ]);
 
@@ -49,7 +49,7 @@ class InstrumentQuestionController extends Controller
     /**
      * Memperbarui data soal yang sudah ada
      */
-    public function update(Request $request, InstrumentQuestion $question): RedirectResponse
+    public function update(Request $request, PertanyaanInstrumen $question): RedirectResponse
     {
         // Update model berdasarkan data yang sudah lolos validasi
         $question->update($this->validatedData($request));
@@ -60,7 +60,7 @@ class InstrumentQuestionController extends Controller
     /**
      * Menghapus soal dari database
      */
-    public function destroy(InstrumentQuestion $question): RedirectResponse
+    public function destroy(PertanyaanInstrumen $question): RedirectResponse
     {
         $question->delete();
 
@@ -74,7 +74,7 @@ class InstrumentQuestionController extends Controller
     private function validatedData(Request $request): array
     {
         $validated = $request->validate([
-            'category' => ['required', Rule::in(array_keys(InstrumentQuestion::CATEGORIES))],
+            'category' => ['required', Rule::in(array_keys(PertanyaanInstrumen::CATEGORIES))],
             'question' => ['required', 'string', 'max:1000'],
             'is_active' => ['nullable', 'boolean'],
             'options' => ['required', 'array', 'min:2'], // Minimal harus ada 2 pilihan jawaban

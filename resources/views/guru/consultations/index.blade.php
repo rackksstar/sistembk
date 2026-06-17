@@ -25,6 +25,7 @@
                             <th class="px-5 py-4">Siswa</th>
                             <th class="px-5 py-4">Topik</th>
                             <th class="px-5 py-4">Kategori</th>
+                            <th class="px-5 py-4">RPL Terkait</th>
                             <th class="px-5 py-4">Jadwal</th>
                             <th class="px-5 py-4">Status</th>
                             <th class="px-5 py-4 text-right">Aksi</th>
@@ -36,6 +37,7 @@
                                 <td class="px-5 py-4 font-semibold text-slate-900">{{ $consultation->student?->name }}</td>
                                 <td class="px-5 py-4 text-slate-600">{{ $consultation->subject }}</td>
                                 <td class="px-5 py-4 text-slate-600">{{ $consultation->caseCategoryLabel() }}</td>
+                                <td class="px-5 py-4 text-slate-600">{{ $consultation->rpl?->title ?? '-' }}</td>
                                 <td class="px-5 py-4 text-slate-600">
                                     @if($consultation->consultation_date)
                                         {{ $consultation->consultation_date->format('d M Y') }} {{ substr($consultation->consultation_time, 0, 5) }}
@@ -62,7 +64,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="px-5 py-6"><x-empty-state title="Belum ada pengajuan" description="Pengajuan konseling siswa akan muncul di tabel ini." /></td></tr>
+                            <tr><td colspan="7" class="px-5 py-6"><x-empty-state title="Belum ada pengajuan" description="Pengajuan konseling siswa akan muncul di tabel ini." /></td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -81,6 +83,7 @@
                     <div class="rounded-2xl bg-slate-50 p-4"><dt class="font-semibold">Sekolah</dt><dd class="mt-1 text-slate-600">{{ $consultation->student?->schoolModel?->name ?? $consultation->student?->school ?? '-' }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 p-4"><dt class="font-semibold">Guru BK</dt><dd class="mt-1 text-slate-600">{{ $consultation->counselor?->name ?? '-' }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 p-4"><dt class="font-semibold">Kategori Kasus</dt><dd class="mt-1 text-slate-600">{{ $consultation->caseCategoryLabel() }}</dd></div>
+                    <div class="rounded-2xl bg-slate-50 p-4"><dt class="font-semibold">RPL Terkait</dt><dd class="mt-1 text-slate-600">{{ $consultation->rpl?->title ?? '-' }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 p-4"><dt class="font-semibold">Waktu pilihan</dt><dd class="mt-1 text-slate-600">{{ $consultation->preferred_time }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 p-4"><dt class="font-semibold">Status</dt><dd class="mt-1"><x-status-badge :status="$consultation->status" /></dd></div>
                     <div class="rounded-2xl bg-slate-50 p-4 sm:col-span-2"><dt class="font-semibold">Catatan siswa</dt><dd class="mt-1 text-slate-600">{{ $consultation->details ?? '-' }}</dd></div>
@@ -114,13 +117,30 @@
                 <x-section-title title="Laporan Konseling" description="Isi hasil konseling dan evaluasi sesi." />
                 <form method="POST" action="{{ route('guru.consultations.report', $consultation) }}" class="mt-6 space-y-4">
                     @csrf @method('PATCH')
+                    <select name="rpl_id" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                        <option value="">Tidak dikaitkan dengan RPL</option>
+                        @foreach($individualRpls->where('student_id', $consultation->student_id) as $rpl)
+                            <option value="{{ $rpl->id }}" @selected(old('rpl_id', $consultation->rpl_id) == $rpl->id)>
+                                {{ $rpl->title }} - {{ $rpl->classRoom?->name ?? 'Tanpa kelas' }}
+                            </option>
+                        @endforeach
+                    </select>
                     <select name="case_category" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
                         <option value="">Pilih kategori kasus</option>
                         @foreach($caseCategories as $value => $label)
                             <option value="{{ $value }}" @selected(old('case_category', $consultation->case_category) === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
-                    <textarea name="result" rows="5" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm" placeholder="Hasil konseling">{{ old('result', $consultation->result) }}</textarea>
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div>
+                            <x-input-label for="duration_minutes_{{ $consultation->id }}" value="Durasi (menit)" />
+                            <x-text-input id="duration_minutes_{{ $consultation->id }}" name="duration_minutes" type="number" min="1" max="600" required value="{{ old('duration_minutes', $consultation->duration_minutes) }}" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm" />
+                        </div>
+                        <div>
+                            <x-input-label for="result_{{ $consultation->id }}" value="Hasil konseling" />
+                            <textarea id="result_{{ $consultation->id }}" name="result" rows="5" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm" placeholder="Hasil konseling">{{ old('result', $consultation->result) }}</textarea>
+                        </div>
+                    </div>
                     <textarea name="evaluation" rows="5" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm" placeholder="Evaluasi">{{ old('evaluation', $consultation->evaluation) }}</textarea>
                     <textarea name="follow_up" rows="4" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm" placeholder="Rencana tindak lanjut">{{ old('follow_up', $consultation->follow_up) }}</textarea>
                     <button class="w-full rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white">Simpan laporan</button>

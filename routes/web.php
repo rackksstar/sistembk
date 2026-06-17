@@ -17,18 +17,21 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\GuruRegistrationController;
 use App\Http\Controllers\Guru\ConsultationController as GuruConsultationController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
-use App\Http\Controllers\Guru\InstrumentQuestionController;
-use App\Http\Controllers\Guru\InstrumentResultController;
+use App\Http\Controllers\Guru\GroupConsultationReportController;
+use App\Http\Controllers\Guru\HasilInstrumenController;
+use App\Http\Controllers\Guru\PertanyaanInstrumenController;
 use App\Http\Controllers\Guru\MonthlyJournalController;
 use App\Http\Controllers\Guru\RplController;
 use App\Http\Controllers\Guru\ServiceFeedbackController as GuruServiceFeedbackController;
+use App\Http\Controllers\Guru\ServiceStatisticController;
 use App\Http\Controllers\Guru\SociometryMapController;
+use App\Http\Controllers\Guru\StudentHistoryController;
 use App\Http\Controllers\Guru\StudentController as GuruStudentController;
 use App\Http\Controllers\Siswa\ConsultationRequestController;
 use App\Http\Controllers\Siswa\CareerInfoController as SiswaCareerInfoController;
 use App\Http\Controllers\Siswa\ClassJoinController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
-use App\Http\Controllers\Siswa\InstrumentSubmissionController;
+use App\Http\Controllers\Siswa\PengisianInstrumenController;
 use App\Http\Controllers\Siswa\ServiceFeedbackController;
 use App\Http\Controllers\Siswa\SociometryController;
 use Illuminate\Support\Facades\Auth;
@@ -81,13 +84,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/dashboard', [GuruDashboardController::class, 'index'])->name('dashboard');
         Route::post('/students/import', [GuruStudentController::class, 'import'])->name('students.import');
         Route::resource('students', GuruStudentController::class)->except(['create', 'show', 'edit']);
-        Route::resource('instrument-questions', InstrumentQuestionController::class)
+        Route::resource('instrument-questions', PertanyaanInstrumenController::class)
             ->parameters(['instrument-questions' => 'question'])
             ->except(['create', 'show', 'edit']);
-        Route::get('/instrument-results', [InstrumentResultController::class, 'index'])->name('instrument-results.index');
+        Route::get('/instrument-results', [HasilInstrumenController::class, 'index'])->name('instrument-results.index');
         Route::get('/sociometry', [SociometryMapController::class, 'index'])->name('sociometry.index');
+        Route::get('/sociometry/{student}', [SociometryMapController::class, 'show'])->name('sociometry.show');
+        Route::get('/sociometry/export', [SociometryMapController::class, 'exportClass'])->name('sociometry.export');
+        Route::get('/sociometry/{student}/export', [SociometryMapController::class, 'exportStudent'])->name('sociometry.export.student');
+        // Kelola instrumen sosiometri
+        Route::get('/sociometry/manage', [\App\Http\Controllers\Guru\SosiometryInstrumentController::class, 'index'])->name('sociometry.manage');
+        Route::post('/sociometry/manage/toggle', [\App\Http\Controllers\Guru\SosiometryInstrumentController::class, 'toggle'])->name('sociometry.manage.toggle');
         Route::resource('rpls', RplController::class)->except(['create', 'show', 'edit']);
         Route::get('/rpls/{rpl}/print', [RplController::class, 'print'])->name('rpls.print');
+        Route::resource('group-reports', GroupConsultationReportController::class)->parameters(['group-reports' => 'groupReport'])->except(['create', 'show', 'edit']);
+        Route::get('/group-reports/{groupReport}/print', [GroupConsultationReportController::class, 'print'])->name('group-reports.print');
+        Route::get('/student-histories', [StudentHistoryController::class, 'index'])->name('student-histories.index');
+        Route::get('/service-statistics', [ServiceStatisticController::class, 'index'])->name('service-statistics.index');
         Route::resource('journals', MonthlyJournalController::class)->parameters(['journals' => 'journal'])->except(['create', 'show', 'edit']);
         Route::get('/journals/{journal}/print', [MonthlyJournalController::class, 'print'])->name('journals.print');
         Route::get('/feedback', [GuruServiceFeedbackController::class, 'index'])->name('feedback.index');
@@ -100,8 +113,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('siswa')->name('siswa.')->middleware('role:siswa')->group(function () {
         Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/instruments', [InstrumentSubmissionController::class, 'index'])->name('instruments.index');
-        Route::post('/instruments', [InstrumentSubmissionController::class, 'store'])->name('instruments.store');
+        Route::get('/instruments', [PengisianInstrumenController::class, 'index'])->name('instruments.index');
+        Route::post('/instruments', [PengisianInstrumenController::class, 'store'])->name('instruments.store');
         Route::get('/sociometry', [SociometryController::class, 'index'])->name('sociometry.index');
         Route::post('/sociometry', [SociometryController::class, 'store'])->name('sociometry.store');
         Route::post('/consultation-requests', [ConsultationRequestController::class, 'store'])->name('consultation-requests.store');

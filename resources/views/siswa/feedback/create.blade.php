@@ -3,7 +3,7 @@
 @section('content')
 <div class="space-y-6">
     <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <x-section-title title="Feedback Layanan BK" description="Kirim penilaian dan masukan setelah menerima layanan." />
+        <x-section-title title="Kuesioner Pasca-Konseling" description="Isi penilaian kepuasan layanan BK setelah sesi selesai." />
         <x-alert class="mt-5" type="success" :message="session('success')" />
         @if($errors->any())
             <x-alert class="mt-5" type="error" message="Periksa kembali feedback Anda." />

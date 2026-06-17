@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\HasilInstrumen;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -76,7 +77,7 @@ class User extends Authenticatable
 
     public function instrumentSubmissions(): HasMany
     {
-        return $this->hasMany(InstrumentSubmission::class, 'student_id');
+        return $this->hasMany(HasilInstrumen::class, 'student_id');
     }
 
     public function sociometryResponses(): HasMany

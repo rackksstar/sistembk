@@ -31,6 +31,7 @@
                     <div class="rounded-2xl bg-blue-50 px-4 py-3 text-right">
                         <p class="text-xs font-semibold text-blue-700">Skor</p>
                         <p class="text-2xl font-bold text-blue-900">{{ $submission->total_score }}</p>
+                        <p class="mt-1 text-sm text-slate-600">{{ number_format($submission->percentage ?? 0, 2) }}%</p>
                     </div>
                 </div>
                 <div class="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-4">

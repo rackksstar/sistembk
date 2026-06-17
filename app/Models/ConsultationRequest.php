@@ -34,11 +34,13 @@ class ConsultationRequest extends Model
     protected $fillable = [
         'student_id',
         'counselor_id',
+        'rpl_id',
         'subject',
         'case_category',
         'preferred_time',
         'consultation_date',
         'consultation_time',
+        'duration_minutes',
         'details',
         'status',
         'scheduled_at',
@@ -53,6 +55,7 @@ class ConsultationRequest extends Model
         return [
             'consultation_date' => 'date',
             'scheduled_at' => 'datetime',
+            'duration_minutes' => 'integer',
         ];
     }
 
@@ -64,6 +67,11 @@ class ConsultationRequest extends Model
     public function counselor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'counselor_id');
+    }
+
+    public function rpl(): BelongsTo
+    {
+        return $this->belongsTo(Rpl::class);
     }
 
     public function caseCategoryLabel(): string

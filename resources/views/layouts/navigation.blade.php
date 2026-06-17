@@ -15,6 +15,13 @@
 
                 <!-- Menu -->
                 @auth
+                @php
+                    $showStudentFeedbackMenu = auth()->user()->isRole(\App\Models\User::ROLE_SISWA) && 
+                        \App\Models\ConsultationRequest::query()
+                            ->where('student_id', auth()->id())
+                            ->where('status', \App\Models\ConsultationRequest::STATUS_SELESAI)
+                            ->exists();
+                @endphp
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
 
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
@@ -26,12 +33,17 @@
                         <x-nav-link :href="route('guru.instrument-results.index')" :active="request()->routeIs('guru.instrument-results.*')">Analisis</x-nav-link>
                         <x-nav-link :href="route('guru.consultations.index')" :active="request()->routeIs('guru.consultations.*')">Konseling</x-nav-link>
                         <x-nav-link :href="route('guru.rpls.index')" :active="request()->routeIs('guru.rpls.*')">RPL</x-nav-link>
+                        <x-nav-link :href="route('guru.group-reports.index')" :active="request()->routeIs('guru.group-reports.*')">Laporan Kelompok</x-nav-link>
+                        <x-nav-link :href="route('guru.student-histories.index')" :active="request()->routeIs('guru.student-histories.*')">Riwayat Siswa</x-nav-link>
+                        <x-nav-link :href="route('guru.service-statistics.index')" :active="request()->routeIs('guru.service-statistics.*')">Statistik</x-nav-link>
                         <x-nav-link :href="route('guru.journals.index')" :active="request()->routeIs('guru.journals.*')">Jurnal</x-nav-link>
                         <x-nav-link :href="route('guru.feedback.index')" :active="request()->routeIs('guru.feedback.*')">Feedback</x-nav-link>
                     @elseif(auth()->user()->isRole(\App\Models\User::ROLE_SISWA))
                         <x-nav-link :href="route('siswa.instruments.index')" :active="request()->routeIs('siswa.instruments.*')">Instrumen</x-nav-link>
                         <x-nav-link :href="route('siswa.sociometry.index')" :active="request()->routeIs('siswa.sociometry.*')">Sosiometri</x-nav-link>
-                        <x-nav-link :href="route('siswa.feedback.create')" :active="request()->routeIs('siswa.feedback.*')">Feedback</x-nav-link>
+                        @if($showStudentFeedbackMenu)
+                            <x-nav-link :href="route('siswa.feedback.create')" :active="request()->routeIs('siswa.feedback.*')">Feedback</x-nav-link>
+                        @endif
                     @endif
 
                 </div>
@@ -117,17 +129,29 @@
                 Dashboard
             </x-responsive-nav-link>
 
-            @if(auth()->user()->isRole(\App\Models\User::ROLE_GURU))
+            @php
+            $showStudentFeedbackMenu = auth()->user()->isRole(\App\Models\User::ROLE_SISWA) && 
+                \App\Models\ConsultationRequest::query()
+                    ->where('student_id', auth()->id())
+                    ->where('status', \App\Models\ConsultationRequest::STATUS_SELESAI)
+                    ->exists();
+        @endphp
+        @if(auth()->user()->isRole(\App\Models\User::ROLE_GURU))
                 <x-responsive-nav-link :href="route('guru.instrument-questions.index')">Instrumen</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('guru.instrument-results.index')">Analisis</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('guru.consultations.index')">Konseling</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('guru.rpls.index')">RPL</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('guru.group-reports.index')">Laporan Kelompok</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('guru.student-histories.index')">Riwayat Siswa</x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('guru.service-statistics.index')">Statistik</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('guru.journals.index')">Jurnal</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('guru.feedback.index')">Feedback</x-responsive-nav-link>
             @elseif(auth()->user()->isRole(\App\Models\User::ROLE_SISWA))
                 <x-responsive-nav-link :href="route('siswa.instruments.index')">Instrumen</x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('siswa.sociometry.index')">Sosiometri</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('siswa.feedback.create')">Feedback</x-responsive-nav-link>
+                @if($showStudentFeedbackMenu)
+                    <x-responsive-nav-link :href="route('siswa.feedback.create')">Feedback</x-responsive-nav-link>
+                @endif
             @endif
 
         </div>

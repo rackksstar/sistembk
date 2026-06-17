@@ -24,8 +24,10 @@
         <tr><td>Kelas</td><td>{{ $consultation->student?->classModel?->name ?? '-' }}</td></tr>
         <tr><td>Sekolah</td><td>{{ $consultation->student?->schoolModel?->name ?? $consultation->student?->school ?? '-' }}</td></tr>
         <tr><td>Guru BK</td><td>{{ $consultation->counselor?->name }}</td></tr>
+        <tr><td>RPL Terkait</td><td>{{ $consultation->rpl?->title ?? '-' }}</td></tr>
         <tr><td>Topik</td><td>{{ $consultation->subject }}</td></tr>
         <tr><td>Kategori Kasus</td><td>{{ $consultation->caseCategoryLabel() }}</td></tr>
+        <tr><td>Durasi</td><td>{{ $consultation->duration_minutes ? $consultation->duration_minutes.' menit' : '-' }}</td></tr>
         <tr><td>Jadwal</td><td>{{ $consultation->consultation_date?->format('d M Y') }} {{ $consultation->consultation_time ? substr($consultation->consultation_time, 0, 5) : '' }}</td></tr>
     </table>
 

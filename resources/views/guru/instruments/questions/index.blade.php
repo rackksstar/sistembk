@@ -4,7 +4,7 @@
 <div class="space-y-6" x-data="{ createOpen: {{ $errors->any() ? 'true' : 'false' }}, editOpen: null }">
     <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <x-section-title title="Soal Instrumen Asesmen" description="Kelola soal Minat Bakat, Gaya Belajar, dan Masalah." />
+            <x-section-title title="Soal Instrumen Asesmen" description="Kelola soal Minat Bakat, Karier, Akademik, Kepribadian, Sosiometri, dan Angket Masalah." />
             <button type="button" x-on:click="createOpen = true" class="w-fit rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">Tambah soal</button>
         </div>
 

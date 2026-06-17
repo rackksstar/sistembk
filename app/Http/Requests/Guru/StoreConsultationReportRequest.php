@@ -17,7 +17,9 @@ class StoreConsultationReportRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'rpl_id' => ['nullable', 'exists:rpls,id'],
             'case_category' => ['required', Rule::in(array_keys(ConsultationRequest::CASE_CATEGORIES))],
+            'duration_minutes' => ['required', 'integer', 'min:1', 'max:600'],
             'result' => ['required', 'string', 'max:3000'],
             'evaluation' => ['required', 'string', 'max:3000'],
             'follow_up' => ['nullable', 'string', 'max:3000'],
