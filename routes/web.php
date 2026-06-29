@@ -69,6 +69,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/consultations', [AdminConsultationController::class, 'index'])->name('consultations.index');
         Route::get('/rapor', [AdminRaporController::class, 'index'])->name('rapor.index');
         Route::get('/rapor/{rapor}', [AdminRaporController::class, 'show'])->name('rapor.show');
+        Route::get('/rapor-cetak/{rapor}/pdf', [AdminRaporController::class, 'exportPdf'])->name('rapor.pdf');
 
         // Phase 2 — Data Master (tambahan di bawah route existing)
         Route::resource('sekolah', SekolahController::class)->except(['create', 'show', 'edit']);
@@ -123,6 +124,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('tryout', [\App\Http\Controllers\Guru\TryoutController::class, 'index'])->name('tryout.index');
         Route::get('tryout/buat', [\App\Http\Controllers\Guru\TryoutController::class, 'create'])->name('tryout.create');
         Route::post('tryout', [\App\Http\Controllers\Guru\TryoutController::class, 'store'])->name('tryout.store');
+        Route::get('tryout/{tryout}/edit', [\App\Http\Controllers\Guru\TryoutController::class, 'edit'])->name('tryout.edit');
+        Route::put('tryout/{tryout}', [\App\Http\Controllers\Guru\TryoutController::class, 'update'])->name('tryout.update');
+        Route::delete('tryout/{tryout}', [\App\Http\Controllers\Guru\TryoutController::class, 'destroy'])->name('tryout.destroy');
         Route::get('tryout/{tryout}', [\App\Http\Controllers\Guru\TryoutController::class, 'show'])->name('tryout.show');
     });
 

@@ -16,7 +16,7 @@ Guru BK membuat tryout, menugaskan kelas, memilih soal dari `master_questions` (
 
 | Role | Route name | Keterangan |
 | --- | --- | --- |
-| Guru | `guru.tryout.*` | Index, buat, simpan, hasil |
+| Guru | `guru.tryout.*` | Index, buat, edit, simpan, hasil, hapus (tanpa jawaban) |
 | Siswa | `siswa.tryout.*` | Daftar aktif, kerjakan, submit |
 
 ## File utama

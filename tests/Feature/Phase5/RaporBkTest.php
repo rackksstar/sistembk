@@ -155,6 +155,15 @@ class RaporBkTest extends TestCase
             ->assertViewIs('admin.rapor.show');
     }
 
+    public function test_admin_dapat_unduh_pdf_rapor(): void
+    {
+        $rapor = RaporBk::factory()->create();
+
+        $this->actingAs($this->buatAdmin())
+            ->get(route('admin.rapor.pdf', $rapor))
+            ->assertOk();
+    }
+
     public function test_siswa_tidak_bisa_akses_modul_rapor_guru(): void
     {
         $student = $this->buatStudent();
