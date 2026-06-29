@@ -3,7 +3,7 @@
 **Tim:** Core (Anda)  
 **Acuan roadmap:** Phase 1–9 (`docs/PROGRESS.md`)  
 **Referensi lengkap:** `docs/FEATURE_BREAKDOWN.md` (semua modul + tim lain)  
-**Terakhir diperbarui:** 2026-06-03 (branch `kela`)
+**Terakhir diperbarui:** 2026-06-29 (audit tombol aksi blade core)
 
 ---
 
@@ -346,6 +346,7 @@ Hari ini:
 
 | Tanggal    | Perubahan                                                                          |
 | ---------- | ---------------------------------------------------------------------------------- |
+| 2026-06-29 | Cross-check mendalam blade core: filter status admin konseling, empty-state CTA, aksi dashboard guru |
 | 2026-06-03 | Phase 5 Rapor BK ✅ di `kela`; modul tim tidak diubah |
 | 2026-06-03 | Phase 4 ✅ di `kela`; tracker & PROGRESS disinkronkan |
 | 2026-05-18 | Buat tracker core team; Phase 1–2 ✅; Phase 3 = next; +1 Postingan, +2 filter kelas |

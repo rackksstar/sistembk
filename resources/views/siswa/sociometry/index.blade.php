@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <x-section-title title="Sosiometri" description="Pilih teman berdasarkan relasi sosial yang diminta. Data ini membantu Guru BK melihat pola hubungan siswa." />
         <x-alert class="mt-5" type="success" :message="session('success')" />
         @if($errors->any())
@@ -11,7 +11,7 @@
     </section>
 
     <section class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <form method="POST" action="{{ route('siswa.sociometry.store') }}" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <form method="POST" action="{{ route('siswa.sociometry.store') }}" class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
             @csrf
             <div class="grid gap-5">
                 <div class="space-y-2">
@@ -38,23 +38,23 @@
 
                 <div class="space-y-2">
                     <x-input-label for="reason" value="Alasan singkat" />
-                    <textarea id="reason" name="reason" rows="5" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100">{{ old('reason') }}</textarea>
+                    <textarea id="reason" name="reason" rows="5" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">{{ old('reason') }}</textarea>
                 </div>
 
                 <x-primary-button class="rounded-full px-6 py-3">Simpan Pilihan</x-primary-button>
             </div>
         </form>
 
-        <aside class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <aside class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
             <x-section-title title="Pilihan Terakhir" description="Pilihan baru akan menggantikan pilihan sebelumnya." />
             <div class="mt-5 space-y-3">
                 @forelse($responses as $response)
-                    <div class="rounded-2xl bg-slate-50 p-4">
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4">
                         <p class="text-xs font-bold uppercase tracking-[0.16em] text-blue-600">{{ \App\Models\SociometryResponse::TYPES[$response->relation_type] ?? $response->relation_type }}</p>
-                        <p class="mt-2 font-semibold text-slate-950">{{ $response->chosenStudent?->name }}</p>
+                        <p class="mt-2 font-semibold text-slate-950 dark:text-white">{{ $response->chosenStudent?->name }}</p>
                     </div>
                 @empty
-                    <p class="text-sm text-slate-500">Belum ada pilihan sosiometri.</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Belum ada pilihan sosiometri.</p>
                 @endforelse
             </div>
         </aside>

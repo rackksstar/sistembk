@@ -11,6 +11,7 @@ use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class TryoutController extends Controller
@@ -33,38 +34,14 @@ class TryoutController extends Controller
 
     public function create(): View
     {
-        $kelasQuery = Kelas::query()->orderBy('nama');
-
-        $user = auth()->user()->loadMissing('guruBkProfile');
-
-        if ($sekolahId = $user->guruBkProfile?->sekolah_id) {
-            $kelasQuery->where('sekolah_id', $sekolahId);
-        }
-
-        $kelas = $kelasQuery->get();
-        $soal = MasterQuestion::query()
-            ->where('kategori', MasterQuestion::KATEGORI_TRYOUT)
-            ->where('is_active', true)
-            ->orderBy('id')
-            ->get();
+        [$kelas, $soal] = $this->formOptions();
 
         return view('guru.tryout.create', compact('kelas', 'soal'));
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'judul' => ['required', 'string', 'max:255'],
-            'deskripsi' => ['nullable', 'string', 'max:2000'],
-            'durasi_menit' => ['required', 'integer', 'min:5', 'max:180'],
-            'mulai_at' => ['required', 'date'],
-            'selesai_at' => ['required', 'date', 'after:mulai_at'],
-            'status' => ['required', Rule::in(array_keys(TryOut::STATUSES))],
-            'kelas_ids' => ['required', 'array', 'min:1'],
-            'kelas_ids.*' => ['integer', 'exists:kelas,id'],
-            'soal_ids' => ['required', 'array', 'min:1'],
-            'soal_ids.*' => ['integer', 'exists:master_questions,id'],
-        ]);
+        $validated = $this->validateTryout($request);
 
         $tryout = $this->tryOutService->createForCounselor(
             auth()->id(),
@@ -82,7 +59,7 @@ class TryoutController extends Controller
 
     public function show(TryOut $tryout): View
     {
-        abort_unless($tryout->counselor_id === auth()->id(), 403);
+        $this->authorizeTryout($tryout);
 
         $tryout->load([
             'kelas',
@@ -92,5 +69,115 @@ class TryoutController extends Controller
         $rataKeseluruhan = round($tryout->details->avg('rata_skor') ?? 0, 1);
 
         return view('guru.tryout.show', compact('tryout', 'rataKeseluruhan'));
+    }
+
+    public function edit(TryOut $tryout): View
+    {
+        $this->authorizeTryout($tryout);
+
+        $tryout->load('kelas');
+        [$kelas, $soal] = $this->formOptions();
+        $locked = $tryout->hasSubmissions();
+
+        return view('guru.tryout.edit', compact('tryout', 'kelas', 'soal', 'locked'));
+    }
+
+    public function update(Request $request, TryOut $tryout): RedirectResponse
+    {
+        $this->authorizeTryout($tryout);
+
+        $validated = $this->validateTryout($request, $tryout);
+
+        $this->tryOutService->updateForCounselor(
+            $tryout,
+            $validated,
+            $validated['kelas_ids'] ?? [],
+            $validated['soal_ids'] ?? []
+        );
+
+        ActivityLogger::log('tryout.updated', $tryout, ['judul' => $validated['judul']]);
+
+        return redirect()
+            ->route('guru.tryout.index')
+            ->with('success', 'Tryout berhasil diperbarui.');
+    }
+
+    public function destroy(TryOut $tryout): RedirectResponse
+    {
+        $this->authorizeTryout($tryout);
+
+        try {
+            ActivityLogger::log('tryout.deleted', $tryout, ['judul' => $tryout->judul]);
+            $this->tryOutService->deleteForCounselor($tryout);
+        } catch (\RuntimeException $exception) {
+            throw ValidationException::withMessages([
+                'tryout' => $exception->getMessage(),
+            ]);
+        }
+
+        return redirect()
+            ->route('guru.tryout.index')
+            ->with('success', 'Tryout berhasil dihapus.');
+    }
+
+    private function authorizeTryout(TryOut $tryout): void
+    {
+        abort_unless($tryout->counselor_id === auth()->id(), 403);
+    }
+
+    /**
+     * @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection}
+     */
+    private function formOptions(): array
+    {
+        $kelasQuery = Kelas::query()->orderBy('nama');
+
+        $user = auth()->user()->loadMissing('guruBkProfile');
+
+        if ($sekolahId = $user->guruBkProfile?->sekolah_id) {
+            $kelasQuery->where('sekolah_id', $sekolahId);
+        }
+
+        $kelas = $kelasQuery->get();
+        $soal = MasterQuestion::query()
+            ->where('kategori', MasterQuestion::KATEGORI_TRYOUT)
+            ->where('is_active', true)
+            ->orderBy('id')
+            ->get();
+
+        return [$kelas, $soal];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function validateTryout(Request $request, ?TryOut $tryout = null): array
+    {
+        $locked = $tryout?->hasSubmissions() ?? false;
+
+        $rules = [
+            'judul' => ['required', 'string', 'max:255'],
+            'deskripsi' => ['nullable', 'string', 'max:2000'],
+            'durasi_menit' => ['required', 'integer', 'min:5', 'max:180'],
+            'mulai_at' => ['required', 'date'],
+            'selesai_at' => ['required', 'date', 'after:mulai_at'],
+            'status' => ['required', Rule::in(array_keys(TryOut::STATUSES))],
+        ];
+
+        if (! $locked) {
+            $rules['kelas_ids'] = ['required', 'array', 'min:1'];
+            $rules['kelas_ids.*'] = ['integer', 'exists:kelas,id'];
+            $rules['soal_ids'] = ['required', 'array', 'min:1'];
+            $rules['soal_ids.*'] = ['integer', 'exists:master_questions,id'];
+        }
+
+        $validated = $request->validate($rules);
+
+        if ($locked) {
+            $validated['kelas_ids'] = $tryout->kelas->pluck('id')->all();
+            $validated['soal_ids'] = $tryout->soal_ids ?? [];
+        }
+
+        return $validated;
     }
 }

@@ -3,7 +3,7 @@
 > **Tracker detail:** `[docs/CORE_TEAM_TRACKER.md](./CORE_TEAM_TRACKER.md)`  
 > **Semua fitur + tim lain:** `[docs/FEATURE_BREAKDOWN.md](./FEATURE_BREAKDOWN.md)`
 
-**Terakhir diperbarui:** 2026-06-03 (branch `kela`)
+**Terakhir diperbarui:** 2026-06-29 (perbaikan navigasi sidebar)
 
 ---
 
@@ -35,7 +35,7 @@
 
 ## UX: menu grup
 
-Sidebar admin, guru, dan siswa memakai grup **Layanan BK (Core)** vs **Modul Tim Lain** — konfigurasi di `config/navigation.php`.
+Navigasi memakai **sidebar vertikal** (kiri) + topbar judul halaman — konfigurasi di `config/navigation.php`.
 
 ---
 
@@ -50,6 +50,7 @@ Sidebar admin, guru, dan siswa memakai grup **Layanan BK (Core)** vs **Modul Tim
 
 | Tanggal    | Update                                                 |
 | ---------- | ------------------------------------------------------ |
+| 2026-06-29 | Fix kontras dark: ui-hero, action-card, dashboard siswa, opacity typo, sidebar logout |
 | 2026-06-03 | Phase 6–9 + menu grup + test Phase 6/8/9 di `kela` |
 | 2026-06-03 | Phase 7 postingan artikel selesai di branch `kela` |
 | 2026-06-03 | Phase 5 rapor BK selesai di branch `kela` |

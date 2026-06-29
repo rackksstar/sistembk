@@ -20,9 +20,9 @@
         <x-text-input name="classical_services" type="number" min="0" required value="{{ old('classical_services', $journal?->classical_services ?? 0) }}" placeholder="Jumlah klasikal" />
     </div>
 
-    <textarea name="summary" rows="5" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm" placeholder="Ringkasan kegiatan">{{ old('summary', $journal?->summary) }}</textarea>
-    <textarea name="evaluation" rows="4" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm" placeholder="Evaluasi">{{ old('evaluation', $journal?->evaluation) }}</textarea>
-    <textarea name="follow_up" rows="4" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm" placeholder="Tindak lanjut">{{ old('follow_up', $journal?->follow_up) }}</textarea>
+    <textarea name="summary" rows="5" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm" placeholder="Ringkasan kegiatan">{{ old('summary', $journal?->summary) }}</textarea>
+    <textarea name="evaluation" rows="4" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm" placeholder="Evaluasi">{{ old('evaluation', $journal?->evaluation) }}</textarea>
+    <textarea name="follow_up" rows="4" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm" placeholder="Tindak lanjut">{{ old('follow_up', $journal?->follow_up) }}</textarea>
 
     <x-primary-button>{{ $submit }}</x-primary-button>
 </div>

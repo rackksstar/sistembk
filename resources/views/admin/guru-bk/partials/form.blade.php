@@ -3,26 +3,26 @@
 @endphp
 
 <div class="space-y-2">
-    <label class="block text-sm font-semibold text-slate-900" for="name-{{ $guruBk?->id ?? 'create' }}">Nama</label>
-    <input id="name-{{ $guruBk?->id ?? 'create' }}" name="name" value="{{ old('name', $user?->name) }}" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+    <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="name-{{ $guruBk?->id ?? 'create' }}">Nama</label>
+    <input id="name-{{ $guruBk?->id ?? 'create' }}" name="name" value="{{ old('name', $user?->name) }}" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" />
     <x-input-error :messages="$errors->get('name')" class="text-sm text-red-600" />
 </div>
 
 <div class="grid gap-4 sm:grid-cols-2">
     <div class="space-y-2">
-        <label class="block text-sm font-semibold text-slate-900" for="password-{{ $guruBk?->id ?? 'create' }}">Password</label>
-        <input id="password-{{ $guruBk?->id ?? 'create' }}" name="password" type="password" @if(! $guruBk) required @endif class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="{{ $guruBk ? 'Kosongkan jika tetap' : '' }}" />
+        <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="password-{{ $guruBk?->id ?? 'create' }}">Password</label>
+        <input id="password-{{ $guruBk?->id ?? 'create' }}" name="password" type="password" @if(! $guruBk) required @endif class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="{{ $guruBk ? 'Kosongkan jika tetap' : '' }}" />
         <x-input-error :messages="$errors->get('password')" class="text-sm text-red-600" />
     </div>
     <div class="space-y-2">
-        <label class="block text-sm font-semibold text-slate-900" for="password-confirm-{{ $guruBk?->id ?? 'create' }}">Konfirmasi</label>
-        <input id="password-confirm-{{ $guruBk?->id ?? 'create' }}" name="password_confirmation" type="password" @if(! $guruBk) required @endif class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+        <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="password-confirm-{{ $guruBk?->id ?? 'create' }}">Konfirmasi</label>
+        <input id="password-confirm-{{ $guruBk?->id ?? 'create' }}" name="password_confirmation" type="password" @if(! $guruBk) required @endif class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" />
     </div>
 </div>
 
 <div class="space-y-2">
-    <label class="block text-sm font-semibold text-slate-900" for="status-{{ $guruBk?->id ?? 'create' }}">Status Akun</label>
-    <select id="status-{{ $guruBk?->id ?? 'create' }}" name="status" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100">
+    <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="status-{{ $guruBk?->id ?? 'create' }}">Status Akun</label>
+    <select id="status-{{ $guruBk?->id ?? 'create' }}" name="status" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
         @foreach($statuses as $item)
             <option value="{{ $item }}" @selected(old('status', $user?->status ?? \App\Models\User::STATUS_APPROVED) === $item)>{{ ucfirst($item) }}</option>
         @endforeach
@@ -31,8 +31,8 @@
 </div>
 
 <div class="space-y-2">
-    <label class="block text-sm font-semibold text-slate-900" for="sekolah-{{ $guruBk?->id ?? 'create' }}">Sekolah</label>
-    <select id="sekolah-{{ $guruBk?->id ?? 'create' }}" name="sekolah_id" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100">
+    <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="sekolah-{{ $guruBk?->id ?? 'create' }}">Sekolah</label>
+    <select id="sekolah-{{ $guruBk?->id ?? 'create' }}" name="sekolah_id" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
         <option value="">Pilih sekolah</option>
         @foreach($sekolahs as $s)
             <option value="{{ $s->id }}" @selected((string) old('sekolah_id', $guruBk?->sekolah_id) === (string) $s->id)>{{ $s->nama }}{{ $s->is_mou ? ' - MOU' : '' }}</option>
@@ -43,28 +43,28 @@
 
 <div class="grid gap-4 sm:grid-cols-2">
     <div class="space-y-2">
-        <label class="block text-sm font-semibold text-slate-900" for="no-hp-{{ $guruBk?->id ?? 'create' }}">No HP / Username</label>
-        <input id="no-hp-{{ $guruBk?->id ?? 'create' }}" name="no_hp" value="{{ old('no_hp', $guruBk?->no_hp) }}" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+        <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="no-hp-{{ $guruBk?->id ?? 'create' }}">No HP / Username</label>
+        <input id="no-hp-{{ $guruBk?->id ?? 'create' }}" name="no_hp" value="{{ old('no_hp', $guruBk?->no_hp) }}" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" />
         <x-input-error :messages="$errors->get('no_hp')" class="text-sm text-red-600" />
     </div>
     <div class="space-y-2">
-        <label class="block text-sm font-semibold text-slate-900" for="nip-{{ $guruBk?->id ?? 'create' }}">NIP</label>
-        <input id="nip-{{ $guruBk?->id ?? 'create' }}" name="nip" value="{{ old('nip', $guruBk?->nip) }}" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+        <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="nip-{{ $guruBk?->id ?? 'create' }}">NIP</label>
+        <input id="nip-{{ $guruBk?->id ?? 'create' }}" name="nip" value="{{ old('nip', $guruBk?->nip) }}" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" />
         <x-input-error :messages="$errors->get('nip')" class="text-sm text-red-600" />
     </div>
 </div>
 
 <div class="grid gap-4 sm:grid-cols-2">
     <div class="space-y-2">
-        <label class="block text-sm font-semibold text-slate-900" for="jabatan-{{ $guruBk?->id ?? 'create' }}">Jabatan</label>
-        <input id="jabatan-{{ $guruBk?->id ?? 'create' }}" name="jabatan" value="{{ old('jabatan', $guruBk?->jabatan) }}" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+        <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="jabatan-{{ $guruBk?->id ?? 'create' }}">Jabatan</label>
+        <input id="jabatan-{{ $guruBk?->id ?? 'create' }}" name="jabatan" value="{{ old('jabatan', $guruBk?->jabatan) }}" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" />
         <x-input-error :messages="$errors->get('jabatan')" class="text-sm text-red-600" />
     </div>
 </div>
 
 <div class="space-y-2">
-    <label class="block text-sm font-semibold text-slate-900" for="bidang-{{ $guruBk?->id ?? 'create' }}">Bidang Studi</label>
-    <input id="bidang-{{ $guruBk?->id ?? 'create' }}" name="bidang_studi" value="{{ old('bidang_studi', $guruBk?->bidang_studi) }}" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+    <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="bidang-{{ $guruBk?->id ?? 'create' }}">Bidang Studi</label>
+    <input id="bidang-{{ $guruBk?->id ?? 'create' }}" name="bidang_studi" value="{{ old('bidang_studi', $guruBk?->bidang_studi) }}" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" />
     <x-input-error :messages="$errors->get('bidang_studi')" class="text-sm text-red-600" />
 </div>
 

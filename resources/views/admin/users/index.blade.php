@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6" x-data="{ createOpen: {{ $errors->any() ? 'true' : 'false' }}, editOpen: null }">
-    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title
                 title="Manajemen Pengguna"
@@ -15,14 +15,14 @@
         <x-alert class="mt-5" type="error" :message="session('error')" />
 
         <form method="GET" action="{{ route('admin.users.index') }}" class="mt-6 grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_180px_auto]">
-            <input name="search" value="{{ $search }}" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="Cari nama atau email..." />
-            <select name="role" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100">
+            <input name="search" value="{{ $search }}" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Cari nama atau email..." />
+            <select name="role" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
                 <option value="">Semua role</option>
                 @foreach($roles as $item)
                     <option value="{{ $item }}" @selected($role === $item)>{{ ucfirst($item) }}</option>
                 @endforeach
             </select>
-            <select name="status" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100">
+            <select name="status" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
                 <option value="">Semua status</option>
                 @foreach($statuses as $item)
                     <option value="{{ $item }}" @selected($status === $item)>{{ ucfirst($item) }}</option>
@@ -31,10 +31,10 @@
             <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">Terapkan</button>
         </form>
 
-        <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200">
+        <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200 text-sm">
-                    <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+                    <thead class="bg-slate-50 dark:bg-slate-800/60 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                         <tr>
                             <th class="px-5 py-4">Nama</th>
                             <th class="px-5 py-4">Email</th>
@@ -43,16 +43,16 @@
                             <th class="px-5 py-4 text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100 bg-white">
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                         @forelse($users as $managedUser)
                             <tr>
-                                <td class="px-5 py-4 font-semibold text-slate-900">{{ $managedUser->name }}</td>
-                                <td class="px-5 py-4 text-slate-600">{{ $managedUser->email }}</td>
-                                <td class="px-5 py-4 capitalize text-slate-700">{{ $managedUser->role }}</td>
+                                <td class="px-5 py-4 font-semibold text-slate-900 dark:text-slate-100">{{ $managedUser->name }}</td>
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $managedUser->email }}</td>
+                                <td class="px-5 py-4 capitalize text-slate-700 dark:text-slate-300">{{ $managedUser->role }}</td>
                                 <td class="px-5 py-4"><x-status-badge :status="$managedUser->status" /></td>
                                 <td class="px-5 py-4">
                                     <div class="flex justify-end gap-2">
-                                        <button type="button" x-on:click="editOpen = {{ $managedUser->id }}" class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50">Edit</button>
+                                        <button type="button" x-on:click="editOpen = {{ $managedUser->id }}" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:hover:bg-slate-800/60">Edit</button>
                                         <form method="POST" action="{{ route('admin.users.destroy', $managedUser) }}" onsubmit="return confirm('Hapus akun ini?')">
                                             @csrf
                                             @method('DELETE')
@@ -79,10 +79,10 @@
     </section>
 
     <div x-show="createOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-        <div x-on:click.outside="createOpen = false" class="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl">
+        <div x-on:click.outside="createOpen = false" class="w-full max-w-xl rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
             <div class="flex items-start justify-between gap-4">
                 <x-section-title title="Tambah Pengguna" description="Buat akun baru untuk admin, Guru BK, atau siswa." />
-                <button type="button" x-on:click="createOpen = false" class="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600">x</button>
+                <button type="button" x-on:click="createOpen = false" class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-600 dark:text-slate-400">x</button>
             </div>
 
             <form method="POST" action="{{ route('admin.users.store') }}" class="mt-6 space-y-4">
@@ -94,10 +94,10 @@
 
     @foreach($users as $managedUser)
         <div x-show="editOpen === {{ $managedUser->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="editOpen = null" class="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl">
+            <div x-on:click.outside="editOpen = null" class="w-full max-w-xl rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <div class="flex items-start justify-between gap-4">
                     <x-section-title title="Edit Pengguna" description="Perbarui data akun pengguna." />
-                    <button type="button" x-on:click="editOpen = null" class="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600">x</button>
+                    <button type="button" x-on:click="editOpen = null" class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-600 dark:text-slate-400">x</button>
                 </div>
 
                 <form method="POST" action="{{ route('admin.users.update', $managedUser) }}" class="mt-6 space-y-4">
