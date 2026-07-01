@@ -31,6 +31,24 @@
 
     <section class="grid gap-4 lg:grid-cols-2">
         <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <div class="flex items-end justify-between gap-4">
+                <x-section-title title="Jadwal minggu ini" description="Sesi konseling yang sudah dijadwalkan untuk Anda." />
+                <a href="{{ route('guru.consultations.index') }}" class="text-sm font-semibold text-blue-600 hover:text-blue-500">Kalender lengkap</a>
+            </div>
+            <div class="mt-5 space-y-3">
+                @forelse($upcomingWeek as $slot)
+                    <article class="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 p-4 text-sm">
+                        <p class="font-semibold text-slate-900 dark:text-slate-100">{{ $slot->student?->name }}</p>
+                        <p class="mt-1 text-slate-600 dark:text-slate-400">{{ $slot->consultation_date?->format('d M Y') }} · {{ $slot->consultation_time ?? '-' }}</p>
+                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ $slot->subject }}</p>
+                    </article>
+                @empty
+                    <x-empty-state title="Belum ada jadwal minggu ini" description="Jadwalkan sesi dari antrian konseling." />
+                @endforelse
+            </div>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
             <x-section-title title="Statistik Kategori Kasus" description="Ringkasan layanan selesai berdasarkan kategori kasus." />
             <div class="mt-5 space-y-3">
                 @foreach(\App\Models\ConsultationRequest::CASE_CATEGORIES as $value => $label)

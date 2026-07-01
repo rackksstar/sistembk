@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Phase8;
 
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -58,5 +59,28 @@ class ApiAuthTest extends TestCase
         $this->getJson('/api/v1/consultations')
             ->assertOk()
             ->assertJsonStructure(['data']);
+    }
+
+    public function test_login_api_siswa_menggunakan_nisn_dan_tanggal_lahir(): void
+    {
+        $user = User::factory()->create([
+            'role' => User::ROLE_SISWA,
+            'status' => User::STATUS_APPROVED,
+        ]);
+
+        Student::query()->create([
+            'user_id' => $user->id,
+            'name' => $user->name,
+            'nisn' => '1234567890',
+            'birth_date' => '2010-05-15',
+        ]);
+
+        $this->postJson('/api/v1/login', [
+            'role' => 'siswa',
+            'login' => '1234567890',
+            'password' => '2010-05-15',
+        ])
+            ->assertOk()
+            ->assertJsonPath('user.role', User::ROLE_SISWA);
     }
 }

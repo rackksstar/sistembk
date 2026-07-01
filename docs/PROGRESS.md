@@ -3,7 +3,7 @@
 > **Tracker detail:** `[docs/CORE_TEAM_TRACKER.md](./CORE_TEAM_TRACKER.md)`  
 > **Semua fitur + tim lain:** `[docs/FEATURE_BREAKDOWN.md](./FEATURE_BREAKDOWN.md)`
 
-**Terakhir diperbarui:** 2026-06-29 (perbaikan navigasi sidebar)
+**Terakhir diperbarui:** 2026-07-01 (audit mendalam + perbaikan gap core)
 
 ---
 
@@ -50,6 +50,7 @@ Navigasi memakai **sidebar vertikal** (kiri) + topbar judul halaman — konfigur
 
 | Tanggal    | Update                                                 |
 | ---------- | ------------------------------------------------------ |
+| 2026-07-01 | Audit mendalam: widget jadwal dashboard, sync docs, API siswa NISN, redirect feedback legacy, test Phase 3 |
 | 2026-06-29 | Fix kontras dark: ui-hero, action-card, dashboard siswa, opacity typo, sidebar logout |
 | 2026-06-03 | Phase 6–9 + menu grup + test Phase 6/8/9 di `kela` |
 | 2026-06-03 | Phase 7 postingan artikel selesai di branch `kela` |

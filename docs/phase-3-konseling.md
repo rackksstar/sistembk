@@ -9,7 +9,7 @@
 - [x] Guru: tolak pengajuan dengan alasan
 - [x] Guru: penjadwalan + deteksi bentrok jadwal (`ConsultationScheduleService`)
 - [x] Kalender FullCalendar (CDN) + endpoint `guru.consultations.events`
-- [x] Widget jadwal minggu ini (guru) & jadwal mendatang (siswa)
+- [x] Widget jadwal minggu ini (guru) & jadwal mendatang (siswa) di **dashboard** + halaman konseling
 - [x] **+2** Filter siswa per kelas (admin)
 
 ## File Baru
@@ -29,6 +29,7 @@
 - [x] `php -l` file baru
 - [x] `php artisan migrate`
 - [x] `php artisan route:list --name=consultation`
+- [x] `php artisan test --filter=Phase3` → 8 test PASS
 
 ## Testing Manual
 1. Login siswa → menu **Konseling** → ajukan dengan topik + kategori

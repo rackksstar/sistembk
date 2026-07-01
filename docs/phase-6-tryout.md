@@ -1,5 +1,9 @@
 # Phase 6 — Tryout BK
 
+## Status: ✅ SELESAI
+
+## Tanggal: 2026-06-03
+
 ## Ringkasan
 
 Guru BK membuat tryout, menugaskan kelas, memilih soal dari `master_questions` (kategori `tryout`). Siswa mengerjakan dalam jendela waktu aktif; jawaban disimpan di `try_out_detail` dengan `rata_skor` otomatis.

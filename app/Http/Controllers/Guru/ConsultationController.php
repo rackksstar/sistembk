@@ -8,6 +8,7 @@ use App\Http\Requests\Guru\ScheduleConsultationRequest;
 use App\Http\Requests\Guru\StoreConsultationReportRequest;
 use App\Models\ConsultationRequest;
 use App\Models\User;
+use App\Support\ActivityLogger;
 use App\Services\ConsultationScheduleService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
@@ -78,6 +79,8 @@ class ConsultationController extends Controller
             'status' => ConsultationRequest::STATUS_APPROVED,
         ]);
 
+        ActivityLogger::log('consultation.approved', $consultation);
+
         return back()->with('success', 'Pengajuan konseling berhasil disetujui.');
     }
 
@@ -90,6 +93,8 @@ class ConsultationController extends Controller
             'status' => ConsultationRequest::STATUS_REJECTED,
             'rejection_reason' => $request->validated('rejection_reason'),
         ]);
+
+        ActivityLogger::log('consultation.rejected', $consultation);
 
         return back()->with('success', 'Pengajuan konseling ditolak.');
     }
@@ -121,6 +126,8 @@ class ConsultationController extends Controller
             ? 'Jadwal konseling berhasil diperbarui (dijadwalkan ulang).'
             : 'Jadwal konseling berhasil disimpan.';
 
+        ActivityLogger::log($hadSchedule ? 'consultation.rescheduled' : 'consultation.scheduled', $consultation);
+
         return back()->with('success', $message);
     }
 
@@ -132,6 +139,8 @@ class ConsultationController extends Controller
             ...$request->validated(),
             'status' => ConsultationRequest::STATUS_SELESAI,
         ]);
+
+        ActivityLogger::log('consultation.completed', $consultation);
 
         return back()->with('success', 'Laporan konseling berhasil disimpan.');
     }

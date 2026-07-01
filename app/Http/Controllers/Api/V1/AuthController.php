@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Student;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use Illuminate\Http\JsonResponse;
@@ -21,18 +22,9 @@ class AuthController extends Controller
             'device_name' => ['nullable', 'string', 'max:120'],
         ]);
 
-        $field = $validated['role'] === User::ROLE_GURU ? 'username' : 'email';
-
-        $user = User::query()
-            ->where($field, $validated['login'])
-            ->where('role', $validated['role'])
-            ->first();
-
-        if (! $user || ! Hash::check($validated['password'], $user->password)) {
-            throw ValidationException::withMessages([
-                'login' => ['Kredensial tidak valid.'],
-            ]);
-        }
+        $user = $validated['role'] === User::ROLE_SISWA
+            ? $this->authenticateStudent($validated['login'], $validated['password'])
+            : $this->authenticateStaff($validated['role'], $validated['login'], $validated['password']);
 
         if ($user->status !== User::STATUS_APPROVED) {
             throw ValidationException::withMessages([
@@ -63,6 +55,45 @@ class AuthController extends Controller
         return response()->json([
             'user' => $this->userPayload($request->user()),
         ]);
+    }
+
+    private function authenticateStaff(string $role, string $login, string $password): User
+    {
+        $field = $role === User::ROLE_GURU ? 'username' : 'email';
+
+        $user = User::query()
+            ->where($field, $login)
+            ->where('role', $role)
+            ->first();
+
+        if (! $user || ! Hash::check($password, $user->password)) {
+            throw ValidationException::withMessages([
+                'login' => ['Kredensial tidak valid.'],
+            ]);
+        }
+
+        return $user;
+    }
+
+    private function authenticateStudent(string $nisn, string $birthDate): User
+    {
+        $student = Student::query()->where('nisn', $nisn)->first();
+
+        if (! $student || $student->birth_date?->toDateString() !== $birthDate) {
+            throw ValidationException::withMessages([
+                'login' => ['NISN atau tanggal lahir tidak valid.'],
+            ]);
+        }
+
+        $user = $student->user;
+
+        if (! $user || $user->role !== User::ROLE_SISWA) {
+            throw ValidationException::withMessages([
+                'login' => ['Akun siswa belum terhubung. Hubungi admin.'],
+            ]);
+        }
+
+        return $user;
     }
 
     /**
