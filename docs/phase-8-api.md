@@ -10,11 +10,15 @@
 
 `POST /api/v1/login`
 
+**Admin / Guru BK:** `login` = email (admin) atau username (guru), `password` = password akun.
+
+**Siswa:** `login` = NISN, `password` = tanggal lahir (`Y-m-d`) — sama seperti login web.
+
 ```json
 {
   "role": "admin|guru|siswa",
-  "login": "email atau username (guru)",
-  "password": "string",
+  "login": "email, username, atau NISN",
+  "password": "password atau tanggal lahir (siswa)",
   "device_name": "opsional"
 }
 ```

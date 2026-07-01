@@ -77,7 +77,7 @@ class DashboardController extends Controller
         $coreSummary = [
             ['label' => 'Rapor BK', 'value' => RaporBk::count(), 'href' => route('admin.rapor.index')],
             ['label' => 'Postingan', 'value' => Postingan::count(), 'href' => route('admin.postingan.index')],
-            ['label' => 'Tryout', 'value' => TryOut::count(), 'href' => route('admin.dashboard')],
+            ['label' => 'Tryout', 'value' => TryOut::count(), 'href' => route('admin.master-pertanyaan.index', ['kategori' => 'tryout'])],
         ];
 
         return view('admin.dashboard', compact('metrics', 'recentRequests', 'roleSummary', 'modules', 'postinganTerbaru', 'coreSummary'));

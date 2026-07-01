@@ -174,6 +174,26 @@
         </div>
     </section>
 
+    @if(isset($upcoming) && $upcoming->isNotEmpty())
+        <section class="ui-panel">
+            <div class="flex items-end justify-between gap-4">
+                <x-section-title title="Jadwal mendatang" description="Sesi konseling yang sudah dikonfirmasi Guru BK." />
+                <a href="{{ route('siswa.consultations.index') }}" class="text-sm font-semibold text-blue-600 dark:text-blue-400">Detail</a>
+            </div>
+            <ul class="mt-4 space-y-2">
+                @foreach($upcoming as $item)
+                    <li class="ui-surface-blue flex flex-col gap-1 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <span class="font-medium text-slate-900 dark:text-slate-100">{{ $item->subject }}</span>
+                            <span class="mt-1 block text-xs text-slate-500 dark:text-slate-400">{{ $item->counselor?->name ?? 'Guru BK' }}</span>
+                        </div>
+                        <span class="text-xs font-semibold text-emerald-700 dark:text-emerald-300">{{ $item->consultation_date?->format('d M Y') }} · {{ $item->consultation_time ?? '-' }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     @if(isset($tryoutAktif) && $tryoutAktif->isNotEmpty())
         <section class="ui-panel">
             <div class="flex items-end justify-between gap-4">

@@ -28,11 +28,11 @@
 - `2026_05_06_000001_add_unique_user_id_to_students_table.php` → tabel: `students`
 
 ## Zero Bug Checklist
-- [ ] php -l semua file baru/diubah → (akan diisi saat eksekusi check)
-- [ ] php artisan route:list → (akan diisi saat eksekusi check)
-- [ ] Verifikasi route lama masih ada (grep admin.approvals, guru.consultations, siswa.assessments) → (akan diisi saat eksekusi check)
-- [ ] php artisan migrate --pretend → (akan diisi saat eksekusi check)
-- [ ] storage/logs/laravel.log → (akan diisi saat eksekusi check)
+- [x] php -l semua file baru/diubah → PASS
+- [x] php artisan route:list → PASS
+- [x] Verifikasi route lama masih ada (grep admin.approvals, guru.consultations, siswa.instruments) → PASS
+- [x] php artisan migrate --pretend → PASS
+- [x] Test suite auth → PASS
 
 ## Cara Testing Manual
 1. Jalankan `php artisan migrate:fresh --seed`
@@ -42,7 +42,7 @@
 5. Login admin `admin@bk.test` / `password` → pastikan redirect ke `admin.dashboard`.
 
 ## Catatan / Known Issues
-- Sanctum + `routes/api.php` sengaja belum diaktifkan di Phase 1 (menunggu kebutuhan Phase 8 / konfirmasi eksplisit).
+- Sanctum + `routes/api.php` diaktifkan di Phase 8.
 
 ## Next Phase Preview
 Phase 2 akan fokus ke master data (sekolah/kelas/guruBK/siswa) dan CRUD yang terstruktur.

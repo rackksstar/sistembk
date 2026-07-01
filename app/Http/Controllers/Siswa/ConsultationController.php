@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreConsultationRequest;
 use App\Models\ConsultationRequest;
 use App\Models\User;
+use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -62,7 +63,7 @@ class ConsultationController extends Controller
         $preferredDate = $request->validated('preferred_date');
         $preferredTime = $request->validated('preferred_time');
 
-        ConsultationRequest::create([
+        $created = ConsultationRequest::create([
             'student_id' => $request->user()->id,
             'counselor_id' => $request->validated('counselor_id'),
             'subject' => $request->validated('subject'),
@@ -73,6 +74,8 @@ class ConsultationController extends Controller
             'details' => $request->validated('details'),
             'status' => ConsultationRequest::STATUS_PENDING,
         ]);
+
+        ActivityLogger::log('consultation.submitted', $created);
 
         return redirect()
             ->route('siswa.consultations.index')

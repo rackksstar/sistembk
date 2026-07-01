@@ -128,10 +128,8 @@ class Phase4IntegrationTest extends TestCase
             'birth_date' => '2010-01-01',
         ]);
 
-        $response = $this->actingAs($siswa)
-            ->get(route('siswa.feedback.create'));
-
-        $this->assertNotEquals(500, $response->status(),
-            'service_feedback menghasilkan error 500 setelah deprecasi');
+        $this->actingAs($siswa)
+            ->get(route('siswa.feedback.create'))
+            ->assertRedirect(route('siswa.penilaian.index'));
     }
 }

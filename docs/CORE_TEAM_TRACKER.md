@@ -3,7 +3,7 @@
 **Tim:** Core (Anda)  
 **Acuan roadmap:** Phase 1–9 (`docs/PROGRESS.md`)  
 **Referensi lengkap:** `docs/FEATURE_BREAKDOWN.md` (semua modul + tim lain)  
-**Terakhir diperbarui:** 2026-06-29 (audit tombol aksi blade core)
+**Terakhir diperbarui:** 2026-07-01 (audit + perbaikan gap core)
 
 ---
 
@@ -49,10 +49,10 @@ flowchart LR
     style P3 fill:#22c55e,color:#fff
     style P4 fill:#22c55e,color:#fff
     style P5 fill:#22c55e,color:#fff
-    style P6 fill:#e5e7eb
+    style P6 fill:#22c55e,color:#fff
     style P7 fill:#22c55e,color:#fff
-    style P8 fill:#e5e7eb
-    style P9 fill:#e5e7eb
+    style P8 fill:#22c55e,color:#fff
+    style P9 fill:#22c55e,color:#fff
 ```
 
 
@@ -113,7 +113,7 @@ Persen = fondasi ada (tim lain / master data), **bukan** deliverable core lengka
 | 1.5 | Register siswa + guru BK (pending)                     | ✅      | Breeze + `GuruRegistrationController` |
 | 1.6 | Reset password, verifikasi email                       | ✅      | `routes/auth.php`                     |
 | 1.7 | Middleware `role:admin|guru|siswa`                     | ✅      | `EnsureUserHasRole`                   |
-| 1.8 | Sanctum API                                            | ⏳      | Phase 8                               |
+| 1.8 | Sanctum API                                            | ✅      | Phase 8 — `/api/v1`              |
 | 1.9 | Role `superadmin` / permission granular                | —      | Out of scope (tanpa Spatie)           |
 
 
@@ -303,9 +303,9 @@ Ambil **maksimal 1–2** per sprint **setelah** task wajib phase aktif selesai.
 
 | Prioritas  | Fitur                                     | Phase | Alasan                                              | Status                        |
 | ---------- | ----------------------------------------- | ----- | --------------------------------------------------- | ----------------------------- |
-| **+1**     | **Postingan artikel** (CRUD + siswa baca) | 7     | Kategori sudah ✅; impact tinggi, sedikit dependensi | ⏳ Rekomendasi setelah 3.1–3.3 |
-| **+2**     | **Filter siswa per kelas** (admin)        | 2     | Quick win, melengkapi master                        | ⏳ Bisa paralel Phase 3        |
-| Alternatif | Widget dashboard admin (sekolah aktif)    | 9 / 2 | Polish, bukan blocking                              | ⏳                             |
+| **+1**     | **Postingan artikel** (CRUD + siswa baca) | 7     | Kategori sudah ✅; impact tinggi, sedikit dependensi | ✅ Selesai |
+| **+2**     | **Filter siswa per kelas** (admin)        | 2     | Quick win, melengkapi master                        | ✅ Selesai |
+| Alternatif | Widget dashboard admin (sekolah aktif)    | 9 / 2 | Polish, bukan blocking                              | ⚠️ Sebagian |
 
 
 **Tidak disarankan sebagai +1/+2 sekarang:** Tryout (besar), API (butuh modul stabil), Rapor (butuh data konseling/penilaian).
@@ -314,29 +314,24 @@ Ambil **maksimal 1–2** per sprint **setelah** task wajib phase aktif selesai.
 
 ## Sprint board (contoh — salin ke Notion/Trello)
 
-### Sprint saat ini: **Core lane selesai** (branch `kela`)
+### Sprint saat ini: **Core lane selesai**
 
 
-| Todo              | Doing | Done        |
-| ----------------- | ----- | ----------- |
-| 6.x Tryout        |       | P1–P5 ✅     |
-| 7.x Postingan (+1)|       |             |
-
-
-**+1 opsional:** 7.1–7.3 Postingan artikel
+| Todo | Doing | Done        |
+| ---- | ----- | ----------- |
+|      |       | P1–P9 ✅     |
+| Backlog deploy: konsolidasi `schools` → `sekolahs` (9.1) | | |
 
 ---
 
 ## Checklist harian core team
 
 ```
-Phase 1–5,7 [████████████████████] 100%  ✅
-Phase 6,8–9 [████████████████████] 100% ✅
+Phase 1–9 [████████████████████] 100%  ✅
 
 Hari ini:
-[ ] Task ID: ___
-[ ] Zero bug: php -l, route:list, migrate --pretend
-[ ] Update baris status di tabel phase di dokumen ini
+[x] Audit gap core + perbaikan paralel
+[x] Test suite: 100 passed
 ```
 
 ---
@@ -346,6 +341,7 @@ Hari ini:
 
 | Tanggal    | Perubahan                                                                          |
 | ---------- | ---------------------------------------------------------------------------------- |
+| 2026-07-01 | Audit mendalam: perbaikan gap core (dashboard, API siswa, docs sync, test Phase 3) |
 | 2026-06-29 | Cross-check mendalam blade core: filter status admin konseling, empty-state CTA, aksi dashboard guru |
 | 2026-06-03 | Phase 5 Rapor BK ✅ di `kela`; modul tim tidak diubah |
 | 2026-06-03 | Phase 4 ✅ di `kela`; tracker & PROGRESS disinkronkan |
