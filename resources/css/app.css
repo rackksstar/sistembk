@@ -5,3 +5,236 @@
 [x-cloak] {
     display: none !important;
 }
+
+@layer base {
+    html {
+        @apply scroll-smooth;
+    }
+
+    html.dark {
+        color-scheme: dark;
+    }
+}
+
+@layer components {
+    .theme-toggle {
+        @apply inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:bg-slate-700 dark:hover:text-white;
+    }
+
+    /* ── Sidebar ── */
+    .app-sidebar {
+        @apply fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out dark:border-slate-800 dark:bg-slate-900 lg:translate-x-0;
+    }
+
+    .app-sidebar--open {
+        @apply translate-x-0;
+    }
+
+    .app-sidebar-overlay {
+        @apply fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-sm dark:bg-slate-950/70;
+    }
+
+    .app-sidebar__header {
+        @apply flex shrink-0 items-center justify-between gap-2 border-b border-slate-200 px-4 py-4 dark:border-slate-800;
+    }
+
+    .app-sidebar__brand {
+        @apply flex min-w-0 flex-1 items-center gap-3;
+    }
+
+    .app-sidebar__logo {
+        @apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white shadow-sm shadow-blue-500/30;
+    }
+
+    .app-sidebar__brand-title {
+        @apply block truncate text-sm font-semibold text-slate-900 dark:text-white;
+    }
+
+    .app-sidebar__brand-subtitle {
+        @apply block truncate text-xs text-slate-500 dark:text-slate-400;
+    }
+
+    .app-sidebar__close {
+        @apply inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white;
+    }
+
+    .app-sidebar__nav {
+        @apply min-h-0 flex-1 overflow-y-auto px-3 py-4;
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+    }
+
+    .dark .app-sidebar__nav {
+        scrollbar-color: #475569 transparent;
+    }
+
+    .app-sidebar__nav::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .app-sidebar__nav::-webkit-scrollbar-thumb {
+        @apply rounded-full bg-slate-300 dark:bg-slate-600;
+    }
+
+    .app-sidebar__divider {
+        @apply my-3 border-t border-slate-200 dark:border-slate-700/80;
+    }
+
+    .app-sidebar__group {
+        @apply mb-4 last:mb-0;
+    }
+
+    .app-sidebar__group-toggle {
+        @apply flex w-full items-center justify-between gap-3 rounded-lg px-2.5 py-2 text-left text-xs font-bold uppercase tracking-widest text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white;
+    }
+
+    .app-sidebar__group-icon {
+        @apply inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition dark:bg-slate-800 dark:text-slate-400;
+    }
+
+    .app-sidebar__group-icon--active {
+        @apply bg-blue-600 text-white shadow-sm shadow-blue-500/30 dark:bg-blue-600 dark:text-white;
+    }
+
+    .app-sidebar__group-label {
+        @apply mb-1.5 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500;
+    }
+
+    .app-sidebar__link {
+        @apply flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white;
+    }
+
+    .app-sidebar__link--active {
+        @apply bg-blue-600 text-white hover:bg-blue-600 hover:text-white dark:bg-blue-600 dark:hover:bg-blue-600;
+    }
+
+    .app-sidebar__footer {
+        @apply shrink-0 border-t border-slate-200 p-4 dark:border-slate-800;
+    }
+
+    .app-sidebar__user-name {
+        @apply truncate text-sm font-medium text-slate-900 dark:text-white;
+    }
+
+    .app-sidebar__user-meta {
+        @apply truncate text-xs text-slate-500 dark:text-slate-400;
+    }
+
+    .app-sidebar__avatar {
+        @apply inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-700 dark:bg-slate-700 dark:text-white;
+    }
+
+    .app-sidebar__action {
+        @apply flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-center text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-600 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:bg-slate-800 dark:hover:text-white;
+    }
+
+    .app-sidebar__action--active {
+        @apply border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-500 dark:bg-blue-950/50 dark:text-blue-300;
+    }
+
+    .app-sidebar__action--logout {
+        @apply hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:hover:border-rose-500/50 dark:hover:bg-rose-950/40 dark:hover:text-rose-300;
+    }
+
+    /* ── Layout ── */
+    .app-layout {
+        @apply min-h-screen bg-slate-100 dark:bg-slate-950 lg:pl-64;
+    }
+
+    .app-topbar {
+        @apply sticky top-0 z-30 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95;
+    }
+
+    .app-topbar__inner {
+        @apply flex items-center justify-between gap-4 px-4 py-3 sm:px-6;
+    }
+
+    .app-topbar__menu-btn {
+        @apply inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800;
+    }
+
+    .app-topbar__title {
+        @apply truncate text-base font-semibold text-slate-900 dark:text-white sm:text-lg;
+    }
+
+    .app-topbar__subtitle {
+        @apply truncate text-xs text-slate-500 dark:text-slate-400;
+    }
+
+    .app-topbar__user-name {
+        @apply block text-sm font-medium text-slate-900 dark:text-slate-100;
+    }
+
+    .app-topbar__user-meta {
+        @apply block text-xs text-slate-500 dark:text-slate-400;
+    }
+
+    .app-topbar__logout {
+        @apply rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:border-slate-700 dark:text-slate-300 dark:hover:border-rose-500/50 dark:hover:bg-rose-950/40 dark:hover:text-rose-300;
+    }
+
+    .app-main {
+        @apply mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8;
+    }
+
+    /* ── Semantic UI (dipakai di halaman & komponen) ── */
+    .ui-card {
+        @apply rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900;
+    }
+
+    .ui-card-muted {
+        @apply rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/60;
+    }
+
+    .ui-panel {
+        @apply rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900;
+    }
+
+    .ui-table-wrap {
+        @apply overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900;
+    }
+
+    .ui-thead {
+        @apply border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-400;
+    }
+
+    .ui-tbody {
+        @apply divide-y divide-slate-100 dark:divide-slate-800;
+    }
+
+    .ui-tr-hover {
+        @apply transition hover:bg-slate-50 dark:hover:bg-slate-800/50;
+    }
+
+    .ui-input {
+        @apply w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-500 dark:focus:ring-blue-900/50;
+    }
+
+    .ui-btn-secondary {
+        @apply inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700;
+    }
+
+    .ui-modal {
+        @apply w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-2xl dark:border-slate-700 dark:bg-slate-900;
+    }
+
+    .ui-hero {
+        @apply overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-blue-50 p-6 shadow-sm dark:border-slate-700 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 sm:p-8;
+    }
+
+    .ui-hero-badge {
+        @apply inline-flex rounded-full border border-blue-200 bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-blue-700 shadow-sm dark:border-blue-800 dark:bg-slate-800/90 dark:text-blue-300;
+    }
+
+    .ui-hero-stat {
+        @apply rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800/80;
+    }
+
+    .ui-surface-blue {
+        @apply rounded-2xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/50 dark:bg-blue-950/30;
+    }
+
+    .ui-btn-outline {
+        @apply inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-blue-500 dark:hover:text-blue-300;
+    }
+}

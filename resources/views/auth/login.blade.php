@@ -12,10 +12,10 @@
     <div class="space-y-8">
         <div class="space-y-3 text-center">
             <p class="text-sm font-semibold uppercase tracking-[0.28em] text-blue-600">Masuk Akun</p>
-            <h1 class="text-3xl font-semibold text-slate-950 sm:text-4xl">
+            <h1 class="text-3xl font-semibold text-slate-950 dark:text-white sm:text-4xl">
                 {{ $roleLabel ? 'Login '.$roleLabel : 'Selamat datang kembali' }}
             </h1>
-            <p class="text-sm leading-6 text-slate-600">
+            <p class="text-sm leading-6 text-slate-600 dark:text-slate-400">
                 @if($selectedRole === 'guru')
                     Jika sudah disetujui admin, masukkan no HP atau NIP untuk melanjutkan ke dashboard.
                 @else
@@ -34,32 +34,32 @@
 
             @if($selectedRole === 'siswa')
                 <div class="space-y-2">
-                    <label for="nisn" class="block text-sm font-semibold text-slate-900">NISN</label>
-                    <input id="nisn" name="nisn" type="text" value="{{ old('nisn') }}" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="NISN siswa" />
+                    <label for="nisn" class="block text-sm font-semibold text-slate-900 dark:text-slate-100">NISN</label>
+                    <input id="nisn" name="nisn" type="text" value="{{ old('nisn') }}" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="NISN siswa" />
                     <x-input-error :messages="$errors->get('nisn')" class="mt-1 text-sm text-red-600" />
                 </div>
 
                 <div class="space-y-2">
-                    <label for="birth_date" class="block text-sm font-semibold text-slate-900">Tanggal Lahir</label>
-                    <input id="birth_date" name="birth_date" type="date" value="{{ old('birth_date') }}" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                    <label for="birth_date" class="block text-sm font-semibold text-slate-900 dark:text-slate-100">Tanggal Lahir</label>
+                    <input id="birth_date" name="birth_date" type="date" value="{{ old('birth_date') }}" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" />
                     <x-input-error :messages="$errors->get('birth_date')" class="mt-1 text-sm text-red-600" />
                 </div>
             @else
                 <div class="space-y-2">
-                    <label for="{{ $selectedRole === 'guru' ? 'login_id' : 'email' }}" class="block text-sm font-semibold text-slate-900">{{ $selectedRole === 'guru' ? 'No HP / NIP' : 'Email' }}</label>
-                    <input id="{{ $selectedRole === 'guru' ? 'login_id' : 'email' }}" name="{{ $selectedRole === 'guru' ? 'login_id' : 'email' }}" type="text" value="{{ old($selectedRole === 'guru' ? 'login_id' : 'email') }}" required autofocus class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="{{ $selectedRole === 'guru' ? 'No HP atau NIP' : 'email@sekolah.id' }}" />
+                    <label for="{{ $selectedRole === 'guru' ? 'login_id' : 'email' }}" class="block text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $selectedRole === 'guru' ? 'No HP / NIP' : 'Email' }}</label>
+                    <input id="{{ $selectedRole === 'guru' ? 'login_id' : 'email' }}" name="{{ $selectedRole === 'guru' ? 'login_id' : 'email' }}" type="text" value="{{ old($selectedRole === 'guru' ? 'login_id' : 'email') }}" required autofocus class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="{{ $selectedRole === 'guru' ? 'No HP atau NIP' : 'email@sekolah.id' }}" />
                     <x-input-error :messages="$errors->get($selectedRole === 'guru' ? 'login_id' : 'email')" class="mt-1 text-sm text-red-600" />
                 </div>
 
                 <div class="space-y-2">
-                    <label for="password" class="block text-sm font-semibold text-slate-900">Password</label>
-                    <input id="password" name="password" type="password" required class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100" placeholder="Masukkan password Anda" />
+                    <label for="password" class="block text-sm font-semibold text-slate-900 dark:text-slate-100">Password</label>
+                    <input id="password" name="password" type="password" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Masukkan password Anda" />
                     <x-input-error :messages="$errors->get('password')" class="mt-1 text-sm text-red-600" />
                 </div>
 
-                <div class="flex items-center justify-between text-sm text-slate-600">
+                <div class="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
                     <label class="flex items-center gap-2">
-                        <input type="checkbox" name="remember" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                        <input type="checkbox" name="remember" class="h-4 w-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500" />
                         <span>Ingat saya</span>
                     </label>
                     @if (Route::has('password.request'))
@@ -71,11 +71,11 @@
             <button type="submit" class="w-full rounded-full bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">Login</button>
 
             @if($selectedRole === 'guru')
-                <div class="text-center text-sm text-slate-600">
+                <div class="text-center text-sm text-slate-600 dark:text-slate-400">
                     <p>Belum punya akun Guru BK? <a href="{{ route('guru.register') }}" class="font-semibold text-blue-600 hover:text-blue-500">Ajukan akun Guru BK</a></p>
                 </div>
             @elseif(! in_array($selectedRole, ['admin', 'siswa'], true))
-                <div class="space-y-2 text-center text-sm text-slate-600">
+                <div class="space-y-2 text-center text-sm text-slate-600 dark:text-slate-400">
                     <p>Siswa dapat masuk lewat <a href="{{ route('login', ['role' => 'siswa']) }}" class="font-semibold text-blue-600 hover:text-blue-500">NISN dan tanggal lahir</a></p>
                     <p>Guru BK baru? <a href="{{ route('guru.register') }}" class="font-semibold text-blue-600 hover:text-blue-500">Ajukan akun Guru BK</a></p>
                 </div>

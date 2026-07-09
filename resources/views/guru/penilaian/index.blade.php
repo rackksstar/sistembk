@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <x-section-title
             title="Laporan Penilaian Layanan"
             description="Ringkasan penilaian siswa untuk konseling yang sudah selesai."
@@ -11,7 +11,7 @@
         <form method="GET" class="mt-6 flex flex-wrap items-end gap-3">
             <div class="space-y-2">
                 <x-input-label for="bulan" value="Bulan" />
-                <select id="bulan" name="bulan" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm">
+                <select id="bulan" name="bulan" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-2.5 text-sm">
                     @for($m = 1; $m <= 12; $m++)
                         <option value="{{ $m }}" @selected((int) $bulan === $m)>{{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}</option>
                     @endfor
@@ -19,7 +19,7 @@
             </div>
             <div class="space-y-2">
                 <x-input-label for="tahun" value="Tahun" />
-                <select id="tahun" name="tahun" class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm">
+                <select id="tahun" name="tahun" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-2.5 text-sm">
                     @for($y = now()->year; $y >= now()->year - 3; $y--)
                         <option value="{{ $y }}" @selected((int) $tahun === $y)>{{ $y }}</option>
                     @endfor
@@ -36,13 +36,13 @@
         <x-dashboard-card title="Overall" :value="number_format($summary['rata_overall'], 1)" :description="$summary['total_dinilai'].' / '.$summary['total_konseling'].' dinilai'" />
     </section>
 
-    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <x-section-title title="Detail penilaian" description="Per konseling pada periode filter." />
 
-        <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200">
+        <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200 text-sm">
-                    <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+                    <thead class="bg-slate-50 dark:bg-slate-800/60 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                         <tr>
                             <th class="px-5 py-4">Tanggal</th>
                             <th class="px-5 py-4">Nama Siswa</th>
@@ -54,19 +54,19 @@
                             <th class="px-5 py-4">Predikat</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100 bg-white">
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                         @forelse($konseling as $item)
                             @php $penilaian = $item->penilaianPelayanan; @endphp
                             <tr>
-                                <td class="px-5 py-4 text-slate-600">
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">
                                     {{ $item->scheduled_at?->format('d M Y') ?? '—' }}
                                 </td>
-                                <td class="px-5 py-4 font-semibold text-slate-900">{{ $item->student?->name ?? '—' }}</td>
-                                <td class="px-5 py-4 text-slate-600">{{ $item->student?->studentProfile?->kelas?->nama ?? '—' }}</td>
-                                <td class="px-5 py-4 text-slate-600">{{ $penilaian?->skor_materi ?? '—' }}</td>
-                                <td class="px-5 py-4 text-slate-600">{{ $penilaian?->skor_cara ?? '—' }}</td>
-                                <td class="px-5 py-4 text-slate-600">{{ $penilaian?->skor_manfaat ?? '—' }}</td>
-                                <td class="px-5 py-4 text-slate-600">{{ $penilaian ? $penilaian->rata_rata : '—' }}</td>
+                                <td class="px-5 py-4 font-semibold text-slate-900 dark:text-slate-100">{{ $item->student?->name ?? '—' }}</td>
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $item->student?->studentProfile?->kelas?->nama ?? '—' }}</td>
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $penilaian?->skor_materi ?? '—' }}</td>
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $penilaian?->skor_cara ?? '—' }}</td>
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $penilaian?->skor_manfaat ?? '—' }}</td>
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $penilaian ? $penilaian->rata_rata : '—' }}</td>
                                 <td class="px-5 py-4">
                                     @if($penilaian)
                                         <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $penilaian->predikat_class }}">

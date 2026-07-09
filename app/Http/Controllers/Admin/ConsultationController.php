@@ -22,6 +22,10 @@ class ConsultationController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.consultations.index', compact('consultations', 'status'));
+        return view('admin.consultations.index', [
+            'consultations' => $consultations,
+            'status' => $status,
+            'statuses' => ConsultationRequest::filterableStatuses(),
+        ]);
     }
 }

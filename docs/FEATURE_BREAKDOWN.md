@@ -2,10 +2,9 @@
 
 **Project:** `sistembk` (Laravel 13)  
 **Acuan:** Daftar fitur blueprint tim (50+ modul)  
-**Tanggal audit:** 2026-05-18  
+**Tanggal audit:** 2026-07-01 (disinkronkan dengan implementasi aktual)
 
-> **Core team (prioritas & task harian):** `[CORE_TEAM_TRACKER.md](./CORE_TEAM_TRACKER.md)`  
-> **Ringkasan phase:** `[PROGRESS.md](./PROGRESS.md)`
+> **PENTING:** Ringkasan phase core team ada di `[PROGRESS.md](./PROGRESS.md)` — acuan status terbaru.
 
 **Legenda status:**
 
@@ -30,8 +29,13 @@
 | ----------- | ------------- | --------------------------- |
 | 1 Auth      | ✅ Selesai     | 100%                        |
 | 2 Master    | ✅ Selesai     | 100%                        |
-| 3 Konseling | 🔄 Berikutnya | ~35% (dasar tim lain)       |
-| 4–9         | ⏳ Belum       | 0% (kecuali fondasi master) |
+| 3 Konseling | ✅ Selesai     | 100%                        |
+| 4 Penilaian & Angket | ✅ Selesai | 100%                 |
+| 5 Rapor BK  | ✅ Selesai     | 100%                        |
+| 6 Tryout    | ✅ Selesai     | 100%                        |
+| 7 Postingan | ✅ Selesai     | 100%                        |
+| 8 API       | ✅ Selesai     | 100% (minimal v1)           |
+| 9 Finalisasi | ✅ Selesai    | 100% (kecuali backlog 9.1)  |
 
 
 **+1 / +2 fitur tambahan (setelah task wajib phase aktif):** Postingan artikel (P7) · Filter siswa per kelas (P2)
@@ -41,10 +45,10 @@
 
 | Kategori                            | Jumlah perkiraan  |
 | ----------------------------------- | ----------------- |
-| ✅ Sudah                             | ~22               |
-| ⚠️ Sebagian                         | ~24               |
-| ❌ Belum                             | ~28               |
-| 🔀 Alternatif di project            | ~8 modul tambahan |
+| ✅ Sudah (core + integrasi)          | ~45               |
+| ⚠️ Sebagian / backlog               | ~8                |
+| ❌ Belum (out of scope)              | ~6                |
+| 🔀 Alternatif di project            | ~8 modul tim lain |
 | 🚫 Tidak sesuai stack (Spatie dll.) | ~6 area           |
 
 
@@ -83,12 +87,19 @@ flowchart TB
         master_q[master_questions]
     end
 
-    subgraph belum [Belum_Implementasi]
+    subgraph belum [Backlog]
+        jadwal[jadwal_konseling_terpisah]
+        schools_dup[schools_classes_legacy]
+    end
+
+    subgraph core_done [Core_Selesai]
         postingan[postingan]
-        tryout[tryout]
+        tryout[try_outs]
         rapor[rapor_bk]
-        jadwal[jadwal_konseling]
         api[API_Sanctum]
+        penilaian[penilaian_pelayanan]
+        angket[respons_angket]
+        actlog[activity_logs]
     end
 
     users --> guru_bks
@@ -117,7 +128,7 @@ flowchart TB
 | 1.2  | Login Siswa (NISN + tanggal lahir)        | ✅      | `AuthenticatedSessionController@storeStudentSession`, `students` ↔ `users`  | Modul siswa      | Wajib `students.user_id` terhubung         |
 | 1.3  | Login multi-guard terpisah                | ⚠️     | Satu guard `web`; beda form via `selected_role`                             | Auth team        | Bukan guard `siswa` di `config/auth.php`   |
 | 1.4  | Logout                                    | ✅      | `POST /logout`                                                              | Semua            |                                            |
-| 1.5  | Sanctum API (token)                       | ❌      | —                                                                           | API team         | Perlu `laravel/sanctum`, `routes/api.php`  |
+| 1.5  | Sanctum API (token)                       | ✅      | `laravel/sanctum`, `routes/api.php` `/api/v1`     | API team         | Phase 8 selesai            |
 | 1.6  | Role `superadmin`                         | ❌      | —                                                                           | Admin team       | Hanya `admin`                              |
 | 1.7  | Role `admin`, `guru_bk`, `siswa`          | ⚠️     | `users.role`: `admin`, `**guru**`, `siswa`                                  | Semua            | String role guru = `guru`, bukan `guru_bk` |
 | 1.8  | Permission granular (manage-jadwal, dll.) | ❌      | Hanya `EnsureUserHasRole` middleware                                        | Semua            | 🚫 Tanpa Spatie Permission                 |
@@ -257,10 +268,10 @@ flowchart TB
 
 | #   | Fitur blueprint                                           | Status | Implementasi                        | Relasi tim | Catatan                           |
 | --- | --------------------------------------------------------- | ------ | ----------------------------------- | ---------- | --------------------------------- |
-| 8.1 | Siswa: 3 skor (kepuasan, komunikasi, kejelasan) + catatan | ❌      | —                                   | §6 selesai | Butuh tabel `penilaian_pelayanan` |
-| 8.2 | Guru: laporan penilaian diri                              | ❌      | —                                   | —          |                                   |
-| 8.3 | Validasi 1x per pengajuan                                 | ❌      | —                                   | §6         |                                   |
-| 8.4 | —                                                         | ⚠️     | `service_feedback` (rating + pesan) | §6         | Modul feedback, bukan 3 skor      |
+| 8.1 | Siswa: 3 skor (kepuasan, komunikasi, kejelasan) + catatan | ✅      | `siswa/penilaian/*`, `penilaian_pelayanan` | §6 selesai | Phase 4 |
+| 8.2 | Guru: laporan penilaian diri                              | ✅      | `guru/penilaian/*`                         | —          |         |
+| 8.3 | Validasi 1x per pengajuan                                 | ✅      | unique DB constraint                       | §6         |         |
+| 8.4 | —                                                         | 🔀     | `service_feedback` (legacy, redirect)      | §6         | Route redirect ke penilaian |
 
 
 **Route:** `siswa.feedback.`*, `guru.feedback.index`  
@@ -273,10 +284,10 @@ flowchart TB
 
 | #   | Fitur blueprint                         | Status | Implementasi                 | Relasi tim    | Catatan                |
 | --- | --------------------------------------- | ------ | ---------------------------- | ------------- | ---------------------- |
-| 9.1 | Siswa isi angket dari master pertanyaan | ❌      | —                            | §7            |                        |
-| 9.2 | Guru laporan + predikat                 | ❌      | —                            | —             |                        |
-| 9.3 | Download PDF laporan angket             | ❌      | —                            | §15           |                        |
-| 9.4 | —                                       | 🔀     | Sosiometri siswa + peta guru | §7 instrument | Bukan angket blueprint |
+| 9.1 | Siswa isi angket dari master pertanyaan | ✅      | `siswa/angket/*`, `respons_angket` | §7            | Phase 4 |
+| 9.2 | Guru laporan + predikat                 | ✅      | `guru/angket/*`                    | —             |         |
+| 9.3 | Download PDF laporan angket             | ✅      | `guru.angket.pdf`                  | §15           |         |
+| 9.4 | —                                       | 🔀     | Sosiometri siswa + peta guru       | §7 instrument | Modul tim asesmen |
 
 
 **Route:** `siswa.sociometry.`*, `guru.sociometry.index`  
@@ -289,10 +300,10 @@ flowchart TB
 
 | #    | Fitur blueprint                       | Status | Implementasi                   | Relasi tim       | Catatan                    |
 | ---- | ------------------------------------- | ------ | ------------------------------ | ---------------- | -------------------------- |
-| 10.1 | Generate rapor per siswa per semester | ❌      | —                              | §5 siswa         | Tabel `rapor_bk` belum ada |
-| 10.2 | Daftar siswa + status rapor           | ❌      | —                              | —                |                            |
-| 10.3 | updateOrCreate rapor                  | ❌      | —                              | —                |                            |
-| 10.4 | Download PDF rapor                    | ❌      | —                              | §15 DomPDF       | Package sudah ada          |
+| 10.1 | Generate rapor per siswa per semester | ✅      | `rapor_bk`, `RaporBkService`   | §5 siswa         | Phase 5 |
+| 10.2 | Daftar siswa + status rapor           | ✅      | `guru/rapor/*`                 | —                |         |
+| 10.3 | updateOrCreate rapor                  | ✅      | `RaporBkService::upsertForStudent` | —            |         |
+| 10.4 | Download PDF rapor                    | ✅      | `guru.rapor.pdf`, `admin.rapor.pdf` | §15 DomPDF  |         |
 | 10.5 | —                                     | 🔀     | **RPL** + cetak PDF            | Guru dokumentasi | Modul berbeda              |
 | 10.6 | —                                     | 🔀     | **Jurnal bulanan** + cetak PDF | Guru dokumentasi | Modul berbeda              |
 
@@ -307,11 +318,11 @@ flowchart TB
 
 | #    | Fitur blueprint                 | Status | Implementasi                       | Relasi tim        | Catatan          |
 | ---- | ------------------------------- | ------ | ---------------------------------- | ----------------- | ---------------- |
-| 11.1 | Guru buat tryout + assign kelas | ❌      | —                                  | §3 kelas, §7 soal |                  |
-| 11.2 | Soal dari master pertanyaan     | ❌      | —                                  | §7                |                  |
-| 11.3 | Guru lihat hasil & rata-rata    | ❌      | —                                  | —                 |                  |
-| 11.4 | Siswa daftar & kerjakan tryout  | ❌      | —                                  | §5                |                  |
-| 11.5 | Timer + submit + riwayat        | ❌      | —                                  | Frontend          |                  |
+| 11.1 | Guru buat tryout + assign kelas | ✅      | `guru/tryout/*`                | §3 kelas, §7 soal | Phase 6 |
+| 11.2 | Soal dari master pertanyaan     | ✅      | `master_questions` kategori tryout | §7            |         |
+| 11.3 | Guru lihat hasil & rata-rata    | ✅      | `guru.tryout.show`             | —                 |         |
+| 11.4 | Siswa daftar & kerjakan tryout  | ✅      | `siswa/tryout/*`               | §5                |         |
+| 11.5 | Timer + submit + riwayat        | ✅      | Alpine timer di show           | Frontend          |         |
 | 11.6 | —                               | ⚠️     | `master_questions.kategori=tryout` | Admin only        | Data master saja |
 
 
@@ -325,8 +336,8 @@ flowchart TB
 | #    | Fitur blueprint                           | Status | Implementasi                                      | Relasi tim        | Catatan                                         |
 | ---- | ----------------------------------------- | ------ | ------------------------------------------------- | ----------------- | ----------------------------------------------- |
 | 12.1 | CRUD kategori postingan                   | ✅      | `Admin\PostCategoryController`, `post_categories` | Postingan (belum) |                                                 |
-| 12.2 | CRUD postingan (judul, isi, slug, gambar) | ❌      | —                                                 | §12               | Tabel `postingan` belum ada                     |
-| 12.3 | Siswa baca postingan publik               | ❌      | —                                                 | —                 |                                                 |
+| 12.2 | CRUD postingan (judul, isi, slug, gambar) | ✅      | `admin/postingan/*`, tabel `postingan` | §12               | Phase 7 |
+| 12.3 | Siswa baca postingan publik               | ✅      | `siswa/postingan/*`                    | —                 |         |
 | 12.4 | —                                         | 🔀     | **Informasi karier**                              | Admin + siswa     | `career_infos` — konten serupa, bukan postingan |
 
 
@@ -341,14 +352,14 @@ flowchart TB
 | #    | Fitur blueprint           | Status | Implementasi                | Relasi tim | Catatan                    |
 | ---- | ------------------------- | ------ | --------------------------- | ---------- | -------------------------- |
 | 13.1 | Admin: total users        | ✅      | `Admin\DashboardController` | §1         |                            |
-| 13.2 | Admin: total postingan    | ❌      | —                           | §12        |                            |
-| 13.3 | Admin: sekolah aktif      | ⚠️     | Metrik umum                 | §2         |                            |
-| 13.4 | Admin: postingan terbaru  | ❌      | —                           | §12        |                            |
-| 13.5 | Guru: statistik pengajuan | ⚠️     | Dashboard guru              | §6         |                            |
-| 13.6 | Guru: jadwal mingguan     | ❌      | —                           | §6         |                            |
-| 13.7 | Guru: rata-rata skor      | ❌      | —                           | §8, §9     |                            |
-| 13.8 | Siswa: pengajuan + jadwal | ⚠️     | Dashboard siswa             | §6         | Jadwal belum widget khusus |
-| 13.9 | Siswa: tryout + postingan | ❌      | —                           | §11, §12   |                            |
+| 13.2 | Admin: total postingan    | ✅      | `coreSummary` + widget           | §12        |                            |
+| 13.3 | Admin: sekolah aktif      | ⚠️     | Metrik umum + modul Sekolah MOU | §2         |                            |
+| 13.4 | Admin: postingan terbaru  | ✅      | Dashboard admin                  | §12        |                            |
+| 13.5 | Guru: statistik pengajuan | ✅      | Dashboard guru                   | §6         |                            |
+| 13.6 | Guru: jadwal mingguan     | ✅      | Widget dashboard + halaman konseling | §6      |                            |
+| 13.7 | Guru: rata-rata skor      | ⚠️     | Ada di `guru/penilaian` terpisah | §8, §9   | Belum di dashboard         |
+| 13.8 | Siswa: pengajuan + jadwal | ✅      | Dashboard + halaman konseling    | §6         |                            |
+| 13.9 | Siswa: tryout + postingan | ✅      | Widget dashboard siswa           | §11, §12   |                            |
 
 
 ---
@@ -358,8 +369,8 @@ flowchart TB
 
 | #    | Fitur blueprint         | Status | Implementasi | Relasi tim  | Catatan                                              |
 | ---- | ----------------------- | ------ | ------------ | ----------- | ---------------------------------------------------- |
-| 14.1 | Log semua aksi penting  | ❌      | —            | Semua modul | 🚫 Manual `activity_logs` direncanakan, bukan Spatie |
-| 14.2 | Halaman admin lihat log | ❌      | —            | Admin       |                                                      |
+| 14.1 | Log semua aksi penting  | ⚠️     | `activity_logs` + `ActivityLogger` | Semua modul | Core modul utama tercatat |
+| 14.2 | Halaman admin lihat log | ✅      | `admin.activity-logs.index`        | Admin       |                           |
 
 
 **Tabel belum ada:** `activity_logs`
@@ -372,8 +383,8 @@ flowchart TB
 | #    | Fitur blueprint    | Status | Implementasi               | Relasi tim     | Catatan                                   |
 | ---- | ------------------ | ------ | -------------------------- | -------------- | ----------------------------------------- |
 | 15.1 | Spatie PDF         | 🚫     | —                          | —              | Project pakai **barryvdh/laravel-dompdf** |
-| 15.2 | PDF Rapor BK       | ❌      | —                          | §10            |                                           |
-| 15.3 | PDF Laporan angket | ❌      | —                          | §9             |                                           |
+| 15.2 | PDF Rapor BK       | ✅      | `guru.rapor.pdf`           | §10            |                                           |
+| 15.3 | PDF Laporan angket | ✅      | `guru.angket.pdf`          | §9             |                                           |
 | 15.4 | PDF Konseling      | ✅      | `guru.consultations.print` | §6             |                                           |
 | 15.5 | PDF RPL            | ✅      | `guru.rpls.print`          | §10 alternatif |                                           |
 | 15.6 | PDF Jurnal bulanan | ✅      | `guru.journals.print`      | §10 alternatif |                                           |
@@ -431,7 +442,7 @@ flowchart TB
 | Tabel blueprint                             | Status | Tabel aktual di project                 |
 | ------------------------------------------- | ------ | --------------------------------------- |
 | users                                       | ✅      | `users`                                 |
-| personal_access_tokens                      | ❌      | —                                       |
+| personal_access_tokens                      | ✅      | Sanctum Phase 8                         |
 | sekolah                                     | ✅      | `sekolahs` (+ duplikat `schools`)       |
 | kelas                                       | ✅      | `kelas` (+ duplikat `classes`)          |
 | guru_bk                                     | ✅      | `guru_bks`                              |
@@ -439,12 +450,13 @@ flowchart TB
 | pengajuan_konseling                         | ⚠️     | `consultation_requests` (gabung jadwal) |
 | jadwal_konseling                            | ❌      | — (kolom di consultation_requests)      |
 | master_pertanyaan                           | ✅      | `master_questions`                      |
-| penilaian_pelayanan                         | ❌      | —                                       |
-| respons_angket / jawaban_angket             | ❌      | —                                       |
-| rapor_bk                                    | ❌      | —                                       |
-| try_out / try_out_kelas / try_out_detail    | ❌      | —                                       |
+| penilaian_pelayanan                         | ✅      | Phase 4                                 |
+| respons_angket / jawaban_angket             | ✅      | `respons_angket`                        |
+| rapor_bk                                    | ✅      | `rapor_bk`                              |
+| try_out / try_out_kelas / try_out_detail    | ✅      | `try_outs`, `try_out_kelas`, `try_out_detail` |
 | kategori_postingan                          | ✅      | `post_categories`                       |
-| postingan                                   | ❌      | —                                       |
+| postingan                                   | ✅      | `postingan`                             |
+| activity_logs (manual)                      | ✅      | `activity_logs`                         |
 | Spatie roles/permissions/activity_log/media | 🚫     | Tidak dipakai                           |
 
 
@@ -528,7 +540,7 @@ flowchart TB
 | Deliverable       | Status | Path / artefak                         |
 | ----------------- | ------ | -------------------------------------- |
 | Informasi karier  | ✅      | `CareerInfoController`, `career_infos` |
-| Postingan artikel | ❌      | Hanya kategori                         |
+| Postingan artikel | ✅      | `PostinganController`, `postingan` |
 
 
 ---
@@ -595,13 +607,14 @@ Prioritas disarankan dengan **dependensi relasi**:
 ## Checklist singkat untuk daily standup tim
 
 ```
-[✅] Auth 3 role + login siswa NISN
-[✅] Master: sekolah, kelas, guru_bk, siswa, master_pertanyaan, kategori_postingan
-[✅] Konseling dasar + cetak
-[✅] Instrumen + sosiometri + RPL + jurnal + karier + kelas bimbingan
-[⚠️] Konseling status lengkap + kalender + riwayat
-[⚠️] Dashboard widget sesuai blueprint
-[❌] Tryout, rapor_bk, postingan, penilaian 3 skor, angket formal, API, activity log
+[✅] Auth 3 role + login siswa NISN + API Sanctum
+[✅] Master: sekolah, kelas, guru_bk, siswa, master_pertanyaan, kategori_postingan, postingan
+[✅] Konseling lengkap + kalender + riwayat + widget dashboard
+[✅] Penilaian 3 skor + angket formal + PDF
+[✅] Rapor BK + Tryout + Postingan + Activity log
+[✅] Instrumen + sosiometri + RPL + jurnal + karier (tim lain — tidak diubah)
+[⏳] Konsolidasi schools/classes legacy (backlog 9.1)
+[⏳] API resource lengkap (mobile) — di luar scope minimal v1
 ```
 
 ---

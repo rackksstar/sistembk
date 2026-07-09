@@ -76,6 +76,20 @@ class DashboardController extends Controller
                 ->get();
         }
 
+        $upcoming = ConsultationRequest::query()
+            ->with('counselor:id,name')
+            ->where('student_id', $userId)
+            ->whereIn('status', [
+                ConsultationRequest::STATUS_APPROVED,
+                ConsultationRequest::STATUS_RESCHEDULED,
+            ])
+            ->whereNotNull('consultation_date')
+            ->where('consultation_date', '>=', now()->startOfDay())
+            ->orderBy('consultation_date')
+            ->orderBy('consultation_time')
+            ->limit(3)
+            ->get();
+
         return view('siswa.dashboard', compact(
             'metrics',
             'requests',
@@ -83,7 +97,8 @@ class DashboardController extends Controller
             'studentProfile',
             'siswaSmk',
             'postinganTerbaru',
-            'tryoutAktif'
+            'tryoutAktif',
+            'upcoming'
         ));
     }
 }

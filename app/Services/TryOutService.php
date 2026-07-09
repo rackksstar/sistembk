@@ -33,6 +33,45 @@ class TryOutService
     }
 
     /**
+     * @param  array<int>  $kelasIds
+     * @param  array<int>  $soalIds
+     */
+    public function updateForCounselor(TryOut $tryout, array $data, array $kelasIds, array $soalIds): TryOut
+    {
+        $hasSubmissions = $tryout->details()->exists();
+
+        $payload = [
+            'judul' => $data['judul'],
+            'deskripsi' => $data['deskripsi'] ?? null,
+            'durasi_menit' => $data['durasi_menit'],
+            'mulai_at' => $data['mulai_at'],
+            'selesai_at' => $data['selesai_at'],
+            'status' => $data['status'] ?? $tryout->status,
+        ];
+
+        if (! $hasSubmissions) {
+            $payload['soal_ids'] = array_values($soalIds);
+        }
+
+        $tryout->update($payload);
+
+        if (! $hasSubmissions) {
+            $tryout->kelas()->sync($kelasIds);
+        }
+
+        return $tryout->fresh(['kelas']);
+    }
+
+    public function deleteForCounselor(TryOut $tryout): void
+    {
+        if ($tryout->details()->exists()) {
+            throw new \RuntimeException('Tryout tidak dapat dihapus karena sudah ada jawaban siswa.');
+        }
+
+        $tryout->delete();
+    }
+
+    /**
      * @param  array<string, string>  $jawaban
      */
     public function submitAnswers(TryOut $tryout, Student $student, array $jawaban): TryOutDetail

@@ -69,6 +69,20 @@ class DashboardController extends Controller
             ->limit(8)
             ->get();
 
-        return view('guru.dashboard', compact('metrics', 'requests', 'caseStats', 'recentStudentHistories'));
+        $upcomingWeek = ConsultationRequest::query()
+            ->with('student:id,name')
+            ->where('counselor_id', $counselorId)
+            ->whereIn('status', [
+                ConsultationRequest::STATUS_APPROVED,
+                ConsultationRequest::STATUS_RESCHEDULED,
+            ])
+            ->whereNotNull('consultation_date')
+            ->whereBetween('consultation_date', [now()->startOfDay(), now()->addDays(7)])
+            ->orderBy('consultation_date')
+            ->orderBy('consultation_time')
+            ->limit(5)
+            ->get();
+
+        return view('guru.dashboard', compact('metrics', 'requests', 'caseStats', 'recentStudentHistories', 'upcomingWeek'));
     }
 }

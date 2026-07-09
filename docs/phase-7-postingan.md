@@ -20,4 +20,4 @@
 
 ## Next Phase
 
-Phase 6 — Tryout · Phase 8 — API
+Phase 8 — API · Phase 9 — Finalisasi

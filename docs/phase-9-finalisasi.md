@@ -6,6 +6,8 @@ Tabel `activity_logs` + helper `App\Support\ActivityLogger::log()`.
 
 Admin: **Log Aktivitas** (`admin.activity-logs.index`) — read-only.
 
+Aksi konseling (submit, approve, reject, schedule, complete) tercatat via `ActivityLogger`.
+
 ## Dashboard admin (core)
 
 Widget ringkasan: jumlah rapor BK, postingan, tryout.

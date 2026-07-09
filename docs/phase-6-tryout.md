@@ -1,5 +1,9 @@
 # Phase 6 — Tryout BK
 
+## Status: ✅ SELESAI
+
+## Tanggal: 2026-06-03
+
 ## Ringkasan
 
 Guru BK membuat tryout, menugaskan kelas, memilih soal dari `master_questions` (kategori `tryout`). Siswa mengerjakan dalam jendela waktu aktif; jawaban disimpan di `try_out_detail` dengan `rata_skor` otomatis.
@@ -16,7 +20,7 @@ Guru BK membuat tryout, menugaskan kelas, memilih soal dari `master_questions` (
 
 | Role | Route name | Keterangan |
 | --- | --- | --- |
-| Guru | `guru.tryout.*` | Index, buat, simpan, hasil |
+| Guru | `guru.tryout.*` | Index, buat, edit, simpan, hasil, hapus (tanpa jawaban) |
 | Siswa | `siswa.tryout.*` | Daftar aktif, kerjakan, submit |
 
 ## File utama

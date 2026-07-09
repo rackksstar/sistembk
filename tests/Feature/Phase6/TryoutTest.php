@@ -102,7 +102,102 @@ class TryoutTest extends TestCase
     public function test_rute_tryout_terdaftar_di_menu_guru_dan_siswa(): void
     {
         $this->assertTrue(Route::has('guru.tryout.index'));
+        $this->assertTrue(Route::has('guru.tryout.edit'));
+        $this->assertTrue(Route::has('guru.tryout.update'));
+        $this->assertTrue(Route::has('guru.tryout.destroy'));
         $this->assertTrue(Route::has('siswa.tryout.index'));
+    }
+
+    public function test_guru_dapat_mengedit_tryout_tanpa_pengumpulan(): void
+    {
+        $guru = $this->buatGuru();
+        $kelas = $this->buatKelas('X IPA 2');
+        $soal = MasterQuestion::factory()->create([
+            'kategori' => MasterQuestion::KATEGORI_TRYOUT,
+            'tipe_input' => MasterQuestion::TIPE_SKALA,
+            'is_active' => true,
+        ]);
+
+        $tryout = TryOut::query()->create([
+            'counselor_id' => $guru->id,
+            'judul' => 'Tryout Lama',
+            'durasi_menit' => 45,
+            'mulai_at' => now()->subHour(),
+            'selesai_at' => now()->addDay(),
+            'soal_ids' => [$soal->id],
+            'status' => TryOut::STATUS_DRAFT,
+        ]);
+        $tryout->kelas()->attach($kelas->id);
+
+        $this->actingAs($guru)
+            ->put(route('guru.tryout.update', $tryout), [
+                'judul' => 'Tryout Diperbarui',
+                'deskripsi' => 'Revisi',
+                'durasi_menit' => 50,
+                'mulai_at' => now()->subHour()->format('Y-m-d\TH:i'),
+                'selesai_at' => now()->addDays(2)->format('Y-m-d\TH:i'),
+                'status' => TryOut::STATUS_AKTIF,
+                'kelas_ids' => [$kelas->id],
+                'soal_ids' => [$soal->id],
+            ])
+            ->assertRedirect(route('guru.tryout.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('try_outs', [
+            'id' => $tryout->id,
+            'judul' => 'Tryout Diperbarui',
+            'status' => TryOut::STATUS_AKTIF,
+        ]);
+    }
+
+    public function test_guru_dapat_menghapus_tryout_tanpa_jawaban(): void
+    {
+        $guru = $this->buatGuru();
+        $kelas = $this->buatKelas('X IPS 1');
+        $soal = MasterQuestion::factory()->create([
+            'kategori' => MasterQuestion::KATEGORI_TRYOUT,
+            'is_active' => true,
+        ]);
+
+        $tryout = TryOut::query()->create([
+            'counselor_id' => $guru->id,
+            'judul' => 'Tryout Hapus',
+            'durasi_menit' => 30,
+            'mulai_at' => now()->subHour(),
+            'selesai_at' => now()->addDay(),
+            'soal_ids' => [$soal->id],
+            'status' => TryOut::STATUS_DRAFT,
+        ]);
+        $tryout->kelas()->attach($kelas->id);
+
+        $this->actingAs($guru)
+            ->delete(route('guru.tryout.destroy', $tryout))
+            ->assertRedirect(route('guru.tryout.index'))
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('try_outs', ['id' => $tryout->id]);
+    }
+
+    public function test_guru_tidak_bisa_menghapus_tryout_yang_sudah_dikerjakan(): void
+    {
+        [$siswa, $tryout] = array_slice($this->buatTryoutAktifUntukSiswa(), 0, 2);
+        $guru = User::query()->findOrFail($tryout->counselor_id);
+
+        TryOutDetail::query()->create([
+            'try_out_id' => $tryout->id,
+            'student_id' => $siswa->id,
+            'jawaban' => [],
+            'rata_skor' => 80,
+            'submitted_at' => now(),
+        ]);
+
+        $this->actingAs($guru)
+            ->from(route('guru.tryout.index'))
+            ->delete(route('guru.tryout.destroy', $tryout))
+            ->assertRedirect(route('guru.tryout.index'))
+            ->assertSessionHasErrors('tryout');
+
+        $this->assertDatabaseHas('try_outs', ['id' => $tryout->id]);
     }
 
     /**

@@ -78,4 +78,11 @@ class TryOut extends Model
     {
         return self::STATUSES[$this->status] ?? $this->status;
     }
+
+    public function hasSubmissions(): bool
+    {
+        return $this->relationLoaded('details')
+            ? $this->details->isNotEmpty()
+            : $this->details()->exists();
+    }
 }

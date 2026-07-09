@@ -1,10 +1,10 @@
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+        <h2 class="text-lg font-medium text-slate-900 dark:text-slate-100">
             {{ __('Profile Information') }}
         </h2>
 
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+        <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
             @if($user->role === \App\Models\User::ROLE_GURU)
                 Perbarui identitas akun Guru BK yang digunakan untuk login.
             @else
@@ -42,7 +42,7 @@
 
             <div>
                 <x-input-label value="Sekolah" />
-                <x-text-input type="text" class="mt-1 block w-full bg-gray-100 dark:bg-gray-700" :value="$user->guruBkProfile?->sekolah?->nama ?? $user->school ?? '-'" disabled />
+                <x-text-input type="text" class="mt-1 block w-full !bg-slate-100 dark:!bg-slate-800" :value="$user->guruBkProfile?->sekolah?->nama ?? $user->school ?? '-'" disabled />
             </div>
         @else
             <div>
@@ -52,10 +52,10 @@
 
                 @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                     <div>
-                        <p class="text-sm mt-2 text-gray-800 dark:text-gray-200">
+                        <p class="text-sm mt-2 text-slate-800 dark:text-slate-200">
                             {{ __('Your email address is unverified.') }}
 
-                            <button form="send-verification" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
+                            <button form="send-verification" class="underline text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900">
                                 {{ __('Click here to re-send the verification email.') }}
                             </button>
                         </p>
@@ -79,7 +79,7 @@
                     x-show="show"
                     x-transition
                     x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600 dark:text-gray-400"
+                    class="text-sm text-slate-600 dark:text-slate-400"
                 >{{ __('Saved.') }}</p>
             @endif
         </div>
