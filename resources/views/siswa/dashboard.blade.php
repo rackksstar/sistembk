@@ -33,6 +33,15 @@
             'featured' => false,
         ],
         [
+            'title' => 'Profil Siswa SMK',
+            'description' => 'Lihat kesiapan kerja, jurusan, dan keahlian yang akan dipakai untuk rekomendasi lowongan.',
+            'href' => '#smk-profile',
+            'cta' => 'Cek Profil',
+            'color' => 'from-amber-50 via-white to-emerald-50',
+            'accent' => 'bg-amber-500',
+            'featured' => false,
+        ],
+        [
             'title' => 'Kelas Bimbingan',
             'description' => 'Pantau kelas bimbingan yang sudah Anda ikuti dan kode kelas dari sekolah.',
             'href' => '#classes',
@@ -96,8 +105,7 @@
             <h2 id="student-actions-title" class="text-2xl font-bold tracking-tight text-slate-950">Apa yang ingin Anda lakukan?</h2>
         </div>
 
-        {{-- Grid diatur menjadi xl:grid-cols-4 untuk 1 baris di desktop --}}
-        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
             @foreach($actionCards as $card)
                 <a href="{{ $card['href'] }}" class="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/90 bg-gradient-to-br {{ $card['color'] }} p-6 shadow-md shadow-blue-100/60 ring-1 ring-white/80 transition hover:-translate-y-1 hover:shadow-xl">
                     <div>
@@ -118,6 +126,78 @@
                     </div>
                 </a>
             @endforeach
+        </div>
+    </section>
+
+    <section id="smk-profile" class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div class="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div class="p-6">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <x-section-title
+                        title="Profil Siswa SMK"
+                        description="Data kesiapan kerja untuk kebutuhan rekomendasi lowongan pekerjaan."
+                    />
+                    <span class="inline-flex w-fit items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">
+                        <x-nav-icon name="briefcase" class="h-4 w-4" />
+                        Lowongan
+                    </span>
+                </div>
+
+                @if($siswaSmk)
+                    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+                        <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                            <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Jurusan</p>
+                            <p class="mt-2 font-semibold text-slate-950">{{ $siswaSmk->jurusan }}</p>
+                        </div>
+                        <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                            <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Kelas</p>
+                            <p class="mt-2 font-semibold text-slate-950">{{ $siswaSmk->kelas ?? '-' }}</p>
+                        </div>
+                        <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                            <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Tahun Lulus</p>
+                            <p class="mt-2 font-semibold text-slate-950">{{ $siswaSmk->tahun_lulus ?? '-' }}</p>
+                        </div>
+                        <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                            <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Status</p>
+                            <p class="mt-2 font-semibold capitalize text-slate-950">{{ str_replace('_', ' ', $siswaSmk->status_kerja) }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-5">
+                        <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Keahlian</p>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            @forelse($siswaSmk->keahlian ?? [] as $skill)
+                                <span class="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">{{ $skill }}</span>
+                            @empty
+                                <span class="text-sm text-slate-500">Belum ada keahlian yang dicatat.</span>
+                            @endforelse
+                        </div>
+                    </div>
+                @else
+                    <div class="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5">
+                        <p class="font-semibold text-slate-950">Profil SMK belum tersedia</p>
+                        <p class="mt-2 text-sm leading-6 text-slate-600">Data jurusan, tahun lulus, kontak, dan keahlian bisa ditambahkan oleh admin/guru saat fitur lowongan pekerjaan mulai diaktifkan.</p>
+                    </div>
+                @endif
+            </div>
+
+            <div class="border-t border-slate-100 bg-[linear-gradient(135deg,#eff6ff_0%,#ecfdf5_100%)] p-6 lg:border-l lg:border-t-0">
+                <div class="flex h-full flex-col justify-between gap-6">
+                    <div>
+                        <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-emerald-600 shadow-sm">
+                            <x-nav-icon name="graduation-cap" class="h-6 w-6" />
+                        </span>
+                        <h3 class="mt-5 text-xl font-bold text-slate-950">{{ $siswaSmk?->sekolah ?? 'Data SMK' }}</h3>
+                        <p class="mt-3 text-sm leading-6 text-slate-600">Profil ini menjadi dasar pencocokan siswa dengan informasi karier dan lowongan kerja sesuai kompetensi.</p>
+                    </div>
+                    @if($siswaSmk)
+                        <div class="rounded-2xl bg-white/80 p-4 text-sm shadow-sm">
+                            <p class="font-semibold text-slate-950">{{ $siswaSmk->siap_dihubungi ? 'Siap dihubungi' : 'Belum siap dihubungi' }}</p>
+                            <p class="mt-1 text-slate-500">{{ $siswaSmk->nomor_hp ?? $siswaSmk->email ?? 'Kontak belum dicatat.' }}</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
         </div>
     </section>
 

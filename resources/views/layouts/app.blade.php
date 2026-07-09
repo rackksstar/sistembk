@@ -45,23 +45,62 @@
                     <p class="text-sm font-semibold">{{ $roleLabel }} Workspace</p>
                     <p class="mt-2 text-xs leading-5 text-blue-50">Navigasi cepat untuk pekerjaan harian BK.</p>
                 </div>
-                <div class="p-4">
-                <nav class="space-y-1" aria-label="Menu utama">
-                    @foreach($menuGroups as $group)
-                        <p class="px-4 pb-1 pt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 first:pt-0">{{ $group['group'] }}</p>
-                        @foreach($group['items'] as $item)
-                            @php
+                <div class="max-h-[calc(100vh-238px)] overflow-y-auto p-4">
+                <nav class="space-y-3" aria-label="Menu utama">
+                    @foreach($menuGroups as $groupIndex => $group)
+                        @php
+                            $groupActive = collect($group['items'] ?? [])->contains(function ($item) {
                                 $patterns = (array) ($item['active'] ?? $item['route'] ?? '');
-                                $isActive = collect($patterns)->contains(fn ($pattern) => request()->routeIs($pattern));
-                                $href = isset($item['route']) ? route($item['route']) : $dashboardRoute;
-                            @endphp
-                            <a href="{{ $href }}" class="flex items-center justify-between rounded-2xl px-4 py-2.5 text-sm font-semibold transition {{ $isActive ? 'bg-blue-50 text-blue-700 ring-1 ring-blue-100' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
-                                <span>{{ $item['label'] }}</span>
-                                @if($isActive)
-                                    <span class="h-2 w-2 rounded-full bg-blue-600"></span>
-                                @endif
-                            </a>
-                        @endforeach
+
+                                return collect($patterns)->contains(fn ($pattern) => request()->routeIs($pattern));
+                            });
+                        @endphp
+                        <div x-data="{ open: {{ $groupActive ? 'true' : 'false' }} }" class="rounded-2xl border border-slate-100 bg-slate-50/70 p-1.5">
+                            <button
+                                type="button"
+                                x-on:click="open = !open"
+                                class="flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-slate-700 transition hover:bg-white hover:text-blue-700"
+                                :aria-expanded="open.toString()"
+                                aria-controls="sidebar-group-{{ $groupIndex }}"
+                            >
+                                <span class="flex min-w-0 items-center gap-2.5">
+                                    <span class="inline-flex h-8 w-8 items-center justify-center rounded-xl {{ $groupActive ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20' : 'bg-white text-blue-600' }}">
+                                        <x-nav-icon :name="$group['icon'] ?? 'circle'" />
+                                    </span>
+                                    <span class="truncate">{{ $group['group'] }}</span>
+                                </span>
+                                <svg class="h-4 w-4 shrink-0 text-slate-400 transition" :class="{ 'rotate-180 text-blue-600': open }" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+
+                            <div
+                                id="sidebar-group-{{ $groupIndex }}"
+                                x-cloak
+                                x-show="open"
+                                x-transition
+                                class="mt-1 space-y-1"
+                            >
+                                @foreach($group['items'] as $item)
+                                    @php
+                                        $patterns = (array) ($item['active'] ?? $item['route'] ?? '');
+                                        $isActive = collect($patterns)->contains(fn ($pattern) => request()->routeIs($pattern));
+                                        $href = isset($item['route']) ? route($item['route']) : $dashboardRoute;
+                                    @endphp
+                                    <a href="{{ $href }}" class="flex items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition {{ $isActive ? 'bg-white text-blue-700 ring-1 ring-blue-100 shadow-sm' : 'text-slate-600 hover:bg-white hover:text-slate-950' }}">
+                                        <span class="flex min-w-0 items-center gap-2.5">
+                                            <span class="inline-flex h-8 w-8 items-center justify-center rounded-xl {{ $isActive ? 'bg-blue-50 text-blue-700' : 'bg-white text-slate-500' }}">
+                                                <x-nav-icon :name="$item['icon'] ?? 'circle'" />
+                                            </span>
+                                            <span class="truncate">{{ $item['label'] }}</span>
+                                        </span>
+                                        @if($isActive)
+                                            <span class="h-2 w-2 rounded-full bg-blue-600"></span>
+                                        @endif
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
                     @endforeach
                 </nav>
 

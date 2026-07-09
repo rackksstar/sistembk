@@ -18,6 +18,7 @@ use App\Models\Sekolah;
 use App\Models\ServiceFeedback;
 use App\Models\SociometryResponse;
 use App\Models\Student;
+use App\Models\SiswaSmk;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -214,6 +215,26 @@ class DatabaseSeeder extends Seeder
                 'school' => $school->name,
                 'jenis_kelamin' => 'L',
                 'status_biodata' => 'lengkap',
+            ]
+        );
+
+        SiswaSmk::query()->updateOrCreate(
+            ['student_id' => $studentProfile->id],
+            [
+                'user_id' => $siswa->id,
+                'name' => $studentProfile->name,
+                'nisn' => $studentProfile->nisn,
+                'sekolah' => 'SMK Negeri 1 Contoh',
+                'jurusan' => 'Rekayasa Perangkat Lunak',
+                'kelas' => 'XII RPL 1',
+                'tahun_lulus' => now()->year,
+                'nomor_hp' => '081234567899',
+                'email' => $siswa->email,
+                'alamat' => 'Jl. Pendidikan No. 10',
+                'keahlian' => ['HTML', 'CSS', 'Laravel', 'UI dasar'],
+                'pengalaman' => 'Pernah membuat aplikasi pencatatan sederhana untuk tugas akhir sekolah.',
+                'status_kerja' => 'mencari_kerja',
+                'siap_dihubungi' => true,
             ]
         );
 
