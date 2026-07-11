@@ -25,7 +25,7 @@
                     @endfor
                 </select>
             </div>
-            <button class="rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white">Terapkan filter</button>
+            <button class="rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Terapkan filter</button>
         </form>
     </section>
 
@@ -59,7 +59,13 @@
                             @php $penilaian = $item->penilaianPelayanan; @endphp
                             <tr>
                                 <td class="px-5 py-4 text-slate-600 dark:text-slate-400">
-                                    {{ $item->scheduled_at?->format('d M Y') ?? '—' }}
+                                    @if($item->scheduled_at)
+                                        {{ $item->scheduled_at->format('d M Y') }}
+                                    @elseif($item->consultation_date)
+                                        {{ $item->consultation_date->format('d M Y') }}
+                                    @else
+                                        {{ $item->updated_at?->format('d M Y') ?? '—' }}
+                                    @endif
                                 </td>
                                 <td class="px-5 py-4 font-semibold text-slate-900 dark:text-slate-100">{{ $item->student?->name ?? '—' }}</td>
                                 <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $item->student?->studentProfile?->kelas?->nama ?? '—' }}</td>

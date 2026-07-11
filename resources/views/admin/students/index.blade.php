@@ -1,7 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6" x-data="{ createOpen: {{ $errors->any() ? 'true' : 'false' }}, editOpen: null }">
+<div class="space-y-6" x-data="{
+    createOpen: {{ $errors->any() && old('form_context') !== 'edit' ? 'true' : 'false' }},
+    editOpen: {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }}
+}">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Manajemen Data Siswa" description="CRUD siswa dengan validasi NISN unik dan tanggal lahir valid." />
@@ -19,7 +22,7 @@
                     </option>
                 @endforeach
             </select>
-            <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white">Filter</button>
+            <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">Filter</button>
         </form>
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">
@@ -73,6 +76,7 @@
             <x-section-title title="Tambah Siswa" description="Isi identitas siswa dengan NISN unik." />
             <form method="POST" action="{{ route('admin.students.store') }}" class="mt-6 space-y-4">
                 @csrf
+                <input type="hidden" name="form_context" value="create">
                 @include('admin.students.partials.form', ['student' => null, 'studentUsers' => $studentUsers, 'kelasList' => $kelasList, 'submit' => 'Simpan siswa'])
             </form>
         </div>
@@ -84,6 +88,8 @@
                 <x-section-title title="Edit Siswa" description="Perbarui identitas siswa." />
                 <form method="POST" action="{{ route('admin.students.update', $student) }}" class="mt-6 space-y-4">
                     @csrf @method('PUT')
+                    <input type="hidden" name="form_context" value="edit">
+                    <input type="hidden" name="editing_id" value="{{ $student->id }}">
                     @include('admin.students.partials.form', ['student' => $student, 'studentUsers' => $studentUsers, 'kelasList' => $kelasList, 'submit' => 'Update siswa'])
                 </form>
             </div>

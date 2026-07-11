@@ -48,21 +48,28 @@ class DashboardController extends Controller
             ->groupBy('case_category')
             ->pluck('total', 'case_category');
 
+        $studentWithKelas = [
+            'student:id,name',
+            'student.studentProfile:id,user_id,kelas_id',
+            'student.studentProfile.kelas:id,nama',
+        ];
+
         $requests = ConsultationRequest::query()
-            ->with(['student:id,name'])
+            ->with($studentWithKelas)
             ->where(fn ($query) => $query
                 ->whereNull('counselor_id')
                 ->orWhere('counselor_id', $counselorId))
+            ->whereIn('status', [
+                ConsultationRequest::STATUS_PENDING,
+                ConsultationRequest::STATUS_APPROVED,
+                ConsultationRequest::STATUS_RESCHEDULED,
+            ])
             ->latest()
             ->limit(20)
             ->get();
 
         $recentStudentHistories = ConsultationRequest::query()
-            ->with([
-                'student:id,name',
-                'student.studentProfile:id,user_id,kelas_id',
-                'student.studentProfile.kelas:id,nama',
-            ])
+            ->with($studentWithKelas)
             ->where('counselor_id', $counselorId)
             ->where('status', ConsultationRequest::STATUS_SELESAI)
             ->latest('consultation_date')
@@ -70,7 +77,7 @@ class DashboardController extends Controller
             ->get();
 
         $upcomingWeek = ConsultationRequest::query()
-            ->with('student:id,name')
+            ->with($studentWithKelas)
             ->where('counselor_id', $counselorId)
             ->whereIn('status', [
                 ConsultationRequest::STATUS_APPROVED,

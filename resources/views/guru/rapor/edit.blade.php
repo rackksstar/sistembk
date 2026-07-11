@@ -7,6 +7,11 @@
             :title="'Rapor BK — '.($student->user?->name ?? $student->name)"
             :description="'Periode '.(\App\Models\RaporBk::SEMESTERS[$semester] ?? $semester).' · '.$tahunAjaran"
         />
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            Kelas: <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $student->kelas?->nama ?? '—' }}</span>
+            · Sekolah: <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $student->kelas?->sekolah?->nama ?? $student->school ?? '—' }}</span>
+            · NISN: <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $student->nisn ?? '—' }}</span>
+        </p>
 
         <div class="mt-4 rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-950/40 p-4 text-sm text-slate-700 dark:text-slate-300">
             <p><span class="font-semibold">Ringkasan konseling (Phase 3–4):</span>

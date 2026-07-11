@@ -24,7 +24,8 @@ class RaporController extends Controller
             ->with([
                 'student:id,name,nisn,kelas_id,user_id',
                 'student.user:id,name',
-                'student.kelas:id,nama',
+                'student.kelas:id,nama,sekolah_id',
+                'student.kelas.sekolah:id,nama',
                 'counselor:id,name',
             ])
             ->when($semester, fn ($q) => $q->where('semester', $semester))
@@ -41,7 +42,7 @@ class RaporController extends Controller
     {
         $rapor->load([
             'student.user',
-            'student.kelas',
+            'student.kelas.sekolah',
             'counselor',
         ]);
 
@@ -52,7 +53,7 @@ class RaporController extends Controller
     {
         $rapor->load([
             'student.user',
-            'student.kelas',
+            'student.kelas.sekolah',
             'counselor',
         ]);
 

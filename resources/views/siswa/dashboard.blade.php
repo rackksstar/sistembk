@@ -65,6 +65,18 @@
 @endphp
 
 <div class="space-y-8">
+    <x-alert type="error" :message="session('error')" />
+    <x-alert type="success" :message="session('success')" />
+
+    @unless($studentProfile)
+        <section class="rounded-3xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 p-6 shadow-sm">
+            <x-section-title
+                title="Profil siswa belum terhubung"
+                description="Akun Anda belum punya data NISN/kelas. Hubungi Guru BK agar modul penilaian, angket, dan tryout bisa dipakai."
+            />
+        </section>
+    @endunless
+
     <section class="ui-hero">
         <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-center">
             <div>
@@ -73,13 +85,12 @@
                     Selamat datang, {{ $firstName }}. Ruang BK Anda siap digunakan.
                 </h1>
                 <p class="mt-4 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-400 sm:text-base">
-                    Mulai dari instrumen minat bakat, gaya belajar, masalah, sosiometri, permintaan konseling, hingga informasi karier tersedia dalam satu tempat yang aman.
+                    Ajukan konseling, isi angket, kerjakan tryout, dan baca artikel BK dari satu dashboard. Modul asesmen lain tersedia di menu samping.
                 </p>
                 <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                    <a href="{{ route('siswa.instruments.index') }}" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">
-                        Isi Instrumen Asesmen
+                    <a href="{{ route('siswa.consultations.index') }}" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">
+                        Ajukan Konseling
                     </a>
-                    <a href="{{ route('siswa.consultations.index') }}" class="ui-btn-outline">Ajukan Konseling</a>
                     <a href="{{ route('siswa.angket.index') }}" class="ui-btn-outline">Isi Angket</a>
                     <a href="{{ route('siswa.penilaian.index') }}" class="ui-btn-outline">Nilai Layanan</a>
                     <a href="{{ route('siswa.tryout.index') }}" class="ui-btn-outline">Kerjakan Tryout</a>
@@ -205,6 +216,18 @@
                 title="Kelas Bimbingan Saya"
                 description="Gunakan kode kelas dari Guru BK untuk bergabung."
             />
+            <div class="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/70">
+                <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">Kelas BK (profil)</p>
+                <p class="mt-2 font-semibold text-slate-950 dark:text-slate-100">
+                    {{ $studentProfile?->kelas?->nama ?? 'Belum ditetapkan' }}
+                </p>
+                @if($studentProfile?->kelas?->sekolah)
+                    <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ $studentProfile->kelas->sekolah->nama }}</p>
+                @endif
+                @unless($studentProfile?->kelas_id)
+                    <p class="mt-1 text-xs text-amber-700 dark:text-amber-300">Hubungi admin/Guru BK agar tryout dan laporan kelas tampil.</p>
+                @endunless
+            </div>
             <div class="mt-6 grid gap-4">
                 @forelse($studentProfile?->guidanceClasses ?? [] as $class)
                     <div class="ui-surface-blue p-5">

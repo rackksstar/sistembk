@@ -108,9 +108,7 @@ class AngketTest extends TestCase
 
     public function test_guru_dapat_melihat_detail_angket_siswa(): void
     {
-        $guru = $this->buatGuru();
-        $siswa = $this->buatSiswa();
-        $student = $siswa->studentProfile;
+        [$guru, $student] = $this->buatGuruDanSiswaTerhubung();
 
         $this->actingAs($guru)
             ->get(route('guru.angket.show', $student))
@@ -144,9 +142,7 @@ class AngketTest extends TestCase
 
     public function test_guru_dapat_download_pdf_angket_siswa(): void
     {
-        $guru = $this->buatGuru();
-        $siswa = $this->buatSiswa();
-        $student = $siswa->studentProfile;
+        [$guru, $student] = $this->buatGuruDanSiswaTerhubung();
 
         $this->actingAs($guru)
             ->get(route('guru.angket.pdf', $student))

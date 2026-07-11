@@ -1,7 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6" x-data="{ createOpen: {{ $errors->any() && ! $errors->has('csv_file') ? 'true' : 'false' }}, importOpen: {{ $errors->has('csv_file') ? 'true' : 'false' }}, editOpen: null }">
+<div class="space-y-6" x-data="{
+    createOpen: {{ $errors->any() && ! $errors->has('csv_file') && old('form_context') !== 'edit' ? 'true' : 'false' }},
+    importOpen: {{ $errors->has('csv_file') ? 'true' : 'false' }},
+    editOpen: {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }}
+}">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Data Login Siswa" description="Masukkan NISN dan tanggal lahir siswa agar siswa dapat login ke dashboard." />
@@ -15,7 +19,7 @@
 
         <form method="GET" class="mt-6 grid gap-3 md:grid-cols-[1fr_auto]">
             <input name="search" value="{{ $search }}" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Cari nama, NISN, sekolah..." />
-            <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white">Cari</button>
+            <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">Cari</button>
         </form>
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">
@@ -26,6 +30,7 @@
                             <th class="px-5 py-4">Nama</th>
                             <th class="px-5 py-4">NISN</th>
                             <th class="px-5 py-4">Tanggal Lahir</th>
+                            <th class="px-5 py-4">Kelas</th>
                             <th class="px-5 py-4">Sekolah</th>
                             <th class="px-5 py-4 text-right">Aksi</th>
                         </tr>
@@ -36,7 +41,8 @@
                                 <td class="px-5 py-4 font-semibold text-slate-900 dark:text-slate-100">{{ $student->name }}</td>
                                 <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $student->nisn }}</td>
                                 <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $student->birth_date->format('d M Y') }}</td>
-                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $student->school ?? '-' }}</td>
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $student->kelas?->nama ?? '—' }}</td>
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $student->kelas?->sekolah?->nama ?? $student->school ?? '—' }}</td>
                                 <td class="px-5 py-4">
                                     <div class="flex justify-end gap-2">
                                         <button x-on:click="editOpen = {{ $student->id }}" class="rounded-2xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-xs font-semibold">Edit</button>
@@ -50,7 +56,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-5 py-6">
+                                <td colspan="6" class="px-5 py-6">
                                     <x-empty-state title="Belum ada data siswa" description="Tambahkan NISN dan tanggal lahir siswa agar siswa dapat login." />
                                     <div class="mt-4 flex flex-wrap justify-center gap-2">
                                         <button type="button" x-on:click="createOpen = true" class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">Tambah siswa</button>
@@ -72,6 +78,7 @@
             <x-section-title title="Tambah Data Siswa" description="Isi data yang akan dipakai siswa saat login." />
             <form method="POST" action="{{ route('guru.students.store') }}" class="mt-6 space-y-4">
                 @csrf
+                <input type="hidden" name="form_context" value="create">
                 @include('guru.students.partials.form', ['student' => null, 'submit' => 'Simpan data siswa'])
             </form>
         </div>
@@ -79,9 +86,9 @@
 
     <div x-show="importOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
         <div x-on:click.outside="importOpen = false" class="w-full max-w-xl rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
-            <x-section-title title="Import CSV Siswa" description="Upload file CSV berisi nama, NISN, tanggal lahir, dan sekolah." />
+            <x-section-title title="Import CSV Siswa" description="Upload file CSV berisi nama, NISN, tanggal lahir, sekolah, dan kelas (opsional)." />
             <div class="mt-5 rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-950/40 p-4 text-sm leading-6 text-blue-700 dark:text-blue-300">
-                Format header: <span class="font-semibold">nama, nisn, tanggal_lahir, sekolah</span>. Tanggal lahir dapat memakai format <span class="font-semibold">YYYY-MM-DD</span>, <span class="font-semibold">DD/MM/YYYY</span>, atau <span class="font-semibold">DD-MM-YYYY</span>.
+                Format header: <span class="font-semibold">nama, nisn, tanggal_lahir, sekolah, kelas_id</span>. Tanggal lahir dapat memakai format <span class="font-semibold">YYYY-MM-DD</span>, <span class="font-semibold">DD/MM/YYYY</span>, atau <span class="font-semibold">DD-MM-YYYY</span>. Kolom <span class="font-semibold">kelas_id</span> harus ID kelas sekolah Anda agar tryout/angket/rapor sinkron.
             </div>
             <form method="POST" action="{{ route('guru.students.import') }}" enctype="multipart/form-data" class="mt-6 space-y-4">
                 @csrf
@@ -102,6 +109,8 @@
                 <form method="POST" action="{{ route('guru.students.update', $student) }}" class="mt-6 space-y-4">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" name="form_context" value="edit">
+                    <input type="hidden" name="editing_id" value="{{ $student->id }}">
                     @include('guru.students.partials.form', ['student' => $student, 'submit' => 'Update data siswa'])
                 </form>
             </div>

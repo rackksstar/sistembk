@@ -1,7 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6" x-data="{ createOpen: {{ $errors->any() ? 'true' : 'false' }}, editOpen: null }">
+<div class="space-y-6" x-data="{
+    createOpen: {{ $errors->any() && old('form_context') !== 'edit' ? 'true' : 'false' }},
+    editOpen: {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }}
+}">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Kategori Postingan" description="Kelola kategori untuk konten postingan." />
@@ -13,7 +16,7 @@
 
         <form method="GET" action="{{ route('admin.kategori-postingan.index') }}" class="mt-6 grid gap-3 md:grid-cols-[1fr_auto]">
             <input name="search" value="{{ $search }}" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Cari kategori..." />
-            <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">Cari</button>
+            <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition">Cari</button>
         </form>
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">
@@ -65,6 +68,7 @@
             <x-section-title title="Tambah Kategori" description="Nama kategori akan dibuatkan slug otomatis." />
             <form method="POST" action="{{ route('admin.kategori-postingan.store') }}" class="mt-6 space-y-4">
                 @csrf
+                <input type="hidden" name="form_context" value="create">
                 @include('admin.kategori-postingan.partials.form', ['kategori' => null, 'submit' => 'Simpan kategori'])
             </form>
         </div>
@@ -77,6 +81,8 @@
                 <form method="POST" action="{{ route('admin.kategori-postingan.update', $cat) }}" class="mt-6 space-y-4">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" name="form_context" value="edit">
+                    <input type="hidden" name="editing_id" value="{{ $cat->id }}">
                     @include('admin.kategori-postingan.partials.form', ['kategori' => $cat, 'submit' => 'Update kategori'])
                 </form>
             </div>

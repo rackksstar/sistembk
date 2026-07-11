@@ -62,8 +62,10 @@ class TryoutController extends Controller
         $this->authorizeTryout($tryout);
 
         $tryout->load([
-            'kelas',
-            'details.student.user',
+            'kelas:id,nama',
+            'details.student:id,name,user_id,kelas_id',
+            'details.student.user:id,name',
+            'details.student.kelas:id,nama',
         ]);
 
         $rataKeseluruhan = round($tryout->details->avg('rata_skor') ?? 0, 1);
@@ -176,6 +178,15 @@ class TryoutController extends Controller
         if ($locked) {
             $validated['kelas_ids'] = $tryout->kelas->pluck('id')->all();
             $validated['soal_ids'] = $tryout->soal_ids ?? [];
+        } elseif (! empty($validated['kelas_ids'])) {
+            $allowedKelasIds = $this->formOptions()[0]->pluck('id')->all();
+            $invalid = collect($validated['kelas_ids'])->diff($allowedKelasIds);
+
+            if ($invalid->isNotEmpty()) {
+                throw ValidationException::withMessages([
+                    'kelas_ids' => 'Satu atau lebih kelas tidak termasuk sekolah Anda.',
+                ]);
+            }
         }
 
         return $validated;

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
+use App\Models\Kelas;
 use App\Models\Student;
+use App\Services\CounselorStudentService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,21 +16,33 @@ use Illuminate\View\View;
 
 class StudentController extends Controller
 {
+    public function __construct(
+        private readonly CounselorStudentService $counselorStudentService
+    ) {}
+
     public function index(Request $request): View
     {
         $search = $request->string('search')->toString();
 
-        $students = Student::query()
+        $students = $this->counselorStudentService
+            ->queryForCounselor(auth()->user())
+            ->with(['kelas:id,nama,sekolah_id', 'kelas.sekolah:id,nama'])
             ->when($search, function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('nisn', 'like', "%{$search}%")
-                    ->orWhere('school', 'like', "%{$search}%");
+                $query->where(function ($inner) use ($search) {
+                    $inner->where('name', 'like', "%{$search}%")
+                        ->orWhere('nisn', 'like', "%{$search}%")
+                        ->orWhere('school', 'like', "%{$search}%")
+                        ->orWhereHas('kelas', fn ($k) => $k->where('nama', 'like', "%{$search}%"))
+                        ->orWhereHas('kelas.sekolah', fn ($s) => $s->where('nama', 'like', "%{$search}%"));
+                });
             })
             ->latest()
             ->paginate(10)
             ->withQueryString();
 
-        return view('guru.students.index', compact('students', 'search'));
+        $kelasList = $this->kelasForCounselor();
+
+        return view('guru.students.index', compact('students', 'search', 'kelasList'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -60,6 +74,7 @@ class StudentController extends Controller
         $created = 0;
         $updated = 0;
         $skipped = 0;
+        $allowedKelasIds = $this->kelasForCounselor()->pluck('id');
 
         while (($row = fgetcsv($file)) !== false) {
             $data = array_combine($headers, array_slice(array_pad($row, count($headers), null), 0, count($headers)));
@@ -73,19 +88,32 @@ class StudentController extends Controller
             $nisn = trim($data['nisn'] ?? '');
             $birthDate = $this->parseCsvDate($data['tanggal_lahir'] ?? $data['birth_date'] ?? null);
             $school = trim($data['sekolah'] ?? $data['school'] ?? '') ?: null;
+            $kelasId = isset($data['kelas_id']) && $data['kelas_id'] !== ''
+                ? (int) $data['kelas_id']
+                : null;
 
             if ($name === '' || $nisn === '' || ! $birthDate) {
                 $skipped++;
                 continue;
             }
 
+            if ($kelasId && ! $allowedKelasIds->contains($kelasId)) {
+                $kelasId = null;
+            }
+
+            $payload = [
+                'name' => $name,
+                'birth_date' => $birthDate,
+                'school' => $school,
+            ];
+
+            if ($kelasId) {
+                $payload['kelas_id'] = $kelasId;
+            }
+
             $student = Student::updateOrCreate(
                 ['nisn' => $nisn],
-                [
-                    'name' => $name,
-                    'birth_date' => $birthDate,
-                    'school' => $school,
-                ]
+                $payload
             );
 
             $student->wasRecentlyCreated ? $created++ : $updated++;
@@ -98,6 +126,8 @@ class StudentController extends Controller
 
     public function update(Request $request, Student $student): RedirectResponse
     {
+        abort_unless($this->counselorStudentService->canAccess($student, auth()->user()), 403);
+
         $student->update($this->validatedData($request, $student));
 
         return back()->with('success', 'Data siswa berhasil diperbarui.');
@@ -105,6 +135,8 @@ class StudentController extends Controller
 
     public function destroy(Student $student): RedirectResponse
     {
+        abort_unless($this->counselorStudentService->canAccess($student, auth()->user()), 403);
+
         $student->delete();
 
         return back()->with('success', 'Data siswa berhasil dihapus.');
@@ -112,6 +144,10 @@ class StudentController extends Controller
 
     private function validatedData(Request $request, ?Student $student = null): array
     {
+        $user = auth()->user()->loadMissing('guruBkProfile');
+        $sekolahId = $user->guruBkProfile?->sekolah_id;
+        $allowedKelasIds = $this->kelasForCounselor()->pluck('id')->all();
+
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'nisn' => [
@@ -122,10 +158,30 @@ class StudentController extends Controller
             ],
             'birth_date' => ['required', 'date', 'before:today'],
             'school' => ['nullable', 'string', 'max:255'],
+            'kelas_id' => $sekolahId
+                ? ['required', 'integer', Rule::in($allowedKelasIds)]
+                : ['nullable', 'integer', Rule::in($allowedKelasIds)],
         ], [
             'nisn.unique' => 'NISN sudah digunakan siswa lain.',
             'birth_date.before' => 'Tanggal lahir harus valid dan sebelum hari ini.',
+            'kelas_id.required' => 'Pilih kelas BK agar siswa masuk cakupan sekolah Anda.',
+            'kelas_id.in' => 'Kelas tidak valid untuk sekolah Anda.',
         ]);
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, Kelas>
+     */
+    private function kelasForCounselor()
+    {
+        $user = auth()->user()->loadMissing('guruBkProfile');
+        $query = Kelas::query()->with('sekolah:id,nama')->orderBy('nama');
+
+        if ($sekolahId = $user->guruBkProfile?->sekolah_id) {
+            $query->where('sekolah_id', $sekolahId);
+        }
+
+        return $query->get(['id', 'nama', 'sekolah_id']);
     }
 
     private function parseCsvDate(?string $value): ?string

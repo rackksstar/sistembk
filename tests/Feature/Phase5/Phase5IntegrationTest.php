@@ -15,22 +15,7 @@ class Phase5IntegrationTest extends TestCase
 
     public function test_alur_rapor_end_to_end(): void
     {
-        $guru = User::factory()->create([
-            'role' => User::ROLE_GURU,
-            'status' => User::STATUS_APPROVED,
-        ]);
-
-        $siswaUser = User::factory()->create([
-            'role' => User::ROLE_SISWA,
-            'status' => User::STATUS_APPROVED,
-        ]);
-
-        $student = Student::query()->create([
-            'user_id' => $siswaUser->id,
-            'name' => $siswaUser->name,
-            'nisn' => fake()->unique()->numerify('##########'),
-            'birth_date' => '2010-01-01',
-        ]);
+        [$guru, $student] = $this->buatGuruDanSiswaTerhubung();
 
         $this->actingAs($guru)
             ->put(route('guru.rapor.update', $student), [

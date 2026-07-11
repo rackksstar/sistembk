@@ -29,7 +29,7 @@
 
                 @foreach($pertanyaan as $index => $soal)
                     @php($jawabanLama = $jawabanBySoal[$soal->id] ?? null)
-                    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 p-5">
+                    <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 p-5">
                         <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Soal {{ $index + 1 }}</p>
                         <p class="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $soal->teks_pertanyaan }}</p>
                         <div class="mt-4 space-y-2">

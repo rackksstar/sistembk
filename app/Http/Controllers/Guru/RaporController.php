@@ -43,7 +43,8 @@ class RaporController extends Controller
             })
             ->with([
                 'user:id,name',
-                'kelas:id,nama',
+                'kelas:id,nama,sekolah_id',
+                'kelas.sekolah:id,nama',
                 'raporBk' => fn ($q) => $q
                     ->where('counselor_id', $counselor->id)
                     ->where('semester', $semester)
@@ -82,7 +83,7 @@ class RaporController extends Controller
             ->where('tahun_ajaran', $tahunAjaran)
             ->first();
 
-        $student->load(['user', 'kelas']);
+        $student->load(['user', 'kelas.sekolah']);
 
         $ringkasanKonseling = $this->ringkasanKonseling($student, auth()->id());
 
@@ -137,7 +138,7 @@ class RaporController extends Controller
 
         $rapor->load([
             'student.user',
-            'student.kelas',
+            'student.kelas.sekolah',
             'counselor',
         ]);
 

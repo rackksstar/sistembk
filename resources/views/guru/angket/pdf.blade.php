@@ -28,6 +28,7 @@
     <table class="info-table">
         <tr><td>Nama Siswa</td><td>: {{ $student->user?->name ?? $student->name ?? '-' }}</td></tr>
         <tr><td>Kelas</td><td>: {{ $student->kelas?->nama ?? '-' }}</td></tr>
+        <tr><td>Sekolah</td><td>: {{ $student->kelas?->sekolah?->nama ?? $student->school ?? '-' }}</td></tr>
         <tr><td>Tanggal Cetak</td><td>: {{ $tanggalCetak }}</td></tr>
         <tr><td>Total Soal</td><td>: {{ $totalSoalAktif }}</td></tr>
         <tr><td>Dijawab</td><td>: {{ $student->responsAngket->count() }}</td></tr>

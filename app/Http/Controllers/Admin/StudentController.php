@@ -20,7 +20,7 @@ class StudentController extends Controller
         $search = $request->string('search')->toString();
         $kelasId = $request->integer('kelas_id') ?: null;
 
-        $students = Student::with(['user', 'kelas'])
+        $students = Student::with(['user', 'kelas.sekolah'])
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($inner) use ($search) {
                     $inner->where('name', 'like', "%{$search}%")

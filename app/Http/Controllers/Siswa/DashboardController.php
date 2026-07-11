@@ -15,7 +15,7 @@ class DashboardController extends Controller
     public function index(): View
     {
         $userId = auth()->id();
-        $studentProfile = AuthenticatedStudent::profile()?->loadMissing(['guidanceClasses', 'kelas', 'siswaSmk']);
+        $studentProfile = AuthenticatedStudent::profile()?->loadMissing(['guidanceClasses', 'kelas.sekolah', 'siswaSmk']);
         $siswaSmk = $studentProfile?->siswaSmk;
 
         $metrics = [

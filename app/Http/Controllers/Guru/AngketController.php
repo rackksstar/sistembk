@@ -27,12 +27,13 @@ class AngketController extends Controller
 
         $students = $this->counselorStudentService
             ->queryForCounselor(auth()->user())
-            ->with(['user:id,name', 'kelas:id,nama'])
+            ->with(['user:id,name', 'kelas:id,nama,sekolah_id', 'kelas.sekolah:id,nama'])
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
                         ->orWhere('nisn', 'like', "%{$search}%")
-                        ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"));
+                        ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"))
+                        ->orWhereHas('kelas', fn ($k) => $k->where('nama', 'like', "%{$search}%"));
                 });
             })
             ->withCount([
@@ -44,7 +45,8 @@ class AngketController extends Controller
                     }
                 },
             ])
-            ->paginate(25);
+            ->paginate(25)
+            ->withQueryString();
 
         $students->getCollection()->transform(function ($student) use ($totalSoalAktif) {
             $student->predikat = AngketProgress::predikat(
@@ -64,7 +66,7 @@ class AngketController extends Controller
 
         $student->load([
             'user',
-            'kelas',
+            'kelas.sekolah',
             'responsAngket' => fn ($q) => $q
                 ->with('masterQuestion:id,teks_pertanyaan,kategori')
                 ->whereIn('master_question_id', AngketQuestions::activeIds())
@@ -84,7 +86,7 @@ class AngketController extends Controller
 
         $student->load([
             'user',
-            'kelas',
+            'kelas.sekolah',
             'responsAngket' => fn ($q) => $q
                 ->with('masterQuestion:id,teks_pertanyaan,kategori')
                 ->whereIn('master_question_id', AngketQuestions::activeIds())

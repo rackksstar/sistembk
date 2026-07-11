@@ -32,8 +32,15 @@
             ? config('navigation')[$user->role]
             : [];
 
-        $activeItem = collect($menuGroups)
-            ->flatMap(fn ($group) => $group['items'])
+        $activeGroup = collect($menuGroups)->first(function ($group) {
+            return collect($group['items'] ?? [])->contains(function ($item) {
+                $patterns = (array) ($item['active'] ?? $item['route'] ?? '');
+
+                return collect($patterns)->contains(fn ($pattern) => request()->routeIs($pattern));
+            });
+        });
+
+        $activeItem = collect($activeGroup['items'] ?? [])
             ->first(function ($item) {
                 $patterns = (array) ($item['active'] ?? $item['route'] ?? '');
 
@@ -42,7 +49,11 @@
 
         $pageTitle = request()->routeIs('profile.*')
             ? 'Profil'
-            : ($activeItem['label'] ?? 'Dashboard');
+            : ($activeItem['title'] ?? $activeItem['label'] ?? 'Dashboard');
+
+        $pageCrumb = request()->routeIs('profile.*')
+            ? 'Akun'
+            : ($activeGroup['group'] ?? $roleLabel);
     @endphp
 
     <div
@@ -78,8 +89,12 @@
                         </svg>
                     </button>
                     <div class="min-w-0">
+                        <nav class="app-topbar__crumb" aria-label="Breadcrumb">
+                            <span>{{ $roleLabel }}</span>
+                            <span class="app-topbar__crumb-sep" aria-hidden="true">/</span>
+                            <span>{{ $pageCrumb }}</span>
+                        </nav>
                         <h1 class="app-topbar__title">{{ $pageTitle }}</h1>
-                        <p class="app-topbar__subtitle">{{ $roleLabel }}</p>
                     </div>
                 </div>
 

@@ -1,7 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6" x-data="{ createOpen: {{ $errors->any() && ! request()->routeIs('admin.sekolah.update') ? 'true' : 'false' }}, editOpen: null }">
+<div class="space-y-6" x-data="{
+    createOpen: {{ $errors->any() && old('form_context') !== 'edit' ? 'true' : 'false' }},
+    editOpen: {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }}
+}">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Daftar Sekolah MOU" description="Kelola sekolah yang sudah MOU dengan PCR dan bisa dipilih saat Guru BK mendaftar." />
@@ -15,6 +18,7 @@
 
         <form method="POST" action="{{ route('admin.sekolah.store') }}" enctype="multipart/form-data" x-show="createOpen" x-cloak class="mt-6 rounded-3xl border border-blue-100 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-950/30 p-5">
             @csrf
+                <input type="hidden" name="form_context" value="create">
             <input type="hidden" name="is_mou" value="1">
             <input type="hidden" name="is_active" value="1">
 
@@ -57,7 +61,7 @@
                 <option value="1" @selected($active === '1')>Aktif</option>
                 <option value="0" @selected($active === '0')>Nonaktif</option>
             </select>
-            <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">Terapkan</button>
+            <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition">Terapkan</button>
         </form>
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">
@@ -141,6 +145,8 @@
                 <form method="POST" action="{{ route('admin.sekolah.update', $sekolah) }}" enctype="multipart/form-data" class="mt-6 space-y-4">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" name="form_context" value="edit">
+                    <input type="hidden" name="editing_id" value="{{ $sekolah->id }}">
                     @include('admin.sekolah.partials.form', ['sekolah' => $sekolah, 'submit' => 'Update sekolah'])
                 </form>
             </div>

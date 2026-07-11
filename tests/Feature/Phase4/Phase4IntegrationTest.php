@@ -57,14 +57,8 @@ class Phase4IntegrationTest extends TestCase
 
     public function test_alur_angket_end_to_end(): void
     {
-        $guru = User::factory()->create(['role' => User::ROLE_GURU, 'status' => User::STATUS_APPROVED]);
-        $siswa = User::factory()->create(['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED]);
-        $student = Student::query()->create([
-            'user_id' => $siswa->id,
-            'name' => $siswa->name,
-            'nisn' => fake()->unique()->numerify('##########'),
-            'birth_date' => '2010-01-01',
-        ]);
+        [$guru, $student] = $this->buatGuruDanSiswaTerhubung();
+        $siswa = $student->user;
 
         $soal = MasterQuestion::factory()->create([
             'kategori' => MasterQuestion::KATEGORI_ANGKET,

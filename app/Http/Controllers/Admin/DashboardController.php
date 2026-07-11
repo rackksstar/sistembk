@@ -46,13 +46,18 @@ class DashboardController extends Controller
             ],
         ];
 
-        $recentRequests = ConsultationRequest::with(['student', 'counselor'])
+        $recentRequests = ConsultationRequest::with([
+            'student:id,name',
+            'student.studentProfile:id,user_id,kelas_id',
+            'student.studentProfile.kelas:id,nama',
+            'counselor:id,name',
+        ])
             ->latest()
             ->take(5)
             ->get();
 
         $roleSummary = [
-            ['label' => 'Admin', 'count' => User::where('role', User::ROLE_ADMIN)->count(), 'color' => 'bg-slate-900'],
+            ['label' => 'Admin', 'count' => User::where('role', User::ROLE_ADMIN)->count(), 'color' => 'bg-slate-700 dark:bg-slate-300'],
             ['label' => 'Guru BK', 'count' => User::where('role', User::ROLE_GURU)->count(), 'color' => 'bg-blue-600'],
             ['label' => 'Siswa', 'count' => User::where('role', User::ROLE_SISWA)->count(), 'color' => 'bg-sky-500'],
         ];
@@ -77,7 +82,7 @@ class DashboardController extends Controller
         $coreSummary = [
             ['label' => 'Rapor BK', 'value' => RaporBk::count(), 'href' => route('admin.rapor.index')],
             ['label' => 'Postingan', 'value' => Postingan::count(), 'href' => route('admin.postingan.index')],
-            ['label' => 'Tryout', 'value' => TryOut::count(), 'href' => route('admin.master-pertanyaan.index', ['kategori' => 'tryout'])],
+            ['label' => 'Soal Tryout', 'value' => TryOut::count(), 'href' => route('admin.master-pertanyaan.index', ['kategori' => 'tryout'])],
         ];
 
         return view('admin.dashboard', compact('metrics', 'recentRequests', 'roleSummary', 'modules', 'postinganTerbaru', 'coreSummary'));

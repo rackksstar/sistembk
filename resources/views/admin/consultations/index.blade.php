@@ -15,7 +15,7 @@
                         <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
-                <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">Filter</button>
+                <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition">Filter</button>
             </form>
         </div>
 
@@ -25,6 +25,7 @@
                     <thead class="bg-slate-50 dark:bg-slate-800/60 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                         <tr>
                             <th class="px-5 py-4">Siswa</th>
+                            <th class="px-5 py-4">Kelas</th>
                             <th class="px-5 py-4">Guru BK</th>
                             <th class="px-5 py-4">Keluhan/Topik</th>
                             <th class="px-5 py-4">Jadwal</th>
@@ -36,6 +37,7 @@
                         @forelse($consultations as $consultation)
                             <tr>
                                 <td class="px-5 py-4 font-semibold text-slate-900 dark:text-slate-100">{{ $consultation->student?->name }}</td>
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $consultation->student?->studentProfile?->kelas?->nama ?? '—' }}</td>
                                 <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $consultation->counselor?->name ?? '-' }}</td>
                                 <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $consultation->details ?? $consultation->subject }}</td>
                                 <td class="px-5 py-4 text-slate-600 dark:text-slate-400">
@@ -56,7 +58,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-5 py-6">
+                                <td colspan="7" class="px-5 py-6">
                                     <x-empty-state title="Belum ada data konseling" description="Data akan muncul setelah siswa mengajukan konseling." />
                                 </td>
                             </tr>

@@ -42,8 +42,7 @@ class RaporBkTest extends TestCase
 
     public function test_guru_dapat_membuka_form_edit_rapor(): void
     {
-        $guru = $this->buatGuru();
-        $student = $this->buatStudent();
+        [$guru, $student] = $this->buatGuruDanSiswaTerhubung();
 
         $this->actingAs($guru)
             ->get(route('guru.rapor.edit', [
@@ -57,8 +56,7 @@ class RaporBkTest extends TestCase
 
     public function test_guru_dapat_simpan_rapor_baru(): void
     {
-        $guru = $this->buatGuru();
-        $student = $this->buatStudent();
+        [$guru, $student] = $this->buatGuruDanSiswaTerhubung();
 
         $this->actingAs($guru)
             ->put(route('guru.rapor.update', $student), [
@@ -176,8 +174,7 @@ class RaporBkTest extends TestCase
 
     public function test_validasi_tahun_ajaran_format(): void
     {
-        $guru = $this->buatGuru();
-        $student = $this->buatStudent();
+        [$guru, $student] = $this->buatGuruDanSiswaTerhubung();
 
         $this->actingAs($guru)
             ->put(route('guru.rapor.update', $student), [
