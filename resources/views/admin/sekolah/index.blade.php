@@ -54,8 +54,13 @@
             </div>
         </form>
 
-        <form method="GET" action="{{ route('admin.sekolah.index') }}" class="mt-6 grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_auto]">
+        <form method="GET" action="{{ route('admin.sekolah.index') }}" class="mt-6 grid gap-3 lg:grid-cols-[minmax(0,1fr)_160px_160px_auto]">
             <input name="search" value="{{ $search }}" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Cari nama/NPSN..." />
+            <select name="mou" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+                <option value="">Semua status MOU</option>
+                <option value="1" @selected($mou === '1')>Sudah MOU</option>
+                <option value="0" @selected($mou === '0')>Belum MOU</option>
+            </select>
             <select name="active" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
                 <option value="">Semua status</option>
                 <option value="1" @selected($active === '1')>Aktif</option>

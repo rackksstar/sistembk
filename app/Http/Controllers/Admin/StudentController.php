@@ -33,7 +33,10 @@ class StudentController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $linkedUserIds = $students->pluck('user_id')->filter()->values();
+        $linkedUserIds = Student::query()
+            ->whereNotNull('user_id')
+            ->pluck('user_id')
+            ->values();
 
         $studentUsers = User::query()
             ->where('role', User::ROLE_SISWA)

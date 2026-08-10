@@ -7,10 +7,10 @@ use App\Models\CareerInfo;
 use App\Models\ConsultationRequest;
 use App\Models\GuidanceClass;
 use App\Models\GuruProfileChange;
+use App\Models\MasterQuestion;
 use App\Models\Postingan;
 use App\Models\RaporBk;
 use App\Models\Sekolah;
-use App\Models\TryOut;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\View\View;
@@ -82,7 +82,7 @@ class DashboardController extends Controller
         $coreSummary = [
             ['label' => 'Rapor BK', 'value' => RaporBk::count(), 'href' => route('admin.rapor.index')],
             ['label' => 'Postingan', 'value' => Postingan::count(), 'href' => route('admin.postingan.index')],
-            ['label' => 'Soal Tryout', 'value' => TryOut::count(), 'href' => route('admin.master-pertanyaan.index', ['kategori' => 'tryout'])],
+            ['label' => 'Soal Tryout', 'value' => MasterQuestion::where('kategori', MasterQuestion::KATEGORI_TRYOUT)->count(), 'href' => route('admin.master-pertanyaan.index', ['kategori' => 'tryout'])],
         ];
 
         return view('admin.dashboard', compact('metrics', 'recentRequests', 'roleSummary', 'modules', 'postinganTerbaru', 'coreSummary'));

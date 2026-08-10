@@ -8,7 +8,10 @@ use App\Models\User;
 use App\Support\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -22,15 +25,38 @@ class AuthController extends Controller
             'device_name' => ['nullable', 'string', 'max:120'],
         ]);
 
-        $user = $validated['role'] === User::ROLE_SISWA
-            ? $this->authenticateStudent($validated['login'], $validated['password'])
-            : $this->authenticateStaff($validated['role'], $validated['login'], $validated['password']);
+        $throttleKey = 'api-login|'.Str::lower($validated['login']).'|'.$request->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            throw ValidationException::withMessages([
+                'login' => trans('auth.throttle', [
+                    'seconds' => $seconds,
+                    'minutes' => ceil($seconds / 60),
+                ]),
+            ]);
+        }
+
+        try {
+            $user = $validated['role'] === User::ROLE_SISWA
+                ? $this->authenticateStudent($validated['login'], $validated['password'])
+                : $this->authenticateStaff($validated['role'], $validated['login'], $validated['password']);
+        } catch (ValidationException $exception) {
+            RateLimiter::hit($throttleKey);
+
+            throw $exception;
+        }
 
         if ($user->status !== User::STATUS_APPROVED) {
+            RateLimiter::hit($throttleKey);
+
             throw ValidationException::withMessages([
                 'login' => ['Akun belum disetujui.'],
             ]);
         }
+
+        RateLimiter::clear($throttleKey);
 
         $token = $user->createToken($validated['device_name'] ?? 'api-token')->plainTextToken;
 
@@ -79,7 +105,7 @@ class AuthController extends Controller
     {
         $student = Student::query()->where('nisn', $nisn)->first();
 
-        if (! $student || $student->birth_date?->toDateString() !== $birthDate) {
+        if (! $student || $student->birth_date?->toDateString() !== $this->normalizeBirthDate($birthDate)) {
             throw ValidationException::withMessages([
                 'login' => ['NISN atau tanggal lahir tidak valid.'],
             ]);
@@ -94,6 +120,19 @@ class AuthController extends Controller
         }
 
         return $user;
+    }
+
+    private function normalizeBirthDate(?string $date): ?string
+    {
+        if (! $date) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($date)->format('Y-m-d');
+        } catch (\Throwable) {
+            return $date;
+        }
     }
 
     /**

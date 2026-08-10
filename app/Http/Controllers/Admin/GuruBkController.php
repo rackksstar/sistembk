@@ -10,7 +10,9 @@ use App\Models\Sekolah;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\QueryException;
 use Illuminate\View\View;
 
 class GuruBkController extends Controller
@@ -52,23 +54,31 @@ class GuruBkController extends Controller
         $sekolah = Sekolah::find($data['sekolah_id']);
         $username = $data['no_hp'] ?: ($data['nip'] ?? null);
 
-        $user = User::create([
-            'name' => $data['name'],
-            'username' => $username,
-            'password' => Hash::make($data['password']),
-            'school' => $sekolah?->nama,
-            'role' => User::ROLE_GURU,
-            'status' => $data['status'],
-        ]);
+        try {
+            DB::transaction(function () use ($data, $sekolah, $username) {
+                $user = User::create([
+                    'name' => $data['name'],
+                    'username' => $username,
+                    'password' => Hash::make($data['password']),
+                    'school' => $sekolah?->nama,
+                    'role' => User::ROLE_GURU,
+                    'status' => $data['status'],
+                ]);
 
-        GuruBk::create([
-            'user_id' => $user->id,
-            'sekolah_id' => $data['sekolah_id'],
-            'no_hp' => $data['no_hp'],
-            'nip' => $data['nip'] ?? null,
-            'jabatan' => $data['jabatan'] ?? null,
-            'bidang_studi' => $data['bidang_studi'] ?? null,
-        ]);
+                GuruBk::create([
+                    'user_id' => $user->id,
+                    'sekolah_id' => $data['sekolah_id'],
+                    'no_hp' => $data['no_hp'],
+                    'nip' => $data['nip'] ?? null,
+                    'jabatan' => $data['jabatan'] ?? null,
+                    'bidang_studi' => $data['bidang_studi'] ?? null,
+                ]);
+            });
+        } catch (QueryException $exception) {
+            return back()->withErrors([
+                'no_hp' => 'No. HP atau NIP sudah digunakan Guru BK lain.',
+            ])->withInput();
+        }
 
         return back()->with('success', 'Data Guru BK berhasil dibuat.');
     }

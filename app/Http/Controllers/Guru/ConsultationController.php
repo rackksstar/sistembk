@@ -87,6 +87,7 @@ class ConsultationController extends Controller
     public function reject(RejectConsultationRequest $request, ConsultationRequest $consultation): RedirectResponse
     {
         abort_unless($consultation->canBeRejected(), 422);
+        abort_unless($consultation->belongsToCounselor(auth()->id()), 403);
 
         $consultation->update([
             'counselor_id' => auth()->id(),
@@ -102,6 +103,7 @@ class ConsultationController extends Controller
     public function schedule(ScheduleConsultationRequest $request, ConsultationRequest $consultation): RedirectResponse
     {
         abort_unless($consultation->isSchedulable(), 422);
+        abort_unless($consultation->belongsToCounselor(auth()->id()), 403);
 
         $data = $request->validated();
         $hadSchedule = $consultation->consultation_date !== null
