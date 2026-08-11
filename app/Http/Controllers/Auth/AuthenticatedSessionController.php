@@ -8,8 +8,10 @@ use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -69,59 +71,91 @@ class AuthenticatedSessionController extends Controller
 
     private function storeStudentSession(LoginRequest $request): RedirectResponse
     {
-        $request->ensureIsNotRateLimited();
+        $this->ensureStudentLoginIsNotRateLimited($request);
 
-        $student = Student::where('nisn', $request->input('nisn'))->first();
+        try {
+            $student = Student::where('nisn', $request->input('nisn'))->first();
 
-        if (! $student) {
-            RateLimiter::hit($request->throttleKey());
+            if (! $student) {
+                throw ValidationException::withMessages([
+                    'nisn' => 'NISN tidak ditemukan pada data siswa. Hubungi admin atau Guru BK.',
+                ]);
+            }
 
-            throw ValidationException::withMessages([
-                'nisn' => 'NISN tidak ditemukan pada data siswa. Hubungi admin atau Guru BK.',
-            ]);
+            if ($student->birth_date?->toDateString() !== $this->normalizeBirthDate($request->input('birth_date'))) {
+                throw ValidationException::withMessages([
+                    'birth_date' => 'Tanggal lahir tidak cocok dengan data siswa.',
+                ]);
+            }
+
+            $user = $student->user;
+
+            if (! $user) {
+                throw ValidationException::withMessages([
+                    'nisn' => 'Akun siswa belum aktif. Hubungi admin untuk menghubungkan data siswa dengan akun login.',
+                ]);
+            }
+
+            if ($user->role !== User::ROLE_SISWA) {
+                throw ValidationException::withMessages([
+                    'nisn' => 'Data siswa ini terhubung dengan akun yang tidak valid. Hubungi admin.',
+                ]);
+            }
+
+            if (! $user->isApproved()) {
+                throw ValidationException::withMessages([
+                    'nisn' => 'Akun siswa ini belum aktif. Silakan hubungi admin.',
+                ]);
+            }
+        } catch (ValidationException $exception) {
+            RateLimiter::hit($this->studentLoginThrottleKey($request));
+
+            throw $exception;
         }
 
-        if ($student->birth_date?->toDateString() !== $request->input('birth_date')) {
-            RateLimiter::hit($request->throttleKey());
-
-            throw ValidationException::withMessages([
-                'birth_date' => 'Tanggal lahir tidak cocok dengan data siswa.',
-            ]);
-        }
-
-        $user = $student->user;
-
-        if (! $user) {
-            RateLimiter::hit($request->throttleKey());
-
-            throw ValidationException::withMessages([
-                'nisn' => 'Akun siswa belum aktif. Hubungi admin untuk menghubungkan data siswa dengan akun login.',
-            ]);
-        }
-
-        if ($user->role !== User::ROLE_SISWA) {
-            RateLimiter::hit($request->throttleKey());
-
-            throw ValidationException::withMessages([
-                'nisn' => 'Data siswa ini terhubung dengan akun yang tidak valid. Hubungi admin.',
-            ]);
-        }
-
-        if (! $user->isApproved()) {
-            RateLimiter::hit($request->throttleKey());
-
-            throw ValidationException::withMessages([
-                'nisn' => 'Akun siswa ini belum aktif. Silakan hubungi admin.',
-            ]);
-        }
+        RateLimiter::clear($this->studentLoginThrottleKey($request));
 
         Auth::login($user, $request->boolean('remember'));
-
-        RateLimiter::clear($request->throttleKey());
 
         $request->session()->regenerate();
 
         return redirect()->route($user->dashboardRoute());
+    }
+
+    private function ensureStudentLoginIsNotRateLimited(LoginRequest $request): void
+    {
+        $key = $this->studentLoginThrottleKey($request);
+
+        if (! RateLimiter::tooManyAttempts($key, 5)) {
+            return;
+        }
+
+        $seconds = RateLimiter::availableIn($key);
+
+        throw ValidationException::withMessages([
+            'nisn' => trans('auth.throttle', [
+                'seconds' => $seconds,
+                'minutes' => ceil($seconds / 60),
+            ]),
+        ]);
+    }
+
+    private function studentLoginThrottleKey(LoginRequest $request): string
+    {
+        return 'student-login|'.Str::lower($request->string('nisn')->toString()).'|'.$request->ip();
+    }
+
+    private function normalizeBirthDate(?string $date): ?string
+    {
+        if (! $date) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($date)->format('Y-m-d');
+        } catch (\Throwable) {
+            return $date;
+        }
     }
 
     /**

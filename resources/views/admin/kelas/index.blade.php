@@ -1,7 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6" x-data="{ createOpen: {{ $errors->any() ? 'true' : 'false' }}, editOpen: null }">
+<div class="space-y-6" x-data="{
+    createOpen: {{ $errors->any() && old('form_context') !== 'edit' ? 'true' : 'false' }},
+    editOpen: {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }}
+}">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Manajemen Kelas" description="Kelola kelas per sekolah dengan filter jenjang." />
@@ -25,7 +28,7 @@
                     <option value="{{ $item }}" @selected($jenjang === $item)>{{ $item }}</option>
                 @endforeach
             </select>
-            <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">Terapkan</button>
+            <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition">Terapkan</button>
         </form>
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">
@@ -81,6 +84,7 @@
             <x-section-title title="Tambah Kelas" description="Pilih sekolah lalu isi identitas kelas." />
             <form method="POST" action="{{ route('admin.kelas.store') }}" class="mt-6 space-y-4">
                 @csrf
+                <input type="hidden" name="form_context" value="create">
                 @include('admin.kelas.partials.form', ['kelas' => null, 'sekolahs' => $sekolahs, 'submit' => 'Simpan kelas'])
             </form>
         </div>
@@ -93,6 +97,8 @@
                 <form method="POST" action="{{ route('admin.kelas.update', $item) }}" class="mt-6 space-y-4">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" name="form_context" value="edit">
+                    <input type="hidden" name="editing_id" value="{{ $item->id }}">
                     @include('admin.kelas.partials.form', ['kelas' => $item, 'sekolahs' => $sekolahs, 'submit' => 'Update kelas'])
                 </form>
             </div>

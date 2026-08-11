@@ -1,7 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6" x-data="{ createOpen: {{ $errors->any() ? 'true' : 'false' }}, editOpen: null }">
+<div class="space-y-6" x-data="{
+    createOpen: {{ $errors->any() && old('form_context') !== 'edit' ? 'true' : 'false' }},
+    editOpen: {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }}
+}">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Manajemen Guru BK" description="Input manual Guru BK langsung menjadi akun aktif sesuai status yang dipilih." />
@@ -25,7 +28,7 @@
                     <option value="{{ $item }}" @selected($status === $item)>{{ ucfirst($item) }}</option>
                 @endforeach
             </select>
-            <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">Terapkan</button>
+            <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition">Terapkan</button>
         </form>
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">
@@ -85,6 +88,7 @@
             <x-section-title title="Tambah Guru BK" description="Buat akun dan profil Guru BK sekaligus." />
             <form method="POST" action="{{ route('admin.guru-bk.store') }}" class="mt-6 space-y-4">
                 @csrf
+                <input type="hidden" name="form_context" value="create">
                 @include('admin.guru-bk.partials.form', ['guruBk' => null, 'sekolahs' => $sekolahs, 'statuses' => $statuses, 'submit' => 'Simpan Guru BK'])
             </form>
         </div>
@@ -97,6 +101,8 @@
                 <form method="POST" action="{{ route('admin.guru-bk.update', $item) }}" class="mt-6 space-y-4">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" name="form_context" value="edit">
+                    <input type="hidden" name="editing_id" value="{{ $item->id }}">
                     @include('admin.guru-bk.partials.form', ['guruBk' => $item, 'sekolahs' => $sekolahs, 'statuses' => $statuses, 'submit' => 'Update Guru BK'])
                 </form>
             </div>

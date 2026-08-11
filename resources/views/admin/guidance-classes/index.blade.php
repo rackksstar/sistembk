@@ -36,7 +36,7 @@
                             <option value="{{ $student->id }}">{{ $student->name }} - {{ $student->nisn }}</option>
                         @endforeach
                     </select>
-                    <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white">Tambah</button>
+                    <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">Tambah</button>
                 </form>
 
                 <div class="mt-5 space-y-2">

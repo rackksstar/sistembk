@@ -12,7 +12,8 @@
                 <div class="mt-4 flex flex-wrap gap-3 text-sm text-slate-600 dark:text-slate-400">
                     <span class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1">Nama: <strong class="text-slate-900 dark:text-slate-100">{{ $student->user?->name ?? $student->name }}</strong></span>
                     <span class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1">Kelas: <strong class="text-slate-900 dark:text-slate-100">{{ $student->kelas?->nama ?? '-' }}</strong></span>
-                    <span class="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-800">Predikat: {{ $predikat }}</span>
+                    <span class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1">Sekolah: <strong class="text-slate-900 dark:text-slate-100">{{ $student->kelas?->sekolah?->nama ?? $student->school ?? '-' }}</strong></span>
+                    <span class="rounded-full bg-emerald-100 px-3 py-1 font-semibold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">Predikat: {{ $predikat }}</span>
                 </div>
             </div>
             <a href="{{ route('guru.angket.pdf', $student) }}" class="w-fit rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">

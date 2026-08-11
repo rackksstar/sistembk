@@ -1,7 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6" x-data="{ createOpen: {{ $errors->any() ? 'true' : 'false' }}, editOpen: null }">
+<div class="space-y-6" x-data="{
+    createOpen: {{ $errors->any() && old('form_context') !== 'edit' ? 'true' : 'false' }},
+    editOpen: {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }}
+}">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Master Pertanyaan" description="Kelola pertanyaan aktif untuk angket dan tryout." />
@@ -24,7 +27,7 @@
                 <option value="1" @selected($active === '1')>Aktif</option>
                 <option value="0" @selected($active === '0')>Nonaktif</option>
             </select>
-            <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">Terapkan</button>
+            <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition">Terapkan</button>
         </form>
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">
@@ -84,6 +87,7 @@
             <x-section-title title="Tambah Pertanyaan" description="Isi kategori, tipe input, dan teks pertanyaan." />
             <form method="POST" action="{{ route('admin.master-pertanyaan.store') }}" class="mt-6 space-y-4">
                 @csrf
+                <input type="hidden" name="form_context" value="create">
                 @include('admin.master-pertanyaan.partials.form', ['question' => null, 'kategoriOptions' => $kategoriOptions, 'tipeOptions' => $tipeOptions, 'submit' => 'Simpan pertanyaan'])
             </form>
         </div>
@@ -96,6 +100,8 @@
                 <form method="POST" action="{{ route('admin.master-pertanyaan.update', $q) }}" class="mt-6 space-y-4">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" name="form_context" value="edit">
+                    <input type="hidden" name="editing_id" value="{{ $q->id }}">
                     @include('admin.master-pertanyaan.partials.form', ['question' => $q, 'kategoriOptions' => $kategoriOptions, 'tipeOptions' => $tipeOptions, 'submit' => 'Update pertanyaan'])
                 </form>
             </div>

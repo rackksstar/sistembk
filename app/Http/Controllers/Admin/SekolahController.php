@@ -17,9 +17,10 @@ class SekolahController extends Controller
     {
         $search = $request->string('search')->toString();
         $active = $request->string('active')->toString();
+        $mou = $request->string('mou')->toString();
 
         $sekolahs = Sekolah::query()
-            ->where('is_mou', true)
+            ->when($mou !== '', fn ($q) => $q->where('is_mou', $mou === '1'))
             ->when($search, fn ($q) => $q->where(fn ($query) => $query
                 ->where('nama', 'like', "%{$search}%")
                 ->orWhere('npsn', 'like', "%{$search}%")
@@ -29,7 +30,7 @@ class SekolahController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.sekolah.index', compact('sekolahs', 'search', 'active'));
+        return view('admin.sekolah.index', compact('sekolahs', 'search', 'active', 'mou'));
     }
 
     public function store(StoreSekolahRequest $request): RedirectResponse

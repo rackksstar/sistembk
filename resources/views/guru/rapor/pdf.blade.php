@@ -28,6 +28,7 @@
         <tr><td>Nama Siswa</td><td>: {{ $rapor->student->user?->name ?? $rapor->student->name ?? '-' }}</td></tr>
         <tr><td>NISN</td><td>: {{ $rapor->student->nisn ?? '-' }}</td></tr>
         <tr><td>Kelas</td><td>: {{ $rapor->student->kelas?->nama ?? '-' }}</td></tr>
+        <tr><td>Sekolah</td><td>: {{ $rapor->student->kelas?->sekolah?->nama ?? $rapor->student->school ?? '-' }}</td></tr>
         <tr><td>Semester</td><td>: {{ $rapor->semesterLabel() }}</td></tr>
         <tr><td>Tahun Ajaran</td><td>: {{ $rapor->tahun_ajaran }}</td></tr>
         <tr><td>Guru BK</td><td>: {{ $rapor->counselor?->name ?? '-' }}</td></tr>

@@ -53,7 +53,7 @@
                                 <p class="font-semibold text-slate-950 dark:text-white">{{ $module['title'] }}</p>
                                 <p class="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-400">{{ $module['description'] }}</p>
                             </div>
-                            <span class="rounded-full bg-white dark:bg-slate-900 px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300 ring-1 ring-blue-100">{{ $module['count'] }}</span>
+                            <span class="rounded-full bg-white dark:bg-slate-900 px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300 ring-1 ring-blue-100 dark:ring-blue-900/50">{{ $module['count'] }}</span>
                         </div>
                     </a>
                 @endforeach
@@ -76,7 +76,7 @@
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                             <p class="font-semibold text-slate-900 dark:text-slate-100">{{ $request->subject }}</p>
-                            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ $request->student?->name }} - Guru BK: {{ $request->counselor?->name ?? 'Belum dipilih' }}</p>
+                            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ $request->student?->name }} · {{ $request->student?->studentProfile?->kelas?->nama ?? '—' }} · Guru BK: {{ $request->counselor?->name ?? 'Belum dipilih' }}</p>
                         </div>
                         <x-status-badge :status="$request->status" />
                     </div>

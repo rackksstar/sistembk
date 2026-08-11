@@ -54,6 +54,12 @@ class PostCategoryController extends Controller
 
     public function destroy(PostCategory $kategoriPostingan): RedirectResponse
     {
+        if ($kategoriPostingan->postingan()->exists()) {
+            return back()->withErrors([
+                'postingan' => 'Kategori tidak dapat dihapus karena masih memiliki postingan. Pindahkan atau hapus postingannya terlebih dahulu.',
+            ]);
+        }
+
         $kategoriPostingan->delete();
 
         return back()->with('success', 'Kategori postingan berhasil dihapus.');

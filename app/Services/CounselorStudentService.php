@@ -38,7 +38,8 @@ class CounselorStudentService
             return $query->whereIn('students.id', $relatedIds);
         }
 
-        return $query;
+        // Deny-by-default: guru tanpa sekolah & tanpa riwayat tidak melihat semua siswa.
+        return $query->whereRaw('1 = 0');
     }
 
     public function canAccess(Student $student, User $counselor): bool
@@ -58,7 +59,7 @@ class CounselorStudentService
                 ->exists();
         }
 
-        return $sekolahId === null && $this->relatedStudentIds($counselor)->isEmpty();
+        return false;
     }
 
     /**

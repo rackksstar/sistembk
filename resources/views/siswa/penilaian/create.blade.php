@@ -57,7 +57,7 @@
                                     class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border text-lg transition"
                                     :class="{{ $aspect['key'] }} >= {{ $star }}
                                         ? 'border-amber-300 bg-amber-50 dark:bg-amber-950/40 text-amber-500'
-                                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-300 hover:border-amber-200 dark:border-amber-800'"
+                                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-300 hover:border-amber-200 dark:hover:border-amber-800'"
                                     aria-hidden="true"
                                 >★</span>
                             </label>

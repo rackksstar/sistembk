@@ -55,10 +55,10 @@ class PenilaianModelTest extends TestCase
     public function test_predikat_class_tailwind_tersedia_untuk_semua_predikat(): void
     {
         $kasus = [
-            [5, 5, 5, 'bg-green-100 text-green-800'],
-            [4, 4, 4, 'bg-blue-100 text-blue-800'],
-            [3, 3, 3, 'bg-yellow-100 text-yellow-800'],
-            [1, 1, 1, 'bg-red-100 text-red-800'],
+            [5, 5, 5, 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'],
+            [4, 4, 4, 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300'],
+            [3, 3, 3, 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'],
+            [1, 1, 1, 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300'],
         ];
 
         foreach ($kasus as [$m, $c, $f, $expectedClass]) {

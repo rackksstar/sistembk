@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Student;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class AuthenticatedStudent
 {
@@ -22,7 +23,14 @@ class AuthenticatedStudent
     public static function profileOrFail(): Student
     {
         $student = self::profile();
-        abort_unless($student, 404);
+
+        if (! $student) {
+            throw new HttpResponseException(
+                redirect()
+                    ->route('siswa.dashboard')
+                    ->with('error', 'Profil siswa belum terhubung ke data NISN. Hubungi Guru BK atau admin.')
+            );
+        }
 
         return $student;
     }

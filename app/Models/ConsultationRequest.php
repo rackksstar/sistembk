@@ -111,6 +111,11 @@ class ConsultationRequest extends Model
         ], true);
     }
 
+    public function belongsToCounselor(int $counselorId): bool
+    {
+        return $this->counselor_id === null || $this->counselor_id === $counselorId;
+    }
+
     public function penilaianPelayanan(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(\App\Models\PenilaianPelayanan::class);

@@ -3,7 +3,7 @@
 @section('content')
 <article class="space-y-6">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
-        <a href="{{ route('siswa.postingan.index') }}" class="text-sm font-semibold text-blue-600 hover:text-blue-500">← Kembali ke daftar artikel</a>
+        <a href="{{ route('siswa.postingan.index') }}" class="text-sm font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">← Kembali ke daftar artikel</a>
 
         <div class="mt-4">
             <span class="rounded-full bg-blue-50 dark:bg-blue-950/40 px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300">{{ $postingan->kategori?->name }}</span>
@@ -15,7 +15,7 @@
             <img src="{{ asset('storage/'.$postingan->gambar_path) }}" alt="{{ $postingan->judul }}" class="mt-6 w-full max-h-96 rounded-2xl object-cover">
         @endif
 
-        <div class="prose prose-slate mt-6 max-w-none text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+        <div class="prose prose-slate dark:prose-invert mt-6 max-w-none text-sm leading-relaxed text-slate-700 dark:text-slate-300">
             {!! nl2br(e($postingan->isi)) !!}
         </div>
     </section>

@@ -11,6 +11,7 @@
         <dl class="mt-6 grid gap-4 text-sm sm:grid-cols-2">
             <div><dt class="font-semibold text-slate-500 dark:text-slate-400">Guru BK</dt><dd class="mt-1 text-slate-900 dark:text-slate-100">{{ $rapor->counselor?->name ?? '-' }}</dd></div>
             <div><dt class="font-semibold text-slate-500 dark:text-slate-400">Kelas</dt><dd class="mt-1 text-slate-900 dark:text-slate-100">{{ $rapor->student->kelas?->nama ?? '-' }}</dd></div>
+            <div><dt class="font-semibold text-slate-500 dark:text-slate-400">Sekolah</dt><dd class="mt-1 text-slate-900 dark:text-slate-100">{{ $rapor->student->kelas?->sekolah?->nama ?? $rapor->student->school ?? '-' }}</dd></div>
             <div><dt class="font-semibold text-slate-500 dark:text-slate-400">NISN</dt><dd class="mt-1 text-slate-900 dark:text-slate-100">{{ $rapor->student->nisn ?? '-' }}</dd></div>
             <div><dt class="font-semibold text-slate-500 dark:text-slate-400">Diperbarui</dt><dd class="mt-1 text-slate-900 dark:text-slate-100">{{ $rapor->updated_at?->format('d M Y H:i') }}</dd></div>
         </dl>

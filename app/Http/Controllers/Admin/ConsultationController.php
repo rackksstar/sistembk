@@ -15,6 +15,8 @@ class ConsultationController extends Controller
 
         $consultations = ConsultationRequest::with([
             'student:id,name',
+            'student.studentProfile:id,user_id,kelas_id',
+            'student.studentProfile.kelas:id,nama',
             'counselor:id,name',
         ])
             ->when($status, fn ($query) => $query->where('status', $status))

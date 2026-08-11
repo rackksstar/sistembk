@@ -1,7 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6" x-data="{ createOpen: {{ $errors->any() ? 'true' : 'false' }}, editOpen: null }">
+<div class="space-y-6" x-data="{
+    createOpen: {{ $errors->any() && old('form_context') !== 'edit' ? 'true' : 'false' }},
+    editOpen: {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }}
+}">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title
@@ -28,7 +31,7 @@
                     <option value="{{ $item }}" @selected($status === $item)>{{ ucfirst($item) }}</option>
                 @endforeach
             </select>
-            <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">Terapkan</button>
+            <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition">Terapkan</button>
         </form>
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">
@@ -87,6 +90,7 @@
 
             <form method="POST" action="{{ route('admin.users.store') }}" class="mt-6 space-y-4">
                 @csrf
+                <input type="hidden" name="form_context" value="create">
                 @include('admin.users.partials.form', ['roles' => $roles, 'statuses' => $statuses, 'user' => null, 'submit' => 'Simpan pengguna'])
             </form>
         </div>
@@ -103,6 +107,8 @@
                 <form method="POST" action="{{ route('admin.users.update', $managedUser) }}" class="mt-6 space-y-4">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" name="form_context" value="edit">
+                    <input type="hidden" name="editing_id" value="{{ $managedUser->id }}">
                     @include('admin.users.partials.form', ['roles' => $roles, 'statuses' => $statuses, 'user' => $managedUser, 'submit' => 'Update pengguna'])
                 </form>
             </div>

@@ -11,7 +11,7 @@
         <form method="GET" class="mt-6 flex max-w-md gap-2">
             <input type="search" name="search" value="{{ $search ?? '' }}" placeholder="Cari nama atau NISN..."
                 class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm">
-            <button class="shrink-0 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white">Cari</button>
+            <button class="shrink-0 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">Cari</button>
         </form>
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">
@@ -34,15 +34,20 @@
                                     ? round(($student->total_dijawab / $totalSoalAktif) * 100)
                                     : 0;
                                 $predikatClass = match ($student->predikat) {
-                                    'Lengkap' => 'bg-emerald-100 text-emerald-800',
-                                    'Sebagian' => 'bg-amber-100 text-amber-800 dark:text-amber-300',
+                                    'Lengkap' => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300',
+                                    'Sebagian' => 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300',
                                     'Belum Ada Soal' => 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
-                                    default => 'bg-red-100 text-red-800',
+                                    default => 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300',
                                 };
                             @endphp
                             <tr>
                                 <td class="px-5 py-4 font-semibold text-slate-900 dark:text-slate-100">{{ $student->user?->name ?? $student->name }}</td>
-                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $student->kelas?->nama ?? '-' }}</td>
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">
+                                    {{ $student->kelas?->nama ?? '-' }}
+                                    @if($student->kelas?->sekolah)
+                                        <span class="block text-xs text-slate-400 dark:text-slate-500">{{ $student->kelas->sekolah->nama }}</span>
+                                    @endif
+                                </td>
                                 <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $student->total_dijawab }} / {{ $totalSoalAktif }}</td>
                                 <td class="px-5 py-4">
                                     <div class="min-w-[120px]">

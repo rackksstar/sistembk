@@ -1,7 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="space-y-6" x-data="{ createOpen: {{ $errors->any() && !request()->routeIs('admin.postingan.update') ? 'true' : 'false' }}, editOpen: null }">
+<div class="space-y-6" x-data="{
+    createOpen: {{ $errors->any() && old('form_context') !== 'edit' ? 'true' : 'false' }},
+    editOpen: {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }}
+}">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Postingan Artikel" description="Kelola artikel BK untuk dibaca siswa." />
@@ -24,7 +27,7 @@
                     <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
                 @endforeach
             </select>
-            <button class="rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white">Filter</button>
+            <button class="rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Filter</button>
         </form>
     </section>
 
@@ -39,7 +42,7 @@
                         <th class="px-5 py-4 text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                     @forelse($postingan as $item)
                         <tr>
                             <td class="px-5 py-4 font-semibold text-slate-900 dark:text-slate-100">{{ $item->judul }}</td>
@@ -74,6 +77,7 @@
             <x-section-title title="Tambah Postingan" description="Artikel baru untuk siswa." />
             <form method="POST" action="{{ route('admin.postingan.store') }}" enctype="multipart/form-data" class="mt-6 space-y-4">
                 @csrf
+                <input type="hidden" name="form_context" value="create">
                 @include('admin.postingan.partials.form', ['item' => null, 'submit' => 'Simpan postingan'])
             </form>
         </div>
@@ -85,6 +89,8 @@
                 <x-section-title title="Edit Postingan" description="{{ $item->judul }}" />
                 <form method="POST" action="{{ route('admin.postingan.update', $item) }}" enctype="multipart/form-data" class="mt-6 space-y-4">
                     @csrf @method('PUT')
+                    <input type="hidden" name="form_context" value="edit">
+                    <input type="hidden" name="editing_id" value="{{ $item->id }}">
                     @include('admin.postingan.partials.form', ['item' => $item, 'submit' => 'Update postingan'])
                 </form>
             </div>

@@ -13,7 +13,12 @@ class ConsultationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = ConsultationRequest::query()
-            ->with(['student:id,name,email', 'counselor:id,name,username'])
+            ->with([
+                'student:id,name,email',
+                'student.studentProfile:id,user_id,kelas_id',
+                'student.studentProfile.kelas:id,nama',
+                'counselor:id,name,username',
+            ])
             ->latest();
 
         if ($request->user()->role === User::ROLE_GURU) {

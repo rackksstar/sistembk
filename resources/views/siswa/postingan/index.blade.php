@@ -13,14 +13,14 @@
                     <option value="{{ $kat->id }}" @selected((int) $kategoriId === $kat->id)>{{ $kat->name }}</option>
                 @endforeach
             </select>
-            <button class="rounded-2xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white">Cari</button>
+            <button class="rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Cari</button>
         </form>
     </section>
 
     <section class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         @forelse($postingan as $item)
             <article class="overflow-hidden rounded-3xl border border-blue-100 dark:border-blue-900/50 bg-white dark:bg-slate-900 shadow-sm">
-                <div class="aspect-[16/10] bg-gradient-to-br from-blue-50 to-sky-100">
+                <div class="aspect-[16/10] bg-gradient-to-br from-blue-50 to-sky-100 dark:from-slate-800 dark:to-slate-900">
                     @if($item->gambar_path)
                         <img src="{{ asset('storage/'.$item->gambar_path) }}" alt="{{ $item->judul }}" class="h-full w-full object-cover">
                     @endif
@@ -39,6 +39,6 @@
         @endforelse
     </section>
 
-    <div>{{ $postingan->links() }}</div>
+    <div class="mt-5">{{ $postingan->links() }}</div>
 </div>
 @endsection

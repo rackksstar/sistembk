@@ -17,10 +17,12 @@
                 <article class="rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-950/30 p-5">
                     <h3 class="font-semibold text-slate-900 dark:text-slate-100">{{ $tryout->judul }}</h3>
                     <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ $tryout->durasi_menit }} menit · hingga {{ $tryout->selesai_at->format('d M Y H:i') }}</p>
-                    <a href="{{ route('siswa.tryout.show', $tryout) }}" class="mt-4 inline-flex rounded-2xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white">Kerjakan</a>
+                    <a href="{{ route('siswa.tryout.show', $tryout) }}" class="mt-4 inline-flex rounded-2xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-500">Kerjakan</a>
                 </article>
             @empty
-                <x-empty-state title="Tidak ada tryout aktif" description="Coba lagi nanti atau hubungi Guru BK." />
+                <div class="md:col-span-2">
+                    <x-empty-state title="Tidak ada tryout aktif" description="Coba lagi nanti atau hubungi Guru BK." />
+                </div>
             @endforelse
         </div>
     </section>
@@ -34,7 +36,7 @@
                     <span class="text-slate-600 dark:text-slate-400">Skor {{ number_format($item->rata_skor ?? 0, 1) }} · {{ $item->submitted_at?->format('d M Y') }}</span>
                 </li>
             @empty
-                <p class="text-slate-500 dark:text-slate-400">Belum ada riwayat.</p>
+                <x-empty-state title="Belum ada riwayat" description="Hasil tryout yang sudah dikerjakan akan muncul di sini." />
             @endforelse
         </ul>
     </section>
