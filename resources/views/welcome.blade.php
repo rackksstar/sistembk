@@ -28,10 +28,6 @@
 
                 <div class="flex items-center gap-2 sm:gap-3">
                     <x-theme-toggle />
-                    <a href="{{ route('login', ['role' => 'admin']) }}"
-                        class="inline-flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-950 dark:text-white">
-                        Login Admin
-                    </a>
                 </div>
             </nav>
         </header>

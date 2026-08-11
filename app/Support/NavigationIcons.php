@@ -8,6 +8,7 @@ final class NavigationIcons
     {
         return match (true) {
             str_contains($route, 'dashboard') => 'home',
+            str_contains($route, 'chatbot') => 'chat',
             str_contains($route, 'consultations') => 'chat',
             str_contains($route, 'rapor') => 'document',
             str_contains($route, 'sekolah') => 'building',

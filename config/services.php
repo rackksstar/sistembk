@@ -22,6 +22,10 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    'konseling_chatbot' => [
+        'service_url' => env('CHATBOT_SERVICE_URL', 'http://127.0.0.1:8000'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

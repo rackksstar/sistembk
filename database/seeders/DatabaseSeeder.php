@@ -80,10 +80,10 @@ class DatabaseSeeder extends Seeder
         );
 
         User::query()->updateOrCreate(
-            ['email' => 'yola@gmail.com'],
+            ['email' => 'admin.demo@bk.test'],
             [
-                'name' => 'yola',
-                'password' => Hash::make('123456'),
+                'name' => 'Admin Demo',
+                'password' => Hash::make('password'),
                 'school' => $school->name,
                 'school_id' => $school->id,
                 'role' => User::ROLE_ADMIN,

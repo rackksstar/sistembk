@@ -20,6 +20,11 @@
 /storage/*.key
 /storage/pail
 /vendor
+chatbot_service/.env
+chatbot_service/venv/
+chatbot_service/chat_memory.sqlite3
+chatbot_service/book_index.sqlite3
+chatbot_service/__pycache__/
 _ide_helper.php
 Homestead.json
 Homestead.yaml

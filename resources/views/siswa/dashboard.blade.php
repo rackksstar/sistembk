@@ -13,6 +13,13 @@
             'accent' => 'bg-indigo-600',
         ],
         [
+            'title' => 'Chatbot Konseling',
+            'description' => 'Mulai percakapan awal dengan asisten BK sebelum membuat pengajuan.',
+            'href' => route('siswa.chatbot.index'),
+            'cta' => 'Buka Chat',
+            'accent' => 'bg-cyan-600',
+        ],
+        [
             'title' => 'Penilaian Layanan',
             'description' => 'Nilai konseling yang sudah selesai untuk membantu peningkatan layanan BK.',
             'href' => route('siswa.penilaian.index'),
@@ -80,6 +87,7 @@
                         Isi Instrumen Asesmen
                     </a>
                     <a href="{{ route('siswa.consultations.index') }}" class="ui-btn-outline">Ajukan Konseling</a>
+                    <a href="{{ route('siswa.chatbot.index') }}" class="ui-btn-outline">Buka Chatbot</a>
                     <a href="{{ route('siswa.angket.index') }}" class="ui-btn-outline">Isi Angket</a>
                     <a href="{{ route('siswa.penilaian.index') }}" class="ui-btn-outline">Nilai Layanan</a>
                     <a href="{{ route('siswa.tryout.index') }}" class="ui-btn-outline">Kerjakan Tryout</a>
@@ -313,5 +321,179 @@
             </ul>
         </section>
     @endif
+</div>
+
+<div
+    x-data="{
+        open: false,
+        message: '',
+        sending: false,
+        messages: [
+            { role: 'assistant', text: 'Hai {{ $firstName }}. Mau cerita atau tanya soal sekolah, belajar, pertemanan, atau rencana karier? Aku bantu pelan-pelan ya.' },
+        ],
+        quickMessages: [
+            'Aku lagi stres belajar',
+            'Apa itu bimbingan konseling?',
+            'Aku bingung pilih karier',
+        ],
+        toggle() {
+            this.open = ! this.open;
+            if (this.open) {
+                this.$nextTick(() => this.scrollToBottom());
+            }
+        },
+        useQuickMessage(text) {
+            this.message = text;
+            this.send();
+        },
+        async send() {
+            const text = this.message.trim();
+
+            if (! text || this.sending) {
+                return;
+            }
+
+            this.messages.push({ role: 'user', text });
+            this.message = '';
+            this.sending = true;
+            this.$nextTick(() => this.scrollToBottom());
+
+            try {
+                const response = await fetch('{{ route('siswa.chatbot.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({ message: text }),
+                });
+                const data = await response.json();
+
+                this.messages.push({
+                    role: 'assistant',
+                    text: data.reply || 'Aku belum bisa menangkap maksudnya. Coba tulis dengan kalimat yang lebih jelas ya.',
+                });
+            } catch (error) {
+                this.messages.push({
+                    role: 'assistant',
+                    text: 'Maaf, chat sedang belum tersambung. Coba lagi sebentar ya.',
+                });
+            } finally {
+                this.sending = false;
+                this.$nextTick(() => this.scrollToBottom());
+            }
+        },
+        scrollToBottom() {
+            if (this.$refs.chatBody) {
+                this.$refs.chatBody.scrollTop = this.$refs.chatBody.scrollHeight;
+            }
+        },
+    }"
+    x-on:keydown.escape.window="open = false"
+    class="fixed bottom-5 right-5 z-40 sm:bottom-6 sm:right-6"
+>
+    <div
+        x-cloak
+        x-show="open"
+        x-transition.origin.bottom.right
+        class="mb-4 flex h-[min(620px,calc(100vh-7rem))] w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40 sm:w-96"
+        role="dialog"
+        aria-label="Chatbot Konseling"
+    >
+        <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-950 px-4 py-3 text-white dark:border-slate-700">
+            <div class="flex min-w-0 items-center gap-3">
+                <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-500 text-white shadow-sm shadow-blue-500/40">
+                    <x-nav-icon name="chat" class="h-5 w-5" />
+                </span>
+                <div class="min-w-0">
+                    <p class="truncate text-sm font-bold">Teman BK</p>
+                    <p class="truncate text-xs text-slate-300">Siap bantu ngobrol</p>
+                </div>
+            </div>
+            <button
+                type="button"
+                x-on:click="open = false"
+                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-300 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+                aria-label="Tutup chatbot"
+            >
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" />
+                </svg>
+            </button>
+        </div>
+
+        <div x-ref="chatBody" class="min-h-0 flex-1 space-y-3 overflow-y-auto bg-slate-50 p-4 dark:bg-slate-950/50">
+            <template x-for="(item, index) in messages" :key="index">
+                <div class="flex" :class="item.role === 'user' ? 'justify-end' : 'justify-start'">
+                    <div
+                        class="max-w-[86%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm"
+                        :class="item.role === 'user'
+                            ? 'rounded-br-md bg-blue-600 text-white shadow-blue-500/20'
+                            : 'rounded-bl-md border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200'"
+                    >
+                        <p class="whitespace-pre-line" x-text="item.text"></p>
+                    </div>
+                </div>
+            </template>
+
+            <div x-show="sending" x-cloak class="flex justify-start">
+                <div class="rounded-2xl rounded-bl-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                    Sedang menulis...
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900">
+            <div class="mb-3 flex gap-2 overflow-x-auto pb-1">
+                <template x-for="text in quickMessages" :key="text">
+                    <button
+                        type="button"
+                        x-on:click="useQuickMessage(text)"
+                        class="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-blue-300 hover:text-blue-700 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-blue-500 dark:hover:text-blue-300"
+                        x-bind:disabled="sending"
+                        x-text="text"
+                    ></button>
+                </template>
+            </div>
+
+            <form x-on:submit.prevent="send" class="flex gap-2">
+                <input
+                    x-model="message"
+                    type="text"
+                    class="ui-input min-w-0 flex-1 rounded-2xl py-3"
+                    placeholder="Tulis pesan..."
+                    maxlength="2000"
+                    autocomplete="off"
+                    x-bind:disabled="sending"
+                >
+                <button
+                    type="submit"
+                    class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                    x-bind:disabled="sending || !message.trim()"
+                    aria-label="Kirim pesan"
+                >
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M3.48 20.1 21.2 12 3.48 3.9 3 10.2l10.2 1.8L3 13.8l.48 6.3Z" />
+                    </svg>
+                </button>
+            </form>
+
+            <a href="{{ route('siswa.chatbot.index') }}" class="mt-3 inline-flex w-full items-center justify-center text-xs font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+                Buka halaman chat penuh
+            </a>
+        </div>
+    </div>
+
+    <button
+        type="button"
+        x-on:click="toggle"
+        class="group relative inline-flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-white shadow-2xl shadow-blue-500/30 transition hover:-translate-y-0.5 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900/50"
+        aria-label="Buka chatbot konseling"
+        x-bind:aria-expanded="open.toString()"
+    >
+        <span class="absolute -right-0.5 -top-0.5 h-4 w-4 rounded-full border-2 border-white bg-emerald-400 dark:border-slate-900"></span>
+        <x-nav-icon name="chat" class="h-7 w-7 transition group-hover:scale-110" />
+    </button>
 </div>
 @endsection

@@ -30,6 +30,7 @@ use App\Http\Controllers\Guru\StudentController as GuruStudentController;
 use App\Http\Controllers\Siswa\ConsultationController as SiswaConsultationController;
 use App\Http\Controllers\Siswa\ConsultationRequestController;
 use App\Http\Controllers\Siswa\CareerInfoController as SiswaCareerInfoController;
+use App\Http\Controllers\Siswa\ChatbotController;
 use App\Http\Controllers\Siswa\ClassJoinController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
 use App\Http\Controllers\Siswa\InstrumentSubmissionController;
@@ -47,7 +48,9 @@ Route::get('/', function () {
 
 Route::middleware('guest')->group(function () {
     Route::get('/register/guru-bk', [GuruRegistrationController::class, 'create'])->name('guru.register');
-    Route::post('/register/guru-bk', [GuruRegistrationController::class, 'store'])->name('guru.register.store');
+    Route::post('/register/guru-bk', [GuruRegistrationController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('guru.register.store');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -138,6 +141,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/sociometry', [SociometryController::class, 'store'])->name('sociometry.store');
         Route::get('/consultations', [SiswaConsultationController::class, 'index'])->name('consultations.index');
         Route::post('/consultations', [SiswaConsultationController::class, 'store'])->name('consultations.store');
+        Route::get('/chatbot', [ChatbotController::class, 'index'])->name('chatbot.index');
+        Route::post('/chatbot', [ChatbotController::class, 'store'])->name('chatbot.store');
         Route::post('/consultation-requests', [ConsultationRequestController::class, 'store'])->name('consultation-requests.store');
         Route::post('/classes/join', [ClassJoinController::class, 'store'])->name('classes.join');
         Route::get('/careers', [SiswaCareerInfoController::class, 'index'])->name('careers.index');

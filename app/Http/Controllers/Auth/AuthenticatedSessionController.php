@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -68,15 +69,21 @@ class AuthenticatedSessionController extends Controller
 
     private function storeStudentSession(LoginRequest $request): RedirectResponse
     {
+        $request->ensureIsNotRateLimited();
+
         $student = Student::where('nisn', $request->input('nisn'))->first();
 
         if (! $student) {
+            RateLimiter::hit($request->throttleKey());
+
             throw ValidationException::withMessages([
                 'nisn' => 'NISN tidak ditemukan pada data siswa. Hubungi admin atau Guru BK.',
             ]);
         }
 
         if ($student->birth_date?->toDateString() !== $request->input('birth_date')) {
+            RateLimiter::hit($request->throttleKey());
+
             throw ValidationException::withMessages([
                 'birth_date' => 'Tanggal lahir tidak cocok dengan data siswa.',
             ]);
@@ -85,24 +92,32 @@ class AuthenticatedSessionController extends Controller
         $user = $student->user;
 
         if (! $user) {
+            RateLimiter::hit($request->throttleKey());
+
             throw ValidationException::withMessages([
                 'nisn' => 'Akun siswa belum aktif. Hubungi admin untuk menghubungkan data siswa dengan akun login.',
             ]);
         }
 
         if ($user->role !== User::ROLE_SISWA) {
+            RateLimiter::hit($request->throttleKey());
+
             throw ValidationException::withMessages([
                 'nisn' => 'Data siswa ini terhubung dengan akun yang tidak valid. Hubungi admin.',
             ]);
         }
 
         if (! $user->isApproved()) {
+            RateLimiter::hit($request->throttleKey());
+
             throw ValidationException::withMessages([
                 'nisn' => 'Akun siswa ini belum aktif. Silakan hubungi admin.',
             ]);
         }
 
         Auth::login($user, $request->boolean('remember'));
+
+        RateLimiter::clear($request->throttleKey());
 
         $request->session()->regenerate();
 

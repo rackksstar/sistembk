@@ -109,6 +109,7 @@ return [
             'section' => 'core',
             'items' => [
                 ['label' => 'Konseling', 'route' => 'siswa.consultations.index', 'active' => ['siswa.consultations.*', 'siswa.consultation-requests.*']],
+                ['label' => 'Chatbot Konseling', 'route' => 'siswa.chatbot.index', 'active' => 'siswa.chatbot.*'],
                 ['label' => 'Penilaian Layanan', 'route' => 'siswa.penilaian.index', 'active' => 'siswa.penilaian.*'],
                 ['label' => 'Angket BK', 'route' => 'siswa.angket.index', 'active' => 'siswa.angket.*'],
                 ['label' => 'Tryout', 'route' => 'siswa.tryout.index', 'active' => 'siswa.tryout.*'],
