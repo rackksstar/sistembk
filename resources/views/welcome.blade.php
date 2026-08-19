@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Platform bimbingan konseling modern untuk siswa, guru BK, dan admin.">
-    <title>Sistem Informasi BK</title>
+    <title>BK System</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=bk-system">
+    <link rel="shortcut icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=bk-system">
     @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -22,7 +24,7 @@
                 class="mx-auto flex max-w-7xl items-center justify-between rounded-full border border-white/80 dark:border-slate-700/80 bg-white/85 dark:bg-slate-900/85 px-4 py-3 shadow-md shadow-blue-100/70 backdrop-blur sm:px-6">
                 <a href="{{ url('/') }}" class="inline-flex items-center gap-3">
                     <span
-                        class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-lg shadow-blue-500/25">BK</span>
+                        class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white shadow-lg shadow-blue-500/25">BK</span>
                     <span class="text-base font-semibold tracking-wide text-slate-950 dark:text-white">BK System</span>
                 </a>
 
@@ -33,6 +35,12 @@
         </header>
 
         <main class="mx-auto max-w-7xl px-6 pb-16 pt-20 sm:px-8 lg:px-10">
+            @if (session('status'))
+                <div class="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium leading-6 text-emerald-800 shadow-sm shadow-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-200">
+                    {{ session('status') }}
+                </div>
+            @endif
+
             <section class="grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
                 <div>
                     <p

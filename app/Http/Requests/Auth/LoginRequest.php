@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -48,17 +49,26 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         $isGuruLogin = $this->string('selected_role')->toString() === 'guru';
-        $identifier = $isGuruLogin
+        $identifier = trim($isGuruLogin
             ? $this->string('login_id')->toString()
-            : $this->string('email')->toString();
-        $userQuery = \App\Models\User::query();
+            : $this->string('email')->toString());
+        $normalizedIdentifier = preg_replace('/\D+/', '', $identifier);
+        $identifiers = collect([$identifier, $normalizedIdentifier])
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+        $userQuery = User::query();
 
         if ($isGuruLogin) {
             $userQuery
-                ->where('username', $identifier)
-                ->orWhereHas('guruBkProfile', function ($query) use ($identifier) {
-                    $query->where('no_hp', $identifier)
-                        ->orWhere('nip', $identifier);
+                ->where('role', User::ROLE_GURU)
+                ->where(function ($query) use ($identifiers) {
+                    $query->whereIn('username', $identifiers)
+                        ->orWhereHas('guruBkProfile', function ($profileQuery) use ($identifiers) {
+                            $profileQuery->whereIn('no_hp', $identifiers)
+                                ->orWhereIn('nip', $identifiers);
+                        });
                 });
         } else {
             $userQuery->where('email', $identifier);

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Dashboard sistem bimbingan konseling untuk admin, guru BK, dan siswa.">
     <title>{{ config('app.name', 'BK System') }} | Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=bk-system">
+    <link rel="shortcut icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=bk-system">
     @include('partials.theme-init')
     @vite(['resources/css/app.css','resources/js/app.js'])
 </head>

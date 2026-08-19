@@ -24,7 +24,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Sistem Informasi BK') }}</title>
+    <title>{{ config('app.name', 'BK System') }}</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=bk-system">
+    <link rel="shortcut icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=bk-system">
     @include('partials.theme-init')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -36,7 +38,7 @@
         <header class="relative z-10 px-4 py-6 sm:px-6">
             <nav class="mx-auto flex max-w-6xl items-center justify-between rounded-full border border-white/80 dark:border-slate-700/80 bg-white/80 dark:bg-slate-900/80 px-4 py-3 shadow-md shadow-blue-100/70 backdrop-blur dark:border-slate-700/80 dark:bg-slate-900/80 dark:shadow-black/20 sm:px-6">
                 <a href="{{ url('/') }}" class="inline-flex items-center gap-3">
-                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white shadow-lg shadow-blue-500/25">BK</span>
+                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white shadow-lg shadow-blue-500/25">BK</span>
                     <span class="text-base font-semibold tracking-wide text-slate-950 dark:text-white">BK System</span>
                 </a>
 

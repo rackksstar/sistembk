@@ -30,9 +30,11 @@
 >
     <div class="app-sidebar__header">
         <a href="{{ $dashboardRoute }}" class="app-sidebar__brand" x-on:click="$dispatch('close-sidebar')">
-            <span class="app-sidebar__logo" aria-hidden="true">BK</span>
+            <span class="app-sidebar__logo" aria-hidden="true">
+                <span>BK</span>
+            </span>
             <span class="min-w-0">
-                <span class="app-sidebar__brand-title">Sistem BK</span>
+                <span class="app-sidebar__brand-title">BK System</span>
                 <span class="app-sidebar__role-pill">{{ $roleLabel }}</span>
             </span>
         </a>

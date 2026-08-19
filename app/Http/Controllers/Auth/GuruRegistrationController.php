@@ -57,7 +57,7 @@ class GuruRegistrationController extends Controller
             ])->withInput();
         }
 
-        return redirect()->route('login')
-            ->with('status', 'Pendaftaran Guru BK berhasil dikirim dan menunggu persetujuan admin.');
+        return redirect('/')
+            ->with('status', 'Pendaftaran Guru BK berhasil dikirim. Silakan tunggu sampai admin menyetujui akun Anda.');
     }
 }
