@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\UpdateGuruBkRequest;
 use App\Models\GuruBk;
 use App\Models\Sekolah;
 use App\Models\User;
+use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -55,7 +56,7 @@ class GuruBkController extends Controller
         $username = $data['no_hp'] ?: ($data['nip'] ?? null);
 
         try {
-            DB::transaction(function () use ($data, $sekolah, $username) {
+            $guru = DB::transaction(function () use ($data, $sekolah, $username) {
                 $user = User::create([
                     'name' => $data['name'],
                     'username' => $username,
@@ -65,7 +66,7 @@ class GuruBkController extends Controller
                     'status' => $data['status'],
                 ]);
 
-                GuruBk::create([
+                return GuruBk::create([
                     'user_id' => $user->id,
                     'sekolah_id' => $data['sekolah_id'],
                     'no_hp' => $data['no_hp'],
@@ -79,6 +80,11 @@ class GuruBkController extends Controller
                 'no_hp' => 'No. HP atau NIP sudah digunakan Guru BK lain.',
             ])->withInput();
         }
+
+        ActivityLogger::log('guru-bk.created', $guru, [
+            'nama' => $guru->user?->name,
+            'nip' => $guru->nip,
+        ]);
 
         return back()->with('success', 'Data Guru BK berhasil dibuat.');
     }
@@ -110,12 +116,22 @@ class GuruBkController extends Controller
             'bidang_studi' => $data['bidang_studi'] ?? null,
         ]);
 
+        ActivityLogger::log('guru-bk.updated', $guruBk, [
+            'nama' => $guruBk->user?->name,
+            'nip' => $guruBk->nip,
+        ]);
+
         return back()->with('success', 'Data Guru BK berhasil diperbarui.');
     }
 
     public function destroy(GuruBk $guruBk): RedirectResponse
     {
         $user = $guruBk->user;
+
+        ActivityLogger::log('guru-bk.deleted', $guruBk, [
+            'nama' => $user?->name,
+            'nip' => $guruBk->nip,
+        ]);
 
         $guruBk->delete();
         $user?->delete();

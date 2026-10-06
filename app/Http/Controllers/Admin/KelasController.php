@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\StoreKelasRequest;
 use App\Http\Requests\Admin\UpdateKelasRequest;
 use App\Models\Kelas;
 use App\Models\Sekolah;
+use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -36,7 +37,9 @@ class KelasController extends Controller
 
     public function store(StoreKelasRequest $request): RedirectResponse
     {
-        Kelas::create($request->validated());
+        $kelas = Kelas::create($request->validated());
+
+        ActivityLogger::log('kelas.created', $kelas, ['nama' => $kelas->nama]);
 
         return back()->with('success', 'Kelas berhasil dibuat.');
     }
@@ -45,11 +48,15 @@ class KelasController extends Controller
     {
         $kelas->update($request->validated());
 
+        ActivityLogger::log('kelas.updated', $kelas, ['nama' => $kelas->nama]);
+
         return back()->with('success', 'Kelas berhasil diperbarui.');
     }
 
     public function destroy(Kelas $kelas): RedirectResponse
     {
+        ActivityLogger::log('kelas.deleted', $kelas, ['nama' => $kelas->nama]);
+
         $kelas->delete();
 
         return back()->with('success', 'Kelas berhasil dihapus.');

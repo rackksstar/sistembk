@@ -14,9 +14,10 @@
         <x-alert class="mt-5" type="success" :message="session('success')" />
         <x-alert class="mt-5" type="error" :message="session('error')" />
 
-        <form method="GET" action="{{ route('admin.kategori-postingan.index') }}" class="mt-6 grid gap-3 md:grid-cols-[1fr_auto]">
+        <form method="GET" action="{{ route('admin.kategori-postingan.index') }}" class="mt-6 grid gap-3 md:grid-cols-[1fr_auto_auto]">
             <input name="search" value="{{ $search }}" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Cari kategori..." />
             <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition">Cari</button>
+            <x-filter-reset />
         </form>
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">

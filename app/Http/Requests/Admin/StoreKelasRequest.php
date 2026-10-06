@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\Kelas;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -21,8 +22,8 @@ class StoreKelasRequest extends FormRequest
                 'required', 'string', 'max:120',
                 Rule::unique('kelas', 'nama')->where(fn ($q) => $q->where('sekolah_id', $this->input('sekolah_id'))),
             ],
-            'jenjang' => ['nullable', 'string', 'max:40'],
-            'tingkatan' => ['nullable', 'string', 'max:40'],
+            'jenjang' => ['nullable', 'string', Rule::in(Kelas::JENJANG_OPTIONS)],
+            'tingkatan' => ['nullable', 'string', Rule::in(Kelas::TINGKATAN_OPTIONS)],
         ];
     }
 
@@ -30,6 +31,8 @@ class StoreKelasRequest extends FormRequest
     {
         return [
             'nama.unique' => 'Kelas dengan nama ini sudah ada di sekolah tersebut.',
+            'jenjang.in' => 'Jenjang harus salah satu dari: '.implode(', ', Kelas::JENJANG_OPTIONS).'.',
+            'tingkatan.in' => 'Tingkatan harus salah satu dari: '.implode(', ', Kelas::TINGKATAN_OPTIONS).'.',
         ];
     }
 }

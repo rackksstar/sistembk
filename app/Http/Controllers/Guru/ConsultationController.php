@@ -25,23 +25,35 @@ class ConsultationController extends Controller
     public function index(Request $request): View
     {
         $status = $request->string('status')->toString();
+        $search = $request->string('search')->toString();
+        $kategori = $request->string('kategori')->toString();
 
-        $consultations = ConsultationRequest::with([
+        $studentWithKelas = [
             'student:id,name',
             'student.studentProfile:id,user_id,kelas_id',
             'student.studentProfile.kelas:id,nama',
             'counselor:id,name',
-        ])
+        ];
+
+        $consultations = ConsultationRequest::with($studentWithKelas)
             ->where(function ($query) {
                 $query->whereNull('counselor_id')->orWhere('counselor_id', auth()->id());
             })
             ->when($status, fn ($query) => $query->where('status', $status))
+            ->when($kategori, fn ($query) => $query->where('case_category', $kategori))
+            ->when($search, fn ($query) => $query->where(function ($inner) use ($search) {
+                $inner->where('subject', 'like', "%{$search}%")
+                    ->orWhere('details', 'like', "%{$search}%")
+                    ->orWhereHas('student', fn ($s) => $s->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('student.studentProfile', fn ($sp) => $sp->where('nisn', 'like', "%{$search}%"))
+                    ->orWhereHas('counselor', fn ($c) => $c->where('name', 'like', "%{$search}%"));
+            }))
             ->latest()
             ->paginate(10)
             ->withQueryString();
 
         $upcomingWeek = ConsultationRequest::query()
-            ->with('student:id,name')
+            ->with($studentWithKelas)
             ->where('counselor_id', auth()->id())
             ->whereIn('status', [
                 ConsultationRequest::STATUS_APPROVED,
@@ -60,6 +72,8 @@ class ConsultationController extends Controller
             'statuses' => ConsultationRequest::filterableStatuses(),
             'caseCategories' => ConsultationRequest::CASE_CATEGORIES,
             'upcomingWeek' => $upcomingWeek,
+            'search' => $search,
+            'kategori' => $kategori,
         ]);
     }
 

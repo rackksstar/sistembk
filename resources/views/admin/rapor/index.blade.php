@@ -33,6 +33,7 @@
                 </select>
             </div>
             <button class="rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Filter</button>
+            <x-filter-reset />
         </form>
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">

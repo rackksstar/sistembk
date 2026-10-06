@@ -3,21 +3,39 @@
 @section('content')
 <div class="space-y-6">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <x-section-title
-                title="Konseling & Laporan"
-                description="Monitoring semua pengajuan, jadwal, hasil konseling, dan evaluasi dari Guru BK."
-            />
-            <form method="GET" class="flex gap-3">
-                <select name="status" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+        <x-section-title
+            title="Konseling & Laporan"
+            description="Monitoring semua pengajuan, jadwal, hasil konseling, dan evaluasi dari Guru BK."
+        />
+        <form method="GET" class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_190px_190px_auto]">
+            <div class="min-w-0">
+                <label for="search" class="sr-only">Cari konseling</label>
+                <input type="search" id="search" name="search" value="{{ $search }}" placeholder="Cari topik, siswa, NISN, atau guru BK..."
+                    class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+            </div>
+            <div class="min-w-0">
+                <label for="filter-status" class="sr-only">Filter status</label>
+                <select id="filter-status" name="status" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
                     <option value="">Semua status</option>
                     @foreach($statuses as $value => $label)
                         <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
-                <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition">Filter</button>
-            </form>
-        </div>
+            </div>
+            <div class="min-w-0">
+                <label for="filter-kategori" class="sr-only">Filter kategori</label>
+                <select id="filter-kategori" name="kategori" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+                    <option value="">Semua kategori</option>
+                    @foreach($caseCategories as $value => $label)
+                        <option value="{{ $value }}" @selected($kategori === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex gap-3 sm:col-span-2 lg:col-span-1">
+                <button class="flex-1 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">Filter</button>
+                <x-filter-reset />
+            </div>
+        </form>
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">
             <div class="overflow-x-auto">
