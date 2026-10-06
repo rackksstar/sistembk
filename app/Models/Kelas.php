@@ -13,6 +13,13 @@ class Kelas extends Model
 
     protected $table = 'kelas';
 
+    public const JENJANG_OPTIONS = ['SD', 'SMP', 'SMA', 'SMK'];
+
+    public const TINGKATAN_OPTIONS = [
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12',
+        'X', 'XI', 'XII',
+    ];
+
     protected $fillable = [
         'sekolah_id',
         'nama',

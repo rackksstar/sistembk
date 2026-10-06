@@ -26,6 +26,7 @@
                 </select>
             </div>
             <button class="rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Terapkan filter</button>
+            <x-filter-reset />
         </form>
     </section>
 

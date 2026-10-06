@@ -7,6 +7,7 @@ use App\Models\Student;
 use App\Services\CounselorStudentService;
 use App\Support\AngketProgress;
 use App\Support\AngketQuestions;
+use App\Support\ActivityLogger;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -97,6 +98,12 @@ class AngketController extends Controller
 
         $predikat = AngketProgress::predikat($student->responsAngket->count(), $totalSoalAktif);
         $tanggalCetak = now()->format('d M Y');
+
+        ActivityLogger::log('angket.pdf.downloaded', $student, [
+            'nama' => $student->user?->name ?? $student->name,
+            'predikat' => $predikat,
+            'total_dijawab' => $student->responsAngket->count(),
+        ]);
 
         $pdf = Pdf::loadView('guru.angket.pdf', compact(
             'student', 'predikat', 'totalSoalAktif', 'tanggalCetak'

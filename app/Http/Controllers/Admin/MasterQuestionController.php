@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreMasterQuestionRequest;
 use App\Http\Requests\Admin\UpdateMasterQuestionRequest;
 use App\Models\MasterQuestion;
+use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -38,7 +39,9 @@ class MasterQuestionController extends Controller
 
     public function store(StoreMasterQuestionRequest $request): RedirectResponse
     {
-        MasterQuestion::create($request->validated());
+        $pertanyaan = MasterQuestion::create($request->validated());
+
+        ActivityLogger::log('master-pertanyaan.created', $pertanyaan, ['kategori' => $pertanyaan->kategori]);
 
         return back()->with('success', 'Pertanyaan berhasil dibuat.');
     }
@@ -47,11 +50,17 @@ class MasterQuestionController extends Controller
     {
         $masterPertanyaan->update($request->validated());
 
+        ActivityLogger::log('master-pertanyaan.updated', $masterPertanyaan, ['kategori' => $masterPertanyaan->kategori]);
+
         return back()->with('success', 'Pertanyaan berhasil diperbarui.');
     }
 
     public function destroy(MasterQuestion $masterPertanyaan): RedirectResponse
     {
+        ActivityLogger::log('master-pertanyaan.deleted', $masterPertanyaan, [
+            'teks' => \Illuminate\Support\Str::limit($masterPertanyaan->teks, 80),
+        ]);
+
         $masterPertanyaan->delete();
 
         return back()->with('success', 'Pertanyaan berhasil dihapus.');

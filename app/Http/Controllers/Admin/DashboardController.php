@@ -7,6 +7,7 @@ use App\Models\CareerInfo;
 use App\Models\ConsultationRequest;
 use App\Models\GuidanceClass;
 use App\Models\GuruProfileChange;
+use App\Models\Kelas;
 use App\Models\MasterQuestion;
 use App\Models\Postingan;
 use App\Models\RaporBk;
@@ -83,8 +84,25 @@ class DashboardController extends Controller
             ['label' => 'Rapor BK', 'value' => RaporBk::count(), 'href' => route('admin.rapor.index')],
             ['label' => 'Postingan', 'value' => Postingan::count(), 'href' => route('admin.postingan.index')],
             ['label' => 'Soal Tryout', 'value' => MasterQuestion::where('kategori', MasterQuestion::KATEGORI_TRYOUT)->count(), 'href' => route('admin.master-pertanyaan.index', ['kategori' => 'tryout'])],
+            ['label' => 'Kelas', 'value' => Kelas::count(), 'href' => route('admin.kelas.index')],
         ];
 
-        return view('admin.dashboard', compact('metrics', 'recentRequests', 'roleSummary', 'modules', 'postinganTerbaru', 'coreSummary'));
+        $sekolahStats = [
+            'total' => Sekolah::count(),
+            'aktif' => Sekolah::where('is_active', true)->count(),
+            'nonaktif' => Sekolah::where('is_active', false)->count(),
+            'mou' => Sekolah::where('is_mou', true)->count(),
+            'paket' => Sekolah::whereNotNull('paket_aktif')->where('paket_aktif', '!=', '')->count(),
+        ];
+
+        $sekolahTerbaru = Sekolah::query()
+            ->latest()
+            ->take(5)
+            ->get(['id', 'nama', 'npsn', 'is_active', 'is_mou', 'paket_aktif', 'tanggal_aktivasi', 'created_at']);
+
+        return view('admin.dashboard', compact(
+            'metrics', 'recentRequests', 'roleSummary', 'modules',
+            'postinganTerbaru', 'coreSummary', 'sekolahStats', 'sekolahTerbaru'
+        ));
     }
 }

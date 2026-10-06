@@ -8,10 +8,11 @@
             description="Progress angket siswa di sekolah Anda atau yang pernah konseling dengan Anda."
         />
 
-        <form method="GET" class="mt-6 flex max-w-md gap-2">
+        <form method="GET" class="mt-6 flex max-w-2xl flex-wrap gap-2">
             <input type="search" name="search" value="{{ $search ?? '' }}" placeholder="Cari nama atau NISN..."
                 class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm">
             <button class="shrink-0 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">Cari</button>
+            <x-filter-reset />
         </form>
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">

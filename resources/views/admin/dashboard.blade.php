@@ -90,14 +90,64 @@
     @if(isset($coreSummary))
         <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
             <x-section-title title="Ringkasan layanan BK (Core)" description="Metrik modul tim inti." />
-            <div class="mt-4 grid gap-4 sm:grid-cols-3">
+            <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach($coreSummary as $item)
-                    <a href="{{ $item['href'] }}" class="rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-950/40 p-4 transition hover:bg-blue-50 dark:hover:bg-blue-950/40">
+                    <a href="{{ $item['href'] }}" class="group rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-blue-50 p-4 transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-blue-950/40 dark:hover:border-blue-700 dark:hover:bg-blue-950/60 dark:focus-visible:ring-offset-slate-900">
                         <p class="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">{{ $item['label'] }}</p>
                         <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $item['value'] }}</p>
+                        <span class="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-blue-600 opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100 dark:text-blue-300">Kelola <span aria-hidden="true">&rarr;</span></span>
                     </a>
                 @endforeach
             </div>
+        </section>
+    @endif
+
+    @if(isset($sekolahStats))
+        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+                <x-section-title title="Sekolah aktif" description="Pantau sekolah MOU, paket aktivasi, dan status aktif." />
+                <a href="{{ route('admin.sekolah.index') }}" class="ui-btn-secondary">Kelola sekolah</a>
+            </div>
+
+            <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                @foreach([
+                    ['label' => 'Total sekolah', 'value' => $sekolahStats['total'], 'tone' => 'text-slate-900 dark:text-slate-100'],
+                    ['label' => 'Aktif', 'value' => $sekolahStats['aktif'], 'tone' => 'text-emerald-600 dark:text-emerald-400'],
+                    ['label' => 'Nonaktif', 'value' => $sekolahStats['nonaktif'], 'tone' => 'text-slate-500 dark:text-slate-400'],
+                    ['label' => 'Sudah MOU', 'value' => $sekolahStats['mou'], 'tone' => 'text-blue-600 dark:text-blue-400'],
+                    ['label' => 'Paket aktif', 'value' => $sekolahStats['paket'], 'tone' => 'text-violet-600 dark:text-violet-400'],
+                ] as $stat)
+                    <div class="ui-card-muted px-4 py-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $stat['label'] }}</p>
+                        <p class="mt-1 text-2xl font-bold {{ $stat['tone'] }}">{{ $stat['value'] }}</p>
+                    </div>
+                @endforeach
+            </div>
+
+            @if($sekolahTerbaru->isNotEmpty())
+                <ul class="mt-5 divide-y divide-slate-100 dark:divide-slate-800">
+                    @foreach($sekolahTerbaru as $sekolah)
+                        <li class="flex flex-wrap items-center justify-between gap-3 py-3">
+                            <div class="min-w-0">
+                                <p class="truncate font-semibold text-slate-900 dark:text-slate-100">{{ $sekolah->nama }}</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">NPSN {{ $sekolah->npsn ?: '—' }}@if($sekolah->paket_aktif) · Paket {{ $sekolah->paket_aktif }}@endif</p>
+                            </div>
+                            <div class="flex shrink-0 items-center gap-2">
+                                @if($sekolah->is_mou)
+                                    <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">MOU</span>
+                                @endif
+                                <span class="rounded-full px-2.5 py-1 text-xs font-semibold {{ $sekolah->is_active ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' }}">
+                                    {{ $sekolah->is_active ? 'Aktif' : 'Nonaktif' }}
+                                </span>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            @else
+                <div class="mt-5">
+                    <x-empty-state title="Belum ada sekolah" description="Tambahkan sekolah MOU untuk mulai memantau aktivitas." />
+                </div>
+            @endif
         </section>
     @endif
 

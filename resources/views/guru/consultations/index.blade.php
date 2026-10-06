@@ -14,10 +14,12 @@
             <div class="mt-6">
                 <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Minggu ini</p>
                 <ul class="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                    @foreach($upcomingWeek as $slot)
+                    @foreach($upcomingWeek as $schedule)
                         <li class="rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm">
-                            <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $slot->student?->name }}</span>
-                            <span class="mt-1 block text-slate-600 dark:text-slate-400">{{ $slot->consultation_date->format('d M') }} · {{ substr($slot->consultation_time, 0, 5) }}</span>
+                            <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $schedule->student?->name ?? 'Siswa dihapus' }}</span>
+                            <span class="mt-1 block text-slate-600 dark:text-slate-400">
+                                {{ $schedule->consultation_date?->format('d M') ?? 'Belum dijadwalkan' }}@if($schedule->consultation_time) · {{ substr($schedule->consultation_time, 0, 5) }}@endif · {{ $schedule->caseCategoryLabel() }}
+                            </span>
                         </li>
                     @endforeach
                 </ul>
@@ -26,18 +28,36 @@
     </section>
 
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <x-section-title title="Pengajuan & Approval Konseling" description="Setujui, tolak, jadwalkan, dan isi laporan konseling." />
-            <form method="GET" class="flex gap-3">
-                <select name="status" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm">
+        <x-section-title title="Pengajuan & Approval Konseling" description="Setujui, tolak, jadwalkan, dan isi laporan konseling." />
+        <form method="GET" class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_190px_190px_auto]">
+            <div class="min-w-0">
+                <label for="search" class="sr-only">Cari konseling</label>
+                <input type="search" id="search" name="search" value="{{ $search }}" placeholder="Cari topik, siswa, NISN, atau guru BK..."
+                    class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+            </div>
+            <div class="min-w-0">
+                <label for="filter-status" class="sr-only">Filter status</label>
+                <select id="filter-status" name="status" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm">
                     <option value="">Semua status</option>
                     @foreach($statuses as $value => $label)
                         <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
-                <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">Filter</button>
-            </form>
-        </div>
+            </div>
+            <div class="min-w-0">
+                <label for="filter-kategori" class="sr-only">Filter kategori</label>
+                <select id="filter-kategori" name="kategori" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm">
+                    <option value="">Semua kategori</option>
+                    @foreach($caseCategories as $value => $label)
+                        <option value="{{ $value }}" @selected($kategori === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex gap-3 sm:col-span-2 lg:col-span-1">
+                <button class="flex-1 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">Filter</button>
+                <x-filter-reset />
+            </div>
+        </form>
         <x-alert class="mt-5" type="success" :message="session('success')" />
         @if($errors->any())
             <x-alert class="mt-3" type="error" :message="$errors->first()" />
@@ -60,17 +80,35 @@
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                         @forelse($consultations as $consultation)
                             <tr>
-                                <td class="px-5 py-4 font-semibold text-slate-900 dark:text-slate-100">{{ $consultation->student?->name }}</td>
-                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $consultation->student?->studentProfile?->kelas?->nama ?? '—' }}</td>
-                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $consultation->subject }}</td>
-                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $consultation->caseCategoryLabel() }}</td>
-                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">
-                                    @if($consultation->consultation_date)
-                                        {{ $consultation->consultation_date->format('d M Y') }} {{ substr($consultation->consultation_time, 0, 5) }}
+                                <td class="px-5 py-4">
+                                    <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $consultation->student?->name }}</span>
+                                    @if($consultation->counselor_id)
+                                        <span class="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">Guru: {{ $consultation->counselor?->name ?? '—' }}</span>
                                     @else
-                                        {{ $consultation->preferred_time }}
+                                        <span class="mt-0.5 block text-xs text-amber-600 dark:text-amber-400">Belum ditugaskan</span>
                                     @endif
                                 </td>
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $consultation->student?->studentProfile?->kelas?->nama ?? '—' }}</td>
+                                <td class="px-5 py-4">
+                                    <span class="font-medium text-slate-900 dark:text-slate-100">{{ $consultation->subject }}</span>
+                                    @if($consultation->details)
+                                        <span class="mt-0.5 block line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{{ $consultation->details }}</span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $consultation->caseCategoryLabel() }}</td>
+                                @if($consultation->consultation_date)
+                                    <td class="px-5 py-4">
+                                        <span class="font-medium text-slate-900 dark:text-slate-100">{{ $consultation->consultation_date->format('d M Y') }}</span>
+                                        <span class="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">{{ $consultation->consultation_time ? substr($consultation->consultation_time, 0, 5) : '-' }}</span>
+                                    </td>
+                                @else
+                                    <td class="px-5 py-4">
+                                        <span class="font-medium text-slate-900 dark:text-slate-100">{{ $consultation->preferred_time ?? '-' }}</span>
+                                        @if($consultation->preferred_date)
+                                            <span class="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">{{ $consultation->preferred_date->format('d M Y') }}</span>
+                                        @endif
+                                    </td>
+                                @endif
                                 <td class="px-5 py-4"><x-status-badge :status="$consultation->status" /></td>
                                 <td class="px-5 py-4">
                                     <div class="flex flex-wrap justify-end gap-2">
@@ -116,8 +154,14 @@
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Kelas</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->student?->studentProfile?->kelas?->nama ?? '—' }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Status</dt><dd class="mt-1"><x-status-badge :status="$consultation->status" /></dd></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Kategori</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->caseCategoryLabel() }}</dd></div>
-                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Preferensi</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->preferred_time }}</dd></div>
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Guru BK</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->counselor?->name ?? 'Belum ditugaskan' }}</dd></div>
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Preferensi siswa</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->preferred_time ?? '-' }}{{ $consultation->preferred_date ? ' · '.$consultation->preferred_date->format('d M Y') : '' }}</dd></div>
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Jadwal sesi</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->consultation_date?->format('d M Y') ?? 'Belum dijadwalkan' }}{{ $consultation->consultation_time ? ' · '.substr($consultation->consultation_time, 0, 5) : '' }}</dd></div>
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Diajukan</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->created_at?->format('d M Y H:i') }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4 sm:col-span-2"><dt class="font-semibold">Detail siswa</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->details ?? '-' }}</dd></div>
+                    @if($consultation->notes)
+                        <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4 sm:col-span-2"><dt class="font-semibold">Catatan jadwal</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->notes }}</dd></div>
+                    @endif
                     @if($consultation->rejection_reason)
                         <div class="rounded-2xl bg-red-50 dark:bg-red-950/40 p-4 sm:col-span-2"><dt class="font-semibold text-red-800">Alasan ditolak</dt><dd class="mt-1 text-red-700 dark:text-red-300">{{ $consultation->rejection_reason }}</dd></div>
                     @endif

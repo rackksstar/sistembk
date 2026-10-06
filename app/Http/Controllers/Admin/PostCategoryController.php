@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StorePostCategoryRequest;
 use App\Http\Requests\Admin\UpdatePostCategoryRequest;
 use App\Models\PostCategory;
+use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -31,10 +32,12 @@ class PostCategoryController extends Controller
         $name = $request->validated('name');
         $slug = Str::slug($name);
 
-        PostCategory::create([
+        $kategori = PostCategory::create([
             'name' => $name,
             'slug' => $this->uniqueSlug($slug),
         ]);
+
+        ActivityLogger::log('kategori-postingan.created', $kategori, ['name' => $kategori->name]);
 
         return back()->with('success', 'Kategori postingan berhasil dibuat.');
     }
@@ -49,6 +52,8 @@ class PostCategoryController extends Controller
             'slug' => $this->uniqueSlug($slug, $kategoriPostingan->id),
         ]);
 
+        ActivityLogger::log('kategori-postingan.updated', $kategoriPostingan, ['name' => $kategoriPostingan->name]);
+
         return back()->with('success', 'Kategori postingan berhasil diperbarui.');
     }
 
@@ -59,6 +64,8 @@ class PostCategoryController extends Controller
                 'postingan' => 'Kategori tidak dapat dihapus karena masih memiliki postingan. Pindahkan atau hapus postingannya terlebih dahulu.',
             ]);
         }
+
+        ActivityLogger::log('kategori-postingan.deleted', $kategoriPostingan, ['name' => $kategoriPostingan->name]);
 
         $kategoriPostingan->delete();
 

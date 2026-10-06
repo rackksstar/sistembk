@@ -5,7 +5,7 @@
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <x-section-title title="Log Aktivitas" description="Catatan aksi penting di sistem (read-only)." />
 
-        <form method="GET" class="mt-6 grid gap-3 md:grid-cols-[minmax(0,1fr)_220px_auto]">
+        <form method="GET" class="mt-6 grid gap-3 md:grid-cols-[minmax(0,1fr)_220px_auto_auto]">
             <x-text-input name="search" value="{{ $search }}" placeholder="Cari aksi atau nama pengguna..." class="w-full" />
             <x-form-select name="action">
                 <option value="">Semua aksi</option>
@@ -14,6 +14,7 @@
                 @endforeach
             </x-form-select>
             <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">Filter</button>
+            <x-filter-reset />
         </form>
     </section>
 

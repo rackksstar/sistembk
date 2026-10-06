@@ -13,7 +13,7 @@
 
         <x-alert class="mt-5" type="success" :message="session('success')" />
 
-        <form method="GET" class="mt-6 grid gap-3 md:grid-cols-[1fr_180px_160px_auto]">
+        <form method="GET" class="mt-6 grid gap-3 md:grid-cols-[1fr_180px_160px_auto_auto]">
             <input name="search" value="{{ $search }}" placeholder="Cari judul atau isi..." class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-2.5 text-sm">
             <select name="kategori" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-2.5 text-sm">
                 <option value="">Semua kategori</option>
@@ -28,6 +28,7 @@
                 @endforeach
             </select>
             <button class="rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Filter</button>
+            <x-filter-reset />
         </form>
     </section>
 

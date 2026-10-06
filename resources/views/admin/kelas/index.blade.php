@@ -14,7 +14,7 @@
         <x-alert class="mt-5" type="success" :message="session('success')" />
         <x-alert class="mt-5" type="error" :message="session('error')" />
 
-        <form method="GET" action="{{ route('admin.kelas.index') }}" class="mt-6 grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px_180px_auto]">
+        <form method="GET" action="{{ route('admin.kelas.index') }}" class="mt-6 grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px_180px_auto_auto]">
             <input name="search" value="{{ $search }}" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Cari nama kelas..." />
             <select name="sekolah_id" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
                 <option value="">Semua sekolah</option>
@@ -29,6 +29,7 @@
                 @endforeach
             </select>
             <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition">Terapkan</button>
+            <x-filter-reset />
         </form>
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">

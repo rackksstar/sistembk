@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Kelas;
 use App\Models\Student;
 use App\Services\CounselorStudentService;
+use App\Support\ActivityLogger;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -47,7 +48,12 @@ class StudentController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        Student::create($this->validatedData($request));
+        $student = Student::create($this->validatedData($request));
+
+        ActivityLogger::log('siswa.created', $student, [
+            'nama' => $student->name,
+            'nisn' => $student->nisn,
+        ]);
 
         return back()->with('success', 'Data NISN dan tanggal lahir siswa berhasil disimpan.');
     }
@@ -121,6 +127,13 @@ class StudentController extends Controller
 
         fclose($file);
 
+        ActivityLogger::log('siswa.imported', null, [
+            'file' => $request->file('csv_file')->getClientOriginalName(),
+            'baru' => $created,
+            'diperbarui' => $updated,
+            'dilewati' => $skipped,
+        ]);
+
         return back()->with('success', "Import selesai. {$created} data baru, {$updated} data diperbarui, {$skipped} baris dilewati.");
     }
 
@@ -130,12 +143,22 @@ class StudentController extends Controller
 
         $student->update($this->validatedData($request, $student));
 
+        ActivityLogger::log('siswa.updated', $student, [
+            'nama' => $student->name,
+            'nisn' => $student->nisn,
+        ]);
+
         return back()->with('success', 'Data siswa berhasil diperbarui.');
     }
 
     public function destroy(Student $student): RedirectResponse
     {
         abort_unless($this->counselorStudentService->canAccess($student, auth()->user()), 403);
+
+        ActivityLogger::log('siswa.deleted', $student, [
+            'nama' => $student->name,
+            'nisn' => $student->nisn,
+        ]);
 
         $student->delete();
 

@@ -146,11 +146,168 @@ class ConsultationTest extends TestCase
             ->assertViewHas('upcomingWeek', fn ($slots) => $slots->isNotEmpty());
     }
 
+    public function test_jadwal_tanpa_jam_tetap_aman_dirender(): void
+    {
+        $siswa = $this->buatSiswa();
+        $guru = User::factory()->create([
+            'role' => User::ROLE_GURU,
+            'status' => User::STATUS_APPROVED,
+            'name' => 'Guru BK Uji',
+        ]);
+
+        $tanggal = now()->addDay()->startOfDay();
+
+        ConsultationRequest::create([
+            'student_id' => $siswa->id,
+            'counselor_id' => $guru->id,
+            'subject' => 'Konseling tanpa jam',
+            'case_category' => ConsultationRequest::CASE_SOSIAL,
+            'preferred_time' => 'Fleksibel',
+            'consultation_date' => $tanggal,
+            'consultation_time' => null,
+            'status' => ConsultationRequest::STATUS_APPROVED,
+        ]);
+
+        $guruPage = $this->actingAs($guru)->get(route('guru.consultations.index'));
+        $guruPage->assertOk()->assertSee('Konseling tanpa jam');
+        $this->assertStringContainsString(
+            $tanggal->format('d M').' · Sosial',
+            $this->teks($guruPage->getContent()),
+            'Widget jadwal guru harus menampilkan satu pemisah, tanpa jam kosong.',
+        );
+
+        $siswaPage = $this->actingAs($siswa)->get(route('siswa.consultations.index'));
+        $siswaPage->assertOk()->assertSee('Konseling tanpa jam');
+        $this->assertStringContainsString(
+            $tanggal->format('d M Y').' · '.$guru->name,
+            $this->teks($siswaPage->getContent()),
+            'Widget jadwal siswa harus menampilkan satu pemisah, tanpa jam kosong.',
+        );
+    }
+
+    public function test_filter_konseling_menampilkan_tombol_reset(): void
+    {
+        $siswa = $this->buatSiswa();
+        $guru = User::factory()->create([
+            'role' => User::ROLE_GURU,
+            'status' => User::STATUS_APPROVED,
+        ]);
+
+        $this->actingAs($guru)
+            ->get(route('guru.consultations.index'))
+            ->assertOk()
+            ->assertDontSee('>Reset<', escape: false);
+
+        $this->actingAs($guru)
+            ->get(route('guru.consultations.index', ['status' => ConsultationRequest::STATUS_APPROVED]))
+            ->assertOk()
+            ->assertSee('>Reset<', escape: false);
+
+        $this->actingAs($siswa)
+            ->get(route('siswa.consultations.index', ['status' => ConsultationRequest::STATUS_PENDING]))
+            ->assertOk()
+            ->assertSee('>Reset<', escape: false);
+    }
+
     public function test_legacy_feedback_siswa_redirect_ke_penilaian(): void
     {
         $this->actingAs($this->buatSiswa())
             ->get(route('siswa.feedback.create'))
             ->assertRedirect(route('siswa.penilaian.index'));
+    }
+
+    public function test_guru_bisa_mencari_konseling_berdasarkan_topik(): void
+    {
+        [, $guru, $konseling] = $this->buatPengajuanPending();
+
+        $lain = ConsultationRequest::create([
+            'student_id' => $konseling->student_id,
+            'counselor_id' => $guru->id,
+            'subject' => 'Topik yang sangat berbeda',
+            'case_category' => ConsultationRequest::CASE_BELAJAR,
+            'preferred_time' => 'Pagi',
+            'status' => ConsultationRequest::STATUS_PENDING,
+        ]);
+
+        $html = $this->teks($this->actingAs($guru)
+            ->get(route('guru.consultations.index', ['search' => 'Masalah']))
+            ->assertOk()
+            ->getContent());
+
+        $this->assertStringContainsString('Masalah sosial', $html);
+        $this->assertStringNotContainsString($lain->subject, $html);
+    }
+
+    public function test_guru_bisa_mencari_konseling_berdasarkan_nisn_siswa(): void
+    {
+        [$siswa, $guru] = $this->buatPengajuanPending();
+
+        $nisn = Student::query()->findOrFail($siswa->id)->nisn;
+
+        $html = $this->teks($this->actingAs($guru)
+            ->get(route('guru.consultations.index', ['search' => $nisn]))
+            ->assertOk()
+            ->getContent());
+
+        $this->assertStringContainsString('Masalah sosial', $html);
+    }
+
+    public function test_guru_bisa_memfilter_konseling_sesuai_kategori(): void
+    {
+        [, $guru, $konseling] = $this->buatPengajuanPending();
+
+        $lain = ConsultationRequest::create([
+            'student_id' => $konseling->student_id,
+            'counselor_id' => $guru->id,
+            'subject' => 'Kesulitan belajar',
+            'case_category' => ConsultationRequest::CASE_BELAJAR,
+            'preferred_time' => 'Pagi',
+            'status' => ConsultationRequest::STATUS_PENDING,
+        ]);
+
+        $html = $this->teks($this->actingAs($guru)
+            ->get(route('guru.consultations.index', ['kategori' => ConsultationRequest::CASE_BELAJAR]))
+            ->assertOk()
+            ->getContent());
+
+        $this->assertStringContainsString($lain->subject, $html);
+        $this->assertStringNotContainsString('Masalah sosial', $html);
+    }
+
+    public function test_admin_bisa_mencari_konseling_berdasarkan_nama_siswa(): void
+    {
+        [$siswa, , $konseling] = $this->buatPengajuanPending();
+
+        $admin = User::factory()->create([
+            'role' => User::ROLE_ADMIN,
+            'status' => User::STATUS_APPROVED,
+        ]);
+
+        $html = $this->teks($this->actingAs($admin)
+            ->get(route('admin.consultations.index', ['search' => $siswa->name]))
+            ->assertOk()
+            ->getContent());
+
+        $this->assertStringContainsString('Masalah sosial', $html);
+    }
+
+    public function test_filter_konseling_mencerminkan_filter_kategori_ke_form(): void
+    {
+        [, $guru] = $this->buatPengajuanPending();
+
+        $this->actingAs($guru)
+            ->get(route('guru.consultations.index', ['kategori' => ConsultationRequest::CASE_SOSIAL]))
+            ->assertOk()
+            ->assertSee('name="kategori"', escape: false)
+            ->assertSee('>Reset<', escape: false);
+    }
+
+    /**
+     * Ratakan HTML supaya spasi/newline dari template tidak mengganggu pencocokan teks.
+     */
+    private function teks(string $html): string
+    {
+        return trim(preg_replace('/\s+/', ' ', strip_tags($html)));
     }
 
     private function buatSiswa(): User

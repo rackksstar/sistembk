@@ -26,9 +26,7 @@
                         <li class="flex flex-wrap items-center justify-between gap-2 text-sm">
                             <span class="font-semibold text-slate-900 dark:text-slate-100">{{ $item->subject }}</span>
                             <span class="text-slate-600 dark:text-slate-400">
-                                {{ $item->consultation_date->format('d M Y') }}
-                                {{ substr($item->consultation_time, 0, 5) }}
-                                · {{ $item->counselor?->name }}
+                                {{ $item->consultation_date->format('d M Y') }}@if($item->consultation_time) · {{ substr($item->consultation_time, 0, 5) }}@endif · {{ $item->counselor?->name }}
                             </span>
                         </li>
                     @endforeach
@@ -91,13 +89,14 @@
         <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <x-section-title title="Riwayat pengajuan" description="Semua permintaan konseling Anda." />
             <form method="GET" class="flex gap-2">
-                <select name="status" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-2.5 text-sm">
+                <select name="status" class="min-w-0 flex-1 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-2.5 text-sm">
                     <option value="">Semua status</option>
                     @foreach($statuses as $value => $label)
                         <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
                 <button class="rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Filter</button>
+                <x-filter-reset />
             </form>
         </div>
 
@@ -124,10 +123,9 @@
                                 <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $consultation->counselor?->name ?? '—' }}</td>
                                 <td class="px-5 py-4 text-slate-600 dark:text-slate-400">
                                     @if($consultation->consultation_date)
-                                        {{ $consultation->consultation_date->format('d M Y') }}
-                                        {{ substr($consultation->consultation_time, 0, 5) }}
+                                        {{ $consultation->consultation_date->format('d M Y') }}@if($consultation->consultation_time) · {{ substr($consultation->consultation_time, 0, 5) }}@endif
                                     @else
-                                        {{ $consultation->preferred_time }}
+                                        {{ $consultation->preferred_time ?: '—' }}
                                     @endif
                                 </td>
                                 <td class="px-5 py-4">

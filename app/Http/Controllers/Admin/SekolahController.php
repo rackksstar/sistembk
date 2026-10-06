@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreSekolahRequest;
 use App\Http\Requests\Admin\UpdateSekolahRequest;
 use App\Models\Sekolah;
+use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -42,7 +43,9 @@ class SekolahController extends Controller
             $data['logo_path'] = $request->file('logo')->store('sekolah-logos', 'public');
         }
 
-        Sekolah::create($data);
+        $sekolah = Sekolah::create($data);
+
+        ActivityLogger::log('sekolah.created', $sekolah, ['nama' => $sekolah->nama, 'npsn' => $sekolah->npsn]);
 
         return back()->with('success', 'Sekolah berhasil dibuat.');
     }
@@ -62,11 +65,15 @@ class SekolahController extends Controller
 
         $sekolah->update($data);
 
+        ActivityLogger::log('sekolah.updated', $sekolah, ['nama' => $sekolah->nama, 'npsn' => $sekolah->npsn]);
+
         return back()->with('success', 'Sekolah berhasil diperbarui.');
     }
 
     public function destroy(Sekolah $sekolah): RedirectResponse
     {
+        ActivityLogger::log('sekolah.deleted', $sekolah, ['nama' => $sekolah->nama, 'npsn' => $sekolah->npsn]);
+
         if ($sekolah->logo_path) {
             Storage::disk('public')->delete($sekolah->logo_path);
         }

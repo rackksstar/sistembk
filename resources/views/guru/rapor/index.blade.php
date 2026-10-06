@@ -28,6 +28,7 @@
                     class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-2.5 text-sm">
             </div>
             <button class="rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-500">Terapkan</button>
+            <x-filter-reset />
         </form>
     </section>
 
