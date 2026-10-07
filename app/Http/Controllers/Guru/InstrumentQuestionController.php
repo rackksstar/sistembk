@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Guru\StoreInstrumentQuestionRequest;
+use App\Http\Requests\Guru\UpdateInstrumentQuestionRequest;
 use App\Models\InstrumentQuestion;
+use App\Models\InterestCategory;
+use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class InstrumentQuestionController extends Controller
@@ -16,31 +20,60 @@ class InstrumentQuestionController extends Controller
      */
     public function index(Request $request): View
     {
-        // Mengambil filter kategori dari URL (jika ada)
         $category = $request->string('category')->toString();
+        $interestCategoryId = $request->filled('interest_category_id')
+            ? $request->integer('interest_category_id')
+            : null;
+        $jenjangTarget = $request->string('jenjang_target')->toString();
 
-        // Query data soal dengan filter kategori dan pagination
         $questions = InstrumentQuestion::query()
+            ->with('interestCategory')
             ->when($category, fn ($query) => $query->where('category', $category))
-            ->latest() // Urutkan dari yang terbaru
-            ->paginate(10) // Batasi 10 data per halaman
-            ->withQueryString(); // Jaga agar parameter pencarian tidak hilang saat pindah halaman
+            ->when($interestCategoryId, fn ($query) => $query->where('interest_category_id', $interestCategoryId))
+            ->when($jenjangTarget, fn ($query) => $query->where('jenjang_target', $jenjangTarget))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        $usedCategoryIds = $questions->getCollection()
+            ->pluck('interest_category_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $interestCategories = InterestCategory::query()
+            ->where(function ($query) use ($usedCategoryIds) {
+                $query->where('is_active', true);
+                if ($usedCategoryIds->isNotEmpty()) {
+                    $query->orWhereIn('id', $usedCategoryIds);
+                }
+            })
+            ->orderBy('urutan')
+            ->orderBy('nama')
+            ->get();
 
         return view('guru.instruments.questions.index', [
             'questions' => $questions,
-            'categories' => InstrumentQuestion::CATEGORIES, // Ambil daftar kategori dari model
+            'categories' => InstrumentQuestion::CATEGORIES,
             'category' => $category,
+            'interestCategories' => $interestCategories,
+            'interest_category_id' => $interestCategoryId,
+            'jenjang_target' => $jenjangTarget,
+            'jenjangTargets' => InstrumentQuestion::JENJANG_TARGETS,
         ]);
     }
 
     /**
      * Menyimpan soal baru ke database
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreInstrumentQuestionRequest $request): RedirectResponse
     {
-        // Gabungkan data tervalidasi dengan ID user yang sedang login
-        InstrumentQuestion::create($this->validatedData($request) + [
+        $question = InstrumentQuestion::create($request->instrumentQuestionData() + [
             'created_by' => auth()->id(),
+        ]);
+
+        ActivityLogger::log('instrument-question.created', $question, [
+            'question' => Str::limit($question->question, 80),
         ]);
 
         return back()->with('success', 'Soal instrumen berhasil ditambahkan.');
@@ -49,10 +82,13 @@ class InstrumentQuestionController extends Controller
     /**
      * Memperbarui data soal yang sudah ada
      */
-    public function update(Request $request, InstrumentQuestion $question): RedirectResponse
+    public function update(UpdateInstrumentQuestionRequest $request, InstrumentQuestion $question): RedirectResponse
     {
-        // Update model berdasarkan data yang sudah lolos validasi
-        $question->update($this->validatedData($request));
+        $question->update($request->instrumentQuestionData());
+
+        ActivityLogger::log('instrument-question.updated', $question, [
+            'question' => Str::limit($question->question, 80),
+        ]);
 
         return back()->with('success', 'Soal instrumen berhasil diperbarui.');
     }
@@ -62,38 +98,16 @@ class InstrumentQuestionController extends Controller
      */
     public function destroy(InstrumentQuestion $question): RedirectResponse
     {
-        $question->delete();
-
-        return back()->with('success', 'Soal instrumen berhasil dihapus.');
-    }
-
-    /**
-     * Fungsi pembantu untuk validasi input form
-     * Dipakai di fungsi store dan update (biar gak nulis ulang/DRY)
-     */
-    private function validatedData(Request $request): array
-    {
-        $validated = $request->validate([
-            'category' => ['required', Rule::in(array_keys(InstrumentQuestion::CATEGORIES))],
-            'question' => ['required', 'string', 'max:1000'],
-            'is_active' => ['nullable', 'boolean'],
-            'options' => ['required', 'array', 'min:2'], // Minimal harus ada 2 pilihan jawaban
-            'options.*.label' => ['required', 'string', 'max:255'],
-            'options.*.score' => ['required', 'integer', 'min:0', 'max:100'],
+        ActivityLogger::log('instrument-question.deleted', $question, [
+            'question' => Str::limit($question->question, 80),
         ]);
 
-        // Memastikan is_active bernilai boolean (default true jika kosong)
-        $validated['is_active'] = $request->boolean('is_active', true);
+        if ($question->answers()->exists()) {
+            $question->delete();
+        } else {
+            $question->forceDelete();
+        }
 
-        // Membersihkan dan memastikan format array options (biasanya disimpan sebagai JSON)
-        $validated['options'] = collect($validated['options'])
-            ->map(fn ($option) => [
-                'label' => $option['label'],
-                'score' => (int) $option['score'],
-            ])
-            ->values()
-            ->all();
-
-        return $validated;
+        return back()->with('success', 'Soal instrumen berhasil dihapus.');
     }
 }

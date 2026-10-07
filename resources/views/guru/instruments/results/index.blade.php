@@ -34,7 +34,25 @@
                     </div>
                 </div>
                 <div class="mt-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-4">
-                    <p class="font-semibold text-slate-900 dark:text-slate-100">{{ $submission->result_label }}</p>
+                    @if($submission->category === \App\Models\InstrumentQuestion::CATEGORY_MINAT_BAKAT && $submission->kode_minat)
+                        <p class="text-xs font-bold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-300">
+                            Kode Minat: {{ $submission->kode_minat }}
+                            @if($submission->jenjang)
+                                · {{ $submission->jenjang }}
+                            @endif
+                        </p>
+                        @php
+                            $topScores = collect($submission->category_scores ?? [])->take(3);
+                        @endphp
+                        @if($topScores->isNotEmpty())
+                            <p class="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                                @foreach($topScores as $scoreRow)
+                                    {{ $scoreRow['kode'] ?? '?' }} {{ number_format((float) ($scoreRow['persen'] ?? 0), 1) }}%@if(! $loop->last) · @endif
+                                @endforeach
+                            </p>
+                        @endif
+                    @endif
+                    <p class="mt-1 font-semibold text-slate-900 dark:text-slate-100">{{ $submission->result_label }}</p>
                     <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">{{ $submission->result_description }}</p>
                 </div>
             </article>

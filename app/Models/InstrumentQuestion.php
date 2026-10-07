@@ -2,16 +2,24 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class InstrumentQuestion extends Model
 {
+    use SoftDeletes;
+
     public const CATEGORY_MINAT_BAKAT = 'minat_bakat';
+
     public const CATEGORY_GAYA_BELAJAR = 'gaya_belajar';
+
     public const CATEGORY_KEPRIBADIAN = 'kepribadian';
+
     public const CATEGORY_SOSIOMETRI = 'sosiometri';
+
     public const CATEGORY_ANGKET_MASALAH = 'angket_masalah';
 
     public const CATEGORIES = [
@@ -22,19 +30,36 @@ class InstrumentQuestion extends Model
         self::CATEGORY_ANGKET_MASALAH => 'Masalah',
     ];
 
-    protected $fillable = ['category', 'question', 'options', 'is_active', 'created_by'];
+    public const JENJANG_TARGETS = ['semua', 'SMA', 'SMK'];
+
+    protected $fillable = [
+        'category',
+        'interest_category_id',
+        'jenjang_target',
+        'bobot',
+        'question',
+        'options',
+        'is_active',
+        'created_by',
+    ];
 
     protected function casts(): array
     {
         return [
             'options' => 'array',
             'is_active' => 'boolean',
+            'bobot' => 'integer',
         ];
     }
 
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function interestCategory(): BelongsTo
+    {
+        return $this->belongsTo(InterestCategory::class);
     }
 
     public function answers(): HasMany
@@ -45,5 +70,24 @@ class InstrumentQuestion extends Model
     public function categoryLabel(): string
     {
         return self::CATEGORIES[$this->category] ?? $this->category;
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeForJenjang(Builder $query, ?string $jenjang): Builder
+    {
+        if (! $jenjang || ! in_array($jenjang, ['SMA', 'SMK'], true)) {
+            return $query->where('jenjang_target', 'semua');
+        }
+
+        return $query->whereIn('jenjang_target', ['semua', $jenjang]);
+    }
+
+    public function isCategorizedForMinat(): bool
+    {
+        return $this->category === self::CATEGORY_MINAT_BAKAT && $this->interest_category_id !== null;
     }
 }
