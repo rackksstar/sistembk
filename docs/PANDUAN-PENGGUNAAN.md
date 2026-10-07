@@ -394,6 +394,9 @@ Daftar 5 sekolah terbaru: nama · "NPSN {npsn}" · "· Paket {paket_aktif}" · b
 | **Data Master** | Sekolah | `admin.sekolah.index` | Sekolah |
 | | Kelas | `admin.kelas.index` | Kelas |
 | | Guru BK | `admin.guru-bk.index` | Guru BK |
+| | Kategori Minat | `admin.interest-categories.index` | Kategori Minat |
+| | Program Studi PCR | `admin.program-studi.index` | Program Studi PCR |
+| | Bidang Karier | `admin.bidang-karier.index` | Bidang Karier |
 | | Master Pertanyaan | `admin.master-pertanyaan.index` | Master Pertanyaan |
 | | Kategori Artikel | `admin.kategori-postingan.index` | Kategori Artikel |
 | | Artikel BK | `admin.postingan.index` | Artikel BK |
@@ -905,6 +908,69 @@ Resource `careers`, `->except(['create','show','edit'])`
 - **Kolom:** Waktu (`d M Y H:i`) | Pengguna (nama, fallback "Sistem") | Aksi (string mentah) | Subjek (`ClassBasename #id` atau `-`)
 - Sepenuhnya read-only. **Tidak ada activity log** untuk halaman ini sendiri.
 - *Empty state:* "Belum ada log" / "Log akan muncul saat pengguna melakukan aksi penting."
+
+---
+
+### 6.18 Kategori Minat (RIASEC)
+
+Resource `interest-categories`, `->except(['create','show','edit'])`. Menu: **Data Master → Kategori Minat**.
+
+| Method | URI | Nama route |
+|---|---|---|
+| GET | `/admin/interest-categories` | `admin.interest-categories.index` |
+| POST | `/admin/interest-categories` | `admin.interest-categories.store` |
+| PUT/PATCH | `/admin/interest-categories/{interestCategory}` | `admin.interest-categories.update` |
+| DELETE | `/admin/interest-categories/{interestCategory}` | `admin.interest-categories.destroy` |
+
+**Alur admin**
+1. Buka **Kategori Minat** → daftar kategori aktif/nonaktif.
+2. **Tambah kategori** (modal) → isi kode, nama, deskripsi, warna, urutan, status → Simpan.
+3. **Edit** / **Nonaktifkan** bila tidak ingin dipakai soal baru; hapus hanya jika tidak dipakai soal.
+
+- Seed awal 6 kategori RIASEC: R Teknik, I Teknologi & Sains, A Kreatif, S Sosial, E Bisnis, C Administrasi & Data (`InterestCategorySeeder`).
+- Field: `kode` (max 5, unik), `nama`, `deskripsi`, `warna`, `urutan`, `is_active`.
+- Select di form/filter memakai **Select2** (cari opsi).
+- Hapus ditolak bila kategori masih dipakai soal: *"Kategori tidak dapat dihapus karena masih dipakai soal. Nonaktifkan saja."*
+- Activity log: `interest-category.created|updated|deleted` (properties: `nama`).
+
+### 6.19 Program Studi PCR
+
+Resource `program-studi`. Fokus **Politeknik Caltex Riau** saja. Menu: **Data Master → Program Studi PCR**.
+
+| Method | URI | Nama route |
+|---|---|---|
+| GET | `/admin/program-studi` | `admin.program-studi.index` |
+| POST | `/admin/program-studi` | `admin.program-studi.store` |
+| PUT/PATCH | `/admin/program-studi/{programStudi}` | `admin.program-studi.update` |
+| DELETE | `/admin/program-studi/{programStudi}` | `admin.program-studi.destroy` |
+
+**Alur admin**
+1. Seed awal lewat `ProgramStudiPcrSeeder` (`is_verified = false`).
+2. Verifikasi nama/jenjang di `https://pmb.pcr.ac.id`.
+3. Edit prodi → centang kategori minat + relevansi 1–3 → set **Terverifikasi** + **Aktif**.
+4. Filter daftar: search, jurusan, verified, active (Select2).
+
+- Field utama: `institusi`, `nama`, `jenjang_pendidikan` (D3/D4), `jurusan`, `is_verified`, `is_active`, plus pivot kategori minat + relevansi 1–3.
+- Rekomendasi siswa SMA **hanya** menampilkan prodi `is_active` dan `is_verified`.
+- Activity log: `program-studi.created|updated|deleted`.
+
+### 6.20 Bidang Karier (SMK)
+
+Resource `bidang-karier` (model `CareerField`; **bukan** `career_infos` / Informasi Karier). Menu: **Data Master → Bidang Karier**.
+
+| Method | URI | Nama route |
+|---|---|---|
+| GET | `/admin/bidang-karier` | `admin.bidang-karier.index` |
+| POST | `/admin/bidang-karier` | `admin.bidang-karier.store` |
+| PUT/PATCH | `/admin/bidang-karier/{careerField}` | `admin.bidang-karier.update` |
+| DELETE | `/admin/bidang-karier/{careerField}` | `admin.bidang-karier.destroy` |
+
+**Alur admin**
+1. Seed awal lewat `CareerFieldSeeder` (13 bidang + Job Zone + contoh pekerjaan).
+2. Tambah/Edit → isi nama, deskripsi, Job Zone 1–5, contoh pekerjaan (satu per baris), relasi kategori + relevansi.
+3. Dipakai rekomendasi hasil asesmen untuk siswa **SMK**.
+
+- Activity log: `bidang-karier.created|updated|deleted`.
 
 ---
 
@@ -1597,7 +1663,8 @@ Submission ganda dicegah dengan `updateOrCreate` + 403.
 | PUT | `/guru/instrument-questions/{question}` | `guru.instrument-questions.update` |
 | DELETE | `/guru/instrument-questions/{question}` | `guru.instrument-questions.destroy` |
 
-Controller: `App\Http\Controllers\Guru\InstrumentQuestionController`
+Controller: `App\Http\Controllers\Guru\InstrumentQuestionController`  
+Form Request: `StoreInstrumentQuestionRequest` / `UpdateInstrumentQuestionRequest`
 
 **Kategori (`InstrumentQuestion::CATEGORIES`)**
 
@@ -1609,13 +1676,20 @@ Controller: `App\Http\Controllers\Guru\InstrumentQuestionController`
 | `sosiometri` | Sosiometri |
 | `angket_masalah` | Masalah |
 
+**Alur Guru — kelola soal Minat Bakat**
+1. Pastikan Admin sudah punya **Kategori Minat** aktif (seed RIASEC atau CRUD).
+2. Buka **Soal Instrumen** → Filter kategori = Minat Bakat (Select2 + pencarian).
+3. **Tambah soal** (modal Alpine `modalCrud`) → pilih jenis **Minat Bakat**.
+4. Isi wajib: **Kategori Minat**, **Target jenjang** (`semua`/`SMA`/`SMK`), **Bobot** 1–5.
+5. Atur opsi (2–6 baris) atau klik **Pakai template Likert 0–4**.
+6. Simpan. Soal tanpa kategori minat tampil badge **Belum dikategorikan** dan **tidak** ikut scoring RIASEC.
+7. Seed 30 soal awal: `MinatQuestionSeeder` (`bobot = 1`, `jenjang_target = semua`).
+
 **Daftar**
 - Judul: "Soal Instrumen Asesmen"
-- Subjudul: "Kelola soal Minat Bakat, Gaya Belajar, dan Masalah."
-- Tombol: "Tambah soal"
-- **Filter:** `category` (dropdown dari `CATEGORIES`)
-- **Kolom:** Kategori | Soal | Status (Aktif/Nonaktif) | Aksi (Edit, Hapus)
-  - Hapus memakai konfirmasi `confirm("Hapus soal ini?")`
+- Tombol: "Tambah soal" / "Edit" memakai `Alpine.data('modalCrud')` + re-init Select2 saat modal dibuka
+- **Filter:** `category`, `interest_category_id`, `jenjang_target` (Select2)
+- **Kolom:** Kategori instrumen | Soal | Kategori minat | Jenjang | Bobot | Status | Aksi
 
 **Form**
 
@@ -1624,27 +1698,24 @@ Controller: `App\Http\Controllers\Guru\InstrumentQuestionController`
 | `category` | required, in `CATEGORIES` |
 | `question` | required, string, max 1000 |
 | `is_active` | checkbox/boolean, nullable (default true) |
-| `options` | required, array, min 2 |
+| `options` | required, array, min 2, max 6 |
 | `options.*.label` | required, string, max 255 |
 | `options.*.score` | integer, min 0, max 100 |
+| `interest_category_id` | **wajib** bila `category = minat_bakat` (kategori aktif) |
+| `jenjang_target` | `semua` / `SMA` / `SMK` (default `semua`) |
+| `bobot` | integer 1–5 (default 1); pengali skor opsi |
 
-Options dinormalisasi menjadi array `{ label: string, score: int }`.
-
-> **Catatan UI:** form partial hanya merender opsi yang sudah ada. Saat membuat soal baru,
-> form me-render empat opsi Likert bawaan. **Tidak ada** tombol tambah/hapus baris opsi,
-> sehingga jumlah dan bobot opsi bergantung pada apa yang sudah ada di form.
+Options dinormalisasi menjadi array `{ label: string, score: int }`. UI Alpine: tambah/hapus opsi + template Likert 0–4. Field minat **hanya** muncul bila kategori = `minat_bakat` (kategori lain tidak berubah perilakunya).
 
 **Sisi efek**
 
 | Aksi | Log | Flash |
 |---|---|---|
-| Store (`created_by = auth()->id()`) | tidak ada | "Soal instrumen berhasil ditambahkan." |
-| Update | tidak ada | "Soal instrumen berhasil diperbarui." |
-| Destroy | tidak ada | "Soal instrumen berhasil dihapus." |
+| Store (`created_by = auth()->id()`) | `instrument-question.created` | "Soal instrumen berhasil ditambahkan." |
+| Update | `instrument-question.updated` | "Soal instrumen berhasil diperbarui." |
+| Destroy | `instrument-question.deleted` | "Soal instrumen berhasil dihapus." |
 
-> **Banner statis:** halaman index selalu merender
-> `x-alert type="error" message="Periksa kembali data soal dan pilihan jawaban."`
-> Ini **bukan** pesan validasi — komponen statis yang selalu tampil.
+Hapus: **soft delete** bila soal sudah punya jawaban; selain itu force delete.
 
 ---
 
@@ -1655,15 +1726,13 @@ Options dinormalisasi menjadi array `{ label: string, score: int }`.
 | GET | `/guru/instrument-results` | `guru.instrument-results.index` |
 
 - Judul: "Hasil Skoring Instrumen"
-- Subjudul: "Pantau hasil skor otomatis dari jawaban siswa."
-- **Filter:** `category` (dropdown dari `CATEGORIES`)
+- **Filter:** `category` (Select2)
 - Urutan: `latest("submitted_at")`
-- **Kartu per submission:** badge label kategori, nama siswa, `submitted_at` (format `d M Y H:i`), kelas, sekolah, skor `total_score`, `result_label`, `result_description`
-- *Empty state:* "Belum ada hasil" / "Hasil akan muncul setelah siswa mengisi instrumen pendukung."
+- **Kartu per submission:** badge kategori, nama siswa, waktu, kelas/sekolah, `total_score`, `result_label`, `result_description`
+- Untuk `minat_bakat`: tampilkan juga **Kode Minat** (`kode_minat`) dan **jenjang** snapshot bila ada
+- *Empty state:* "Belum ada hasil"
 
-> **Tidak ada scoping per sekolah/Guru** — modul ini menampilkan seluruh submission instrumen
-> dari seluruh siswa di sistem. Berbeda dengan modul Angket dan Rapor yang memakai
-> `CounselorStudentService`.
+> **Tidak ada scoping per sekolah/Guru (P1)** — seluruh submission terlihat. Berbeda dengan Angket/Rapor yang memakai `CounselorStudentService`.
 
 ---
 
@@ -2078,30 +2147,82 @@ Tidak ada halaman hasil detail terpisah — hasil hanya tampil di riwayat.
 |---|---|---|
 | GET | `/siswa/instruments` | `siswa.instruments.index` |
 | POST | `/siswa/instruments` | `siswa.instruments.store` |
+| GET | `/siswa/instruments/hasil/{submission}` | `siswa.instruments.hasil` |
+| GET | `/siswa/instruments/hasil/{submission}/pdf` | `siswa.instruments.hasil.pdf` |
 
-**Kategori** — sama dengan [7.10](#710-soal-instrumen-asesmen): Minat Bakat, Gaya Belajar,
-Kepribadian, Sosiometri, Masalah. Default kategori `minat_bakat`.
+Controller: `App\Http\Controllers\Siswa\InstrumentSubmissionController`  
+Service: `App\Services\Minat\InterestScoringService`, `App\Services\Minat\RecommendationService`
 
-**Halaman**
-- Tab per kategori
-- Ringkasan hasil terakhir per kategori: "result_label - submitted_at (d M Y)", atau "Belum diisi"
-- Form soal: pilihan ganda (radio) 0-based berdasarkan `options` array
-- *Empty state:* "Belum ada hasil" / "Hasil akan muncul setelah siswa mengisi instrumen pendukung."
+**Kategori** — sama dengan [7.10](#710-soal-instrumen-asesmen). Default tab: `minat_bakat`.
 
-**Validasi**
+#### 8.8.1 Alur pengisian Minat Bakat (wizard)
+
+```
+Login siswa → Instrumen → tab Minat Bakat
+        │
+        ▼
+[1] Intro
+    • Penjelasan 3 langkah (isi soal → Kode Minat → rekomendasi)
+    • Jenjang: dari kelas siswa (SMA/SMK)
+      - jika kosong → pilih SMA/SMK (Select2) atau tombol "Mulai sebagai SMA/SMK"
+      - SD/SMP → pesan "Asesmen ini untuk siswa SMA/SMK."
+        │
+        ▼
+[2] Quiz (satu soal per layar)
+    • Soal aktif + punya interest_category_id + jenjang_target ∈ {semua, jenjang siswa}
+    • Progress bar: terjawab / total
+    • Pilih skala → otomatis lanjut soal berikutnya
+    • Tombol Sebelumnya / Lewati / Berikutnya
+        │
+        ▼
+[3] Kirim (semua soal terjawab) → POST store
+    • InterestScoringService menghitung skor + Kode Minat
+    • Simpan submission + instrument_answers + snapshot category_scores
+    • Activity: instrument.minat.submitted
+        │
+        ▼
+[4] Halaman hasil GET /siswa/instruments/hasil/{submission}
+    • Kartu Kode Minat + 3 minat dominan (+ catatan tie bila is_tied)
+    • Bar distribusi persen semua kategori
+    • Rekomendasi:
+        - SMA → Program Studi PCR (hanya is_verified + is_active)
+        - SMK → Bidang Karier + Job Zone + penjelasan Job Zone
+    • Tombol: Ulangi asesmen | Unduh laporan (PDF) | Kembali dashboard
+    • Guard pemilik: siswa lain → 403
+```
+
+**Ringkasan di index:** kartu Minat Bakat menampilkan **Kode Minat** + tautan **Lihat hasil**. Retake = isi ulang; yang ditampilkan = submission terbaru.
+
+#### 8.8.2 Validasi & skoring
 
 | Field | Aturan |
 |---|---|
 | `category` | required, in `CATEGORIES` |
-| `answers` | required, array, min 1 |
-| `answers.*` | required, integer, min 0 |
+| `jenjang` | required untuk minat bila kelas belum punya jenjang (`SMA`/`SMK`) |
+| `answers` | required, array; kunci = id soal aktif yang difilter |
+| `answers.*` | integer, indeks opsi ≥ 0 |
 
-Bila jumlah id soal pada `answers` tidak sama dengan jumlah soal aktif kategori tersebut:
-> Jawaban tidak sesuai dengan daftar soal aktif.
+- Jumlah jawaban ≠ jumlah soal aktif → *"Jawaban tidak sesuai dengan daftar soal aktif."*
+- Indeks opsi invalid → 422 *"Pilihan jawaban tidak valid."*
 
-Bila indeks opsi di luar rentang: 422 "Pilihan jawaban tidak valid."
+**Skoring Minat Bakat (RIASEC)** — `InterestScoringService`:
+- Per kategori: `raw = Σ(skor opsi × bobot soal)`; `max = Σ(skor opsi tertinggi × bobot)`; `persen = raw/max×100` (1 desimal)
+- Peringkat by persen; tie-break: raw lebih besar → `urutan` kategori lebih kecil
+- `is_tied` bila selisih persen peringkat 1 dan 2 < 0.5
+- **Kode Minat** = gabungan `kode` 3 kategori teratas (contoh `RCS`)
+- Kolom lama tetap diisi: `result_label` = nama dominan, `result_description` = deskripsi, `total_score` = Σ raw
 
-**Skoring otomatis** — `$maxScore = max($questionCount * 4, 1)`; `$percentage = ($score / $maxScore) × 100`.
+**Rekomendasi** (`RecommendationService`, dihitung saat halaman hasil dibuka):
+- Bobot peringkat: top-1 ×1.0, top-2 ×0.6, top-3 ×0.3 terhadap relevansi pivot
+- Label: skor ≥ 3 → "Sangat Cocok", selain itu "Cocok" (maks 6 item)
+- Fallback kosong: pesan diskusikan dengan Guru BK (tidak error)
+
+**PDF:** `hasil-minat-{slug-nama}-{Ymd}.pdf` (dompdf A4 portrait); activity `instrument.minat.pdf.downloaded`.
+
+#### 8.8.3 Instrumen kategori lain (bukan Minat Bakat)
+
+Form klasik: semua soal di satu halaman (radio). Skoring lama tetap:
+`$maxScore = max($questionCount * 4, 1)`; `$percentage = ($score / $maxScore) × 100`.
 
 Kategori **Masalah** (`angket_masalah`):
 
@@ -2111,7 +2232,7 @@ Kategori **Masalah** (`angket_masalah`):
 | ≥ 40% | Perlu Dipantau | "Ada beberapa area masalah yang perlu didalami melalui percakapan lanjutan." |
 | < 40% | Ringan | "Belum tampak indikasi masalah berat dari jawaban instrumen." |
 
-Kategori lainnya (Minat Bakat, Gaya Belajar, Kepribadian, Sosiometri):
+Kategori Gaya Belajar, Kepribadian, Sosiometri:
 
 | Persentase | Label | Deskripsi |
 |---|---|---|
@@ -2119,9 +2240,7 @@ Kategori lainnya (Minat Bakat, Gaya Belajar, Kepribadian, Sosiometri):
 | ≥ 40% | Cukup Berkembang | "Potensi siswa sudah terlihat dan dapat diperkuat melalui bimbingan." |
 | < 40% | Perlu Eksplorasi | "Siswa masih perlu mengeksplorasi diri pada area ini." |
 
-- **Flash:** "Jawaban instrumen berhasil dikirim dan diskor otomatis."
-
-Tidak ada activity log dan tidak ada ekspor PDF.
+- Redirect kembali ke index + flash sukses (bukan halaman hasil RIASEC).
 
 ---
 
@@ -2272,6 +2391,15 @@ ActivityLogger::log(string $action, ?Model $subject = null, array $properties = 
 | `postingan.created` | `PostinganController@store` | (kosong) |
 | `postingan.updated` | `PostinganController@update` | (kosong) |
 | `postingan.deleted` | `PostinganController@destroy` | `judul` |
+| `interest-category.created` | `InterestCategoryController@store` | `nama` |
+| `interest-category.updated` | `InterestCategoryController@update` | `nama` |
+| `interest-category.deleted` | `InterestCategoryController@destroy` | `nama` |
+| `program-studi.created` | `ProgramStudiController@store` | `nama` |
+| `program-studi.updated` | `ProgramStudiController@update` | `nama` |
+| `program-studi.deleted` | `ProgramStudiController@destroy` | `nama` |
+| `bidang-karier.created` | `CareerFieldController@store` | `nama` |
+| `bidang-karier.updated` | `CareerFieldController@update` | `nama` |
+| `bidang-karier.deleted` | `CareerFieldController@destroy` | `nama` |
 
 #### Dari role Guru BK
 
@@ -2291,6 +2419,9 @@ ActivityLogger::log(string $action, ?Model $subject = null, array $properties = 
 | `tryout.created` | `TryoutController@store` | `judul` |
 | `tryout.updated` | `TryoutController@update` | `judul` |
 | `tryout.deleted` | `TryoutController@destroy` (sebelum delete) | `judul` |
+| `instrument-question.created` | `InstrumentQuestionController@store` | `question` (limit 80) |
+| `instrument-question.updated` | `InstrumentQuestionController@update` | `question` (limit 80) |
+| `instrument-question.deleted` | `InstrumentQuestionController@destroy` | `question` (limit 80) |
 
 #### Dari role Siswa
 
@@ -2300,6 +2431,8 @@ ActivityLogger::log(string $action, ?Model $subject = null, array $properties = 
 | `penilaian_pelayanan.submitted` | `PenilaianController@store` | `consultation_request_id` |
 | `tryout.submitted` | `TryoutController@store` | `try_out_id` |
 | `angket.submitted` | `AngketController@store` | `jumlah_jawaban` |
+| `instrument.minat.submitted` | submit Minat Bakat | `submission_id`, `kode_minat`, `jenjang` |
+| `instrument.minat.pdf.downloaded` | unduh PDF hasil Minat | (submission) |
 
 ### 9.3 Aksi yang TIDAK menulis Activity Log
 
@@ -2312,10 +2445,9 @@ ActivityLogger::log(string $action, ?Model $subject = null, array $properties = 
 - Kelas Bimbingan dan tambah/lepas siswa
 - Perubahan Profil Guru (menggunakan `GuruProfileChange`)
 - Cetak PDF konseling, rapor BK, RPL, dan jurnal bulanan
-- CRUD soal instrumen
 - CRUD RPL
 - CRUD jurnal bulanan
-- Instrumen, Sosiometri, Chatbot, Gabung Kelas, Postingan, Karier (sisi siswa)
+- Instrumen non-minat, Sosiometri, Chatbot, Gabung Kelas, Postingan, Karier (sisi siswa)
 - Logout dan update profil
 
 ### 9.4 Catatan Audit
@@ -2327,13 +2459,25 @@ delete gagal atau ditolak, entry log tetap sudah tercatat meskipun data tidak te
 
 ## 10. Daftar Route Lengkap
 
-### 10.1 Admin — 53 route
+### 10.1 Admin
 
 Semua berada pada middleware `auth`, `verified` → prefix `admin`, name prefix `admin.`, `role:admin`.
 
 | Method | URI | Nama route |
 |---|---|---|
 | GET | `admin/dashboard` | `admin.dashboard` |
+| GET | `admin/interest-categories` | `admin.interest-categories.index` |
+| POST | `admin/interest-categories` | `admin.interest-categories.store` |
+| PUT/PATCH | `admin/interest-categories/{interestCategory}` | `admin.interest-categories.update` |
+| DELETE | `admin/interest-categories/{interestCategory}` | `admin.interest-categories.destroy` |
+| GET | `admin/program-studi` | `admin.program-studi.index` |
+| POST | `admin/program-studi` | `admin.program-studi.store` |
+| PUT/PATCH | `admin/program-studi/{programStudi}` | `admin.program-studi.update` |
+| DELETE | `admin/program-studi/{programStudi}` | `admin.program-studi.destroy` |
+| GET | `admin/bidang-karier` | `admin.bidang-karier.index` |
+| POST | `admin/bidang-karier` | `admin.bidang-karier.store` |
+| PUT/PATCH | `admin/bidang-karier/{careerField}` | `admin.bidang-karier.update` |
+| DELETE | `admin/bidang-karier/{careerField}` | `admin.bidang-karier.destroy` |
 | GET | `admin/approvals` | `admin.approvals.index` |
 | PATCH | `admin/approvals/{user}/approve` | `admin.approvals.approve` |
 | PATCH | `admin/approvals/{user}/reject` | `admin.approvals.reject` |
@@ -2448,6 +2592,8 @@ Middleware `role:siswa`; prefix `siswa`; name prefix `siswa.`
 | GET | `/siswa/dashboard` | `siswa.dashboard` | `Siswa\DashboardController@index` |
 | GET | `/siswa/instruments` | `siswa.instruments.index` | `Siswa\InstrumentSubmissionController@index` |
 | POST | `/siswa/instruments` | `siswa.instruments.store` | `Siswa\InstrumentSubmissionController@store` |
+| GET | `/siswa/instruments/hasil/{submission}` | `siswa.instruments.hasil` | hasil Minat Bakat (pemilik) |
+| GET | `/siswa/instruments/hasil/{submission}/pdf` | `siswa.instruments.hasil.pdf` | PDF hasil Minat Bakat |
 | GET | `/siswa/sociometry` | `siswa.sociometry.index` | `Siswa\SociometryController@index` |
 | POST | `/siswa/sociometry` | `siswa.sociometry.store` | `Siswa\SociometryController@store` |
 | GET | `/siswa/consultations` | `siswa.consultations.index` | `Siswa\ConsultationController@index` |
@@ -2555,9 +2701,8 @@ Keduanya tidak memakai `CounselorStudentService`, berbeda dari modul Angket, Rap
 `update` dan `destroy` pada `/guru/instrument-questions/{question}` tidak memverifikasi `created_by`.
 Setiap Guru yang punya akses `role:guru` dapat mengubah atau menghapus soal yang dibuat Guru lain.
 
-Selain itu, form opsi soal instrumen **tidak interaktif** — partial form hanya merender opsi yang
-sudah ada. Saat membuat soal baru, form me-render empat opsi Likert bawaan, dan tidak ada tombol
-tambah atau hapus baris opsi di dalam UI.
+Soal yang sudah punya jawaban di-soft-delete (bukan force delete) agar histori submission tetap utuh.
+Untuk Minat Bakat, opsi jawaban bersifat dinamis (2–6 baris, template Likert).
 
 ### 11.8 Data Siswa Belum Tentu Punya Akun Login
 

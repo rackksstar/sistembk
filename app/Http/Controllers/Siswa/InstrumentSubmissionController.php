@@ -6,24 +6,74 @@ use App\Http\Controllers\Controller;
 use App\Models\InstrumentAnswer;
 use App\Models\InstrumentQuestion;
 use App\Models\InstrumentSubmission;
+use App\Models\InterestCategory;
+use App\Services\Minat\InterestResult;
+use App\Services\Minat\InterestScoringService;
+use App\Services\Minat\RecommendationService;
+use App\Support\ActivityLogger;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class InstrumentSubmissionController extends Controller
 {
+    public function __construct(
+        private readonly InterestScoringService $interestScoringService,
+        private readonly RecommendationService $recommendationService,
+    ) {}
+
     public function index(Request $request): View
     {
         $category = $request->string('category', InstrumentQuestion::CATEGORY_MINAT_BAKAT)->toString();
         abort_unless(array_key_exists($category, InstrumentQuestion::CATEGORIES), 404);
 
-        $questions = InstrumentQuestion::query()
-            ->where('category', $category)
-            ->where('is_active', true)
-            ->oldest()
-            ->get();
+        $profileJenjang = $this->resolveProfileJenjang();
+        $jenjang = $profileJenjang;
+        $needsJenjangChooser = false;
+
+        if ($category === InstrumentQuestion::CATEGORY_MINAT_BAKAT) {
+            // Di luar SMA/SMK (kecuali SD/SMP yang diblok view): anggap belum dipilih.
+            if ($jenjang && ! in_array($jenjang, ['SMA', 'SMK', 'SD', 'SMP'], true)) {
+                $jenjang = null;
+            }
+
+            if (! $jenjang) {
+                $requestedJenjang = strtoupper((string) $request->query('jenjang', ''));
+                if (in_array($requestedJenjang, ['SMA', 'SMK'], true)) {
+                    $jenjang = $requestedJenjang;
+                }
+            }
+
+            // Chooser hanya jika jenjang asesmen belum ditentukan (jangan biarkan ganti setelah soal dimuat).
+            $needsJenjangChooser = ! in_array((string) $jenjang, ['SMA', 'SMK'], true)
+                && ! in_array((string) $profileJenjang, ['SD', 'SMP'], true);
+
+            $questionsQuery = InstrumentQuestion::query()
+                ->where('category', $category)
+                ->active()
+                ->whereNotNull('interest_category_id')
+                ->whereHas('interestCategory', fn ($q) => $q->active())
+                ->with('interestCategory')
+                ->oldest();
+
+            if (in_array((string) $jenjang, ['SMA', 'SMK'], true)) {
+                $questionsQuery->forJenjang($jenjang);
+            } else {
+                $questionsQuery->whereRaw('0 = 1');
+            }
+
+            $questions = $questionsQuery->get();
+        } else {
+            $questions = InstrumentQuestion::query()
+                ->where('category', $category)
+                ->where('is_active', true)
+                ->oldest()
+                ->get();
+        }
 
         $latestSubmissions = InstrumentSubmission::query()
             ->where('student_id', auth()->id())
@@ -37,6 +87,10 @@ class InstrumentSubmissionController extends Controller
             'category' => $category,
             'questions' => $questions,
             'latestSubmissions' => $latestSubmissions,
+            'profileJenjang' => $profileJenjang,
+            'jenjang' => $jenjang,
+            'needsJenjangChooser' => $needsJenjangChooser,
+            'jenjangBlocked' => in_array($profileJenjang, ['SD', 'SMP'], true),
         ]);
     }
 
@@ -46,16 +100,27 @@ class InstrumentSubmissionController extends Controller
             'category' => ['required', Rule::in(array_keys(InstrumentQuestion::CATEGORIES))],
             'answers' => ['required', 'array', 'min:1'],
             'answers.*' => ['required', 'integer', 'min:0'],
+            'jenjang' => ['nullable', Rule::in(['SMA', 'SMK'])],
         ]);
+
+        if ($validated['category'] === InstrumentQuestion::CATEGORY_MINAT_BAKAT) {
+            return $this->storeMinatBakat($request, $validated);
+        }
 
         $questions = InstrumentQuestion::query()
             ->where('category', $validated['category'])
             ->where('is_active', true)
-            ->whereIn('id', array_keys($validated['answers']))
+            ->oldest()
             ->get()
             ->keyBy('id');
 
-        if ($questions->count() !== count($validated['answers'])) {
+        if ($questions->isEmpty()) {
+            return back()->withErrors(['answers' => 'Soal instrumen belum tersedia untuk kategori ini.'])->withInput();
+        }
+
+        $answerIds = collect(array_keys($validated['answers']))->map(fn ($id) => (int) $id)->sort()->values();
+        $questionIds = $questions->keys()->map(fn ($id) => (int) $id)->sort()->values();
+        if ($answerIds->all() !== $questionIds->all()) {
             return back()->withErrors(['answers' => 'Jawaban tidak sesuai dengan daftar soal aktif.'])->withInput();
         }
 
@@ -65,7 +130,8 @@ class InstrumentSubmissionController extends Controller
 
             foreach ($validated['answers'] as $questionId => $optionIndex) {
                 $question = $questions[(int) $questionId];
-                $option = $question->options[$optionIndex] ?? null;
+                $options = array_values($question->options ?? []);
+                $option = $options[(int) $optionIndex] ?? null;
 
                 if (! $option) {
                     abort(422, 'Pilihan jawaban tidak valid.');
@@ -75,7 +141,7 @@ class InstrumentSubmissionController extends Controller
                 $totalScore += $score;
                 $answerRows[] = new InstrumentAnswer([
                     'instrument_question_id' => $question->id,
-                    'answer_label' => $option['label'],
+                    'answer_label' => $option['label'] ?? '',
                     'score' => $score,
                 ]);
             }
@@ -97,6 +163,249 @@ class InstrumentSubmissionController extends Controller
         return redirect()
             ->route('siswa.instruments.index', ['category' => $validated['category']])
             ->with('success', 'Jawaban instrumen berhasil dikirim dan diskor otomatis.');
+    }
+
+    public function hasil(InstrumentSubmission $submission): View
+    {
+        $this->assertOwnsSubmission($submission);
+
+        if ($submission->category !== InstrumentQuestion::CATEGORY_MINAT_BAKAT) {
+            return view('siswa.instruments.hasil-simple', [
+                'submission' => $submission,
+            ]);
+        }
+
+        [$result, $recommendations] = $this->buildMinatResultPayload($submission);
+
+        return view('siswa.instruments.hasil', [
+            'submission' => $submission,
+            'result' => $result,
+            'topCategories' => $result->topCategories(3),
+            'recommendations' => $recommendations,
+        ]);
+    }
+
+    public function hasilPdf(InstrumentSubmission $submission): Response
+    {
+        $this->assertOwnsSubmission($submission);
+        abort_unless($submission->category === InstrumentQuestion::CATEGORY_MINAT_BAKAT, 404);
+
+        [$result, $recommendations] = $this->buildMinatResultPayload($submission);
+
+        $user = auth()->user();
+        $student = $user?->studentProfile?->loadMissing('kelas.sekolah');
+        $tanggalCetak = now()->format('d M Y');
+
+        ActivityLogger::log('instrument.minat.pdf.downloaded', $submission, [
+            'submission_id' => $submission->id,
+            'kode_minat' => $submission->kode_minat,
+            'jenjang' => $submission->jenjang,
+        ]);
+
+        $pdf = Pdf::loadView('siswa.instruments.pdf', compact(
+            'submission',
+            'result',
+            'recommendations',
+            'user',
+            'student',
+            'tanggalCetak',
+        ))->setPaper('a4', 'portrait');
+
+        $namaFile = 'hasil-minat-'.str($user?->name ?? 'siswa')->slug().'-'.now()->format('Ymd').'.pdf';
+
+        return $pdf->download($namaFile);
+    }
+
+    /**
+     * @param  array{category: string, answers: array<int|string, int>, jenjang?: string|null}  $validated
+     */
+    private function storeMinatBakat(Request $request, array $validated): RedirectResponse
+    {
+        $jenjang = $this->resolveProfileJenjang();
+
+        if (! $jenjang) {
+            $request->validate([
+                'jenjang' => ['required', Rule::in(['SMA', 'SMK'])],
+            ], [
+                'jenjang.required' => 'Pilih jenjang SMA atau SMK sebelum mengirim asesmen.',
+            ]);
+            $jenjang = strtoupper((string) $validated['jenjang']);
+        }
+
+        if (in_array($jenjang, ['SD', 'SMP'], true)) {
+            return back()->withErrors([
+                'jenjang' => 'Asesmen ini untuk siswa SMA/SMK.',
+            ])->withInput();
+        }
+
+        if (! in_array($jenjang, ['SMA', 'SMK'], true)) {
+            return back()->withErrors([
+                'jenjang' => 'Jenjang tidak valid. Pilih SMA atau SMK.',
+            ])->withInput();
+        }
+
+        $questions = InstrumentQuestion::query()
+            ->where('category', InstrumentQuestion::CATEGORY_MINAT_BAKAT)
+            ->active()
+            ->whereNotNull('interest_category_id')
+            ->whereHas('interestCategory', fn ($q) => $q->active())
+            ->forJenjang($jenjang)
+            ->with('interestCategory')
+            ->get()
+            ->keyBy('id');
+
+        if ($questions->isEmpty()) {
+            return back()->withErrors([
+                'answers' => 'Soal asesmen minat bakat belum tersedia untuk jenjang ini.',
+            ])->withInput();
+        }
+
+        if ($questions->count() !== count($validated['answers'])) {
+            return back()->withErrors(['answers' => 'Jawaban tidak sesuai dengan daftar soal aktif.'])->withInput();
+        }
+
+        $answerIds = collect(array_keys($validated['answers']))->map(fn ($id) => (int) $id)->sort()->values();
+        $questionIds = $questions->keys()->map(fn ($id) => (int) $id)->sort()->values();
+        if ($answerIds->all() !== $questionIds->all()) {
+            return back()->withErrors(['answers' => 'Jawaban tidak sesuai dengan daftar soal aktif.'])->withInput();
+        }
+
+        $interestResult = $this->interestScoringService->score($questions, $validated['answers']);
+
+        $submission = DB::transaction(function () use ($validated, $questions, $interestResult, $jenjang) {
+            $answerRows = [];
+
+            foreach ($validated['answers'] as $questionId => $optionIndex) {
+                $question = $questions[(int) $questionId];
+                $options = array_values($question->options ?? []);
+                $option = $options[(int) $optionIndex] ?? null;
+
+                if (! $option) {
+                    abort(422, 'Pilihan jawaban tidak valid.');
+                }
+
+                $answerRows[] = new InstrumentAnswer([
+                    'instrument_question_id' => $question->id,
+                    'answer_label' => $option['label'] ?? '',
+                    'score' => (int) $option['score'],
+                ]);
+            }
+
+            $submission = InstrumentSubmission::create([
+                'student_id' => auth()->id(),
+                'category' => InstrumentQuestion::CATEGORY_MINAT_BAKAT,
+                'jenjang' => $jenjang,
+                'kode_minat' => $interestResult->kode_minat,
+                'category_scores' => $interestResult->toArray(),
+                'dominant_interest_id' => $interestResult->dominant_interest_id,
+                'secondary_interest_id' => $interestResult->secondary_interest_id,
+                'is_tied' => $interestResult->is_tied,
+                'total_score' => (int) round((float) $interestResult->total_score),
+                'result_label' => $interestResult->result_label,
+                'result_description' => $interestResult->result_description,
+                'submitted_at' => now(),
+            ]);
+
+            $submission->answers()->saveMany($answerRows);
+
+            return $submission;
+        });
+
+        ActivityLogger::log('instrument.minat.submitted', $submission, [
+            'submission_id' => $submission->id,
+            'kode_minat' => $submission->kode_minat,
+            'jenjang' => $submission->jenjang,
+        ]);
+
+        return redirect()
+            ->route('siswa.instruments.hasil', $submission)
+            ->with('success', 'Asesmen minat bakat berhasil dikirim.');
+    }
+
+    /**
+     * @return array{0: InterestResult, 1: array{items: list<array<string, mixed>>, empty_message: ?string}}
+     */
+    private function buildMinatResultPayload(InstrumentSubmission $submission): array
+    {
+        $scores = $submission->category_scores ?? [];
+        $result = InterestResult::fromSnapshot($scores, [
+            'kode_minat' => $submission->kode_minat,
+            'dominant_interest_id' => $submission->dominant_interest_id,
+            'secondary_interest_id' => $submission->secondary_interest_id,
+            'is_tied' => (bool) $submission->is_tied,
+            'result_label' => $submission->result_label,
+            'result_description' => $submission->result_description,
+            'total_score' => $submission->total_score,
+        ]);
+
+        $result = $this->enrichResultDescriptions($result);
+
+        if ($result->isInconclusive()) {
+            return [$result, [
+                'items' => [],
+                'empty_message' => 'Hasil skor belum cukup untuk rekomendasi. Ulangi asesmen dengan jawaban yang lebih akurat.',
+            ]];
+        }
+
+        $jenjang = strtoupper((string) $submission->jenjang);
+        if ($jenjang === 'SMK') {
+            $recommendations = $this->recommendationService->forSmk($result);
+        } elseif ($jenjang === 'SMA') {
+            $recommendations = $this->recommendationService->forSma($result);
+        } else {
+            $recommendations = [
+                'items' => [],
+                'empty_message' => 'Jenjang asesmen tidak diketahui, sehingga rekomendasi tidak dapat ditampilkan.',
+            ];
+        }
+
+        return [$result, $recommendations];
+    }
+
+    private function enrichResultDescriptions(InterestResult $result): InterestResult
+    {
+        $ids = collect($result->rankedCategories)->pluck('id')->filter()->all();
+        if ($ids === []) {
+            return $result;
+        }
+
+        $descriptions = InterestCategory::query()
+            ->whereIn('id', $ids)
+            ->pluck('deskripsi', 'id');
+
+        $ranked = array_map(static function (array $category) use ($descriptions): array {
+            if (($category['deskripsi'] ?? null) === null) {
+                $category['deskripsi'] = $descriptions[$category['id']] ?? null;
+            }
+
+            return $category;
+        }, $result->rankedCategories);
+
+        return new InterestResult(
+            rankedCategories: $ranked,
+            kode_minat: $result->kode_minat,
+            dominant_interest_id: $result->dominant_interest_id,
+            secondary_interest_id: $result->secondary_interest_id,
+            is_tied: $result->is_tied,
+            result_label: $result->result_label,
+            result_description: $result->result_description ?? ($ranked[0]['deskripsi'] ?? null),
+            total_score: $result->total_score,
+        );
+    }
+
+    private function resolveProfileJenjang(): ?string
+    {
+        $jenjang = auth()->user()?->studentProfile?->kelas?->jenjang;
+        if (! is_string($jenjang) || trim($jenjang) === '') {
+            return null;
+        }
+
+        return strtoupper(trim($jenjang));
+    }
+
+    private function assertOwnsSubmission(InstrumentSubmission $submission): void
+    {
+        abort_unless((int) $submission->student_id === (int) auth()->id(), 403);
     }
 
     private function scoreResult(string $category, int $score, int $questionCount): array

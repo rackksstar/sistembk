@@ -1,37 +1,45 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AdminApprovalController;
+use App\Http\Controllers\Admin\CareerFieldController;
 use App\Http\Controllers\Admin\CareerInfoController;
 use App\Http\Controllers\Admin\ConsultationController as AdminConsultationController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\GuidanceClassController;
 use App\Http\Controllers\Admin\GuruBkController;
 use App\Http\Controllers\Admin\GuruProfileChangeController;
-use App\Http\Controllers\Admin\GuidanceClassController;
+use App\Http\Controllers\Admin\InterestCategoryController;
 use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\MasterQuestionController;
 use App\Http\Controllers\Admin\PostCategoryController;
 use App\Http\Controllers\Admin\PostinganController;
+use App\Http\Controllers\Admin\ProgramStudiController;
 use App\Http\Controllers\Admin\RaporController as AdminRaporController;
 use App\Http\Controllers\Admin\SekolahController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\GuruRegistrationController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Guru\AngketController;
 use App\Http\Controllers\Guru\ConsultationController as GuruConsultationController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
 use App\Http\Controllers\Guru\InstrumentQuestionController;
 use App\Http\Controllers\Guru\InstrumentResultController;
 use App\Http\Controllers\Guru\MonthlyJournalController;
+use App\Http\Controllers\Guru\PenilaianController;
+use App\Http\Controllers\Guru\RaporController;
 use App\Http\Controllers\Guru\RplController;
 use App\Http\Controllers\Guru\ServiceFeedbackController as GuruServiceFeedbackController;
 use App\Http\Controllers\Guru\SociometryMapController;
 use App\Http\Controllers\Guru\StudentController as GuruStudentController;
-use App\Http\Controllers\Siswa\ConsultationController as SiswaConsultationController;
-use App\Http\Controllers\Siswa\ConsultationRequestController;
+use App\Http\Controllers\Guru\TryoutController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Siswa\CareerInfoController as SiswaCareerInfoController;
 use App\Http\Controllers\Siswa\ChatbotController;
 use App\Http\Controllers\Siswa\ClassJoinController;
+use App\Http\Controllers\Siswa\ConsultationController as SiswaConsultationController;
+use App\Http\Controllers\Siswa\ConsultationRequestController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
 use App\Http\Controllers\Siswa\InstrumentSubmissionController;
 use App\Http\Controllers\Siswa\PostinganController as SiswaPostinganController;
@@ -80,6 +88,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('guru-bk', GuruBkController::class)
             ->parameters(['guru-bk' => 'guruBk'])
             ->except(['create', 'show', 'edit']);
+        Route::resource('interest-categories', InterestCategoryController::class)
+            ->parameters(['interest-categories' => 'interestCategory'])
+            ->except(['create', 'show', 'edit']);
+        Route::resource('program-studi', ProgramStudiController::class)
+            ->parameters(['program-studi' => 'programStudi'])
+            ->except(['create', 'show', 'edit']);
+        Route::resource('bidang-karier', CareerFieldController::class)
+            ->parameters(['bidang-karier' => 'careerField'])
+            ->except(['create', 'show', 'edit']);
         Route::get('/perubahan-profil-guru', [GuruProfileChangeController::class, 'index'])->name('guru-profile-changes.index');
         Route::patch('/perubahan-profil-guru/{change}/dibaca', [GuruProfileChangeController::class, 'markReviewed'])->name('guru-profile-changes.reviewed');
         Route::resource('master-pertanyaan', MasterQuestionController::class)
@@ -90,7 +107,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->except(['create', 'show', 'edit']);
         Route::resource('postingan', PostinganController::class)
             ->except(['create', 'show', 'edit']);
-        Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
+        Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     });
 
     Route::prefix('guru')->name('guru.')->middleware('role:guru')->group(function () {
@@ -116,27 +133,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/consultations/{consultation}/print', [GuruConsultationController::class, 'print'])->name('consultations.print');
 
         // Phase 4–6 — Core (guru)
-        Route::get('penilaian', [\App\Http\Controllers\Guru\PenilaianController::class, 'index'])->name('penilaian.index');
-        Route::get('angket', [\App\Http\Controllers\Guru\AngketController::class, 'index'])->name('angket.index');
-        Route::get('angket/{student}/pdf', [\App\Http\Controllers\Guru\AngketController::class, 'exportPdf'])->name('angket.pdf');
-        Route::get('angket/{student}', [\App\Http\Controllers\Guru\AngketController::class, 'show'])->name('angket.show');
-        Route::get('rapor', [\App\Http\Controllers\Guru\RaporController::class, 'index'])->name('rapor.index');
-        Route::get('rapor/{student}/edit', [\App\Http\Controllers\Guru\RaporController::class, 'edit'])->name('rapor.edit');
-        Route::put('rapor/{student}', [\App\Http\Controllers\Guru\RaporController::class, 'update'])->name('rapor.update');
-        Route::get('rapor-cetak/{rapor}/pdf', [\App\Http\Controllers\Guru\RaporController::class, 'exportPdf'])->name('rapor.pdf');
-        Route::get('tryout', [\App\Http\Controllers\Guru\TryoutController::class, 'index'])->name('tryout.index');
-        Route::get('tryout/buat', [\App\Http\Controllers\Guru\TryoutController::class, 'create'])->name('tryout.create');
-        Route::post('tryout', [\App\Http\Controllers\Guru\TryoutController::class, 'store'])->name('tryout.store');
-        Route::get('tryout/{tryout}/edit', [\App\Http\Controllers\Guru\TryoutController::class, 'edit'])->name('tryout.edit');
-        Route::put('tryout/{tryout}', [\App\Http\Controllers\Guru\TryoutController::class, 'update'])->name('tryout.update');
-        Route::delete('tryout/{tryout}', [\App\Http\Controllers\Guru\TryoutController::class, 'destroy'])->name('tryout.destroy');
-        Route::get('tryout/{tryout}', [\App\Http\Controllers\Guru\TryoutController::class, 'show'])->name('tryout.show');
+        Route::get('penilaian', [PenilaianController::class, 'index'])->name('penilaian.index');
+        Route::get('angket', [AngketController::class, 'index'])->name('angket.index');
+        Route::get('angket/{student}/pdf', [AngketController::class, 'exportPdf'])->name('angket.pdf');
+        Route::get('angket/{student}', [AngketController::class, 'show'])->name('angket.show');
+        Route::get('rapor', [RaporController::class, 'index'])->name('rapor.index');
+        Route::get('rapor/{student}/edit', [RaporController::class, 'edit'])->name('rapor.edit');
+        Route::put('rapor/{student}', [RaporController::class, 'update'])->name('rapor.update');
+        Route::get('rapor-cetak/{rapor}/pdf', [RaporController::class, 'exportPdf'])->name('rapor.pdf');
+        Route::get('tryout', [TryoutController::class, 'index'])->name('tryout.index');
+        Route::get('tryout/buat', [TryoutController::class, 'create'])->name('tryout.create');
+        Route::post('tryout', [TryoutController::class, 'store'])->name('tryout.store');
+        Route::get('tryout/{tryout}/edit', [TryoutController::class, 'edit'])->name('tryout.edit');
+        Route::put('tryout/{tryout}', [TryoutController::class, 'update'])->name('tryout.update');
+        Route::delete('tryout/{tryout}', [TryoutController::class, 'destroy'])->name('tryout.destroy');
+        Route::get('tryout/{tryout}', [TryoutController::class, 'show'])->name('tryout.show');
     });
 
     Route::prefix('siswa')->name('siswa.')->middleware('role:siswa')->group(function () {
         Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->name('dashboard');
         Route::get('/instruments', [InstrumentSubmissionController::class, 'index'])->name('instruments.index');
         Route::post('/instruments', [InstrumentSubmissionController::class, 'store'])->name('instruments.store');
+        Route::get('/instruments/hasil/{submission}', [InstrumentSubmissionController::class, 'hasil'])->name('instruments.hasil');
+        Route::get('/instruments/hasil/{submission}/pdf', [InstrumentSubmissionController::class, 'hasilPdf'])->name('instruments.hasil.pdf');
         Route::get('/sociometry', [SociometryController::class, 'index'])->name('sociometry.index');
         Route::post('/sociometry', [SociometryController::class, 'store'])->name('sociometry.store');
         Route::get('/consultations', [SiswaConsultationController::class, 'index'])->name('consultations.index');
@@ -152,15 +171,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/feedback', [ServiceFeedbackController::class, 'store'])->name('feedback.store');
 
         // Phase 4–6 — Core (siswa)
-        Route::get('penilaian', [\App\Http\Controllers\Siswa\PenilaianController::class, 'index'])->name('penilaian.index');
-        Route::get('penilaian/buat', [\App\Http\Controllers\Siswa\PenilaianController::class, 'create'])->name('penilaian.create');
-        Route::post('penilaian', [\App\Http\Controllers\Siswa\PenilaianController::class, 'store'])->name('penilaian.store');
-        Route::get('angket', [\App\Http\Controllers\Siswa\AngketController::class, 'index'])->name('angket.index');
-        Route::get('angket/isi', [\App\Http\Controllers\Siswa\AngketController::class, 'show'])->name('angket.show');
-        Route::post('angket', [\App\Http\Controllers\Siswa\AngketController::class, 'store'])->name('angket.store');
-        Route::get('tryout', [\App\Http\Controllers\Siswa\TryoutController::class, 'index'])->name('tryout.index');
-        Route::get('tryout/{tryout}', [\App\Http\Controllers\Siswa\TryoutController::class, 'show'])->name('tryout.show');
-        Route::post('tryout/{tryout}', [\App\Http\Controllers\Siswa\TryoutController::class, 'store'])->name('tryout.store');
+        Route::get('penilaian', [App\Http\Controllers\Siswa\PenilaianController::class, 'index'])->name('penilaian.index');
+        Route::get('penilaian/buat', [App\Http\Controllers\Siswa\PenilaianController::class, 'create'])->name('penilaian.create');
+        Route::post('penilaian', [App\Http\Controllers\Siswa\PenilaianController::class, 'store'])->name('penilaian.store');
+        Route::get('angket', [App\Http\Controllers\Siswa\AngketController::class, 'index'])->name('angket.index');
+        Route::get('angket/isi', [App\Http\Controllers\Siswa\AngketController::class, 'show'])->name('angket.show');
+        Route::post('angket', [App\Http\Controllers\Siswa\AngketController::class, 'store'])->name('angket.store');
+        Route::get('tryout', [App\Http\Controllers\Siswa\TryoutController::class, 'index'])->name('tryout.index');
+        Route::get('tryout/{tryout}', [App\Http\Controllers\Siswa\TryoutController::class, 'show'])->name('tryout.show');
+        Route::post('tryout/{tryout}', [App\Http\Controllers\Siswa\TryoutController::class, 'store'])->name('tryout.store');
     });
 
     Route::middleware('role:admin,guru')->group(function () {
