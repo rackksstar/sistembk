@@ -137,7 +137,7 @@
                 <template x-for="opt in currentOptions" :key="opt.index">
                     <button
                         type="button"
-                        class="flex w-full items-center gap-3 rounded-2xl border bg-white p-4 text-left text-sm font-medium shadow-sm transition dark:bg-slate-900"
+                        class="flex w-full items-center gap-3 rounded-2xl border bg-white p-4 text-left text-sm font-medium shadow-xs transition dark:bg-slate-900"
                         x-bind:class="isSelected(opt.index)
                             ? @js($accentRing)
                             : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-emerald-200 dark:hover:border-emerald-800'"

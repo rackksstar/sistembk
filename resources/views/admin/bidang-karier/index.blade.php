@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6" x-data="modalCrud({{ $errors->any() && old('form_context') !== 'edit' ? 'true' : 'false' }}, {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }})">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Bidang Karier" description="Kelola bidang karier dan relasi kategori minat untuk rekomendasi SMK." />
             <button type="button" x-on:click="openCreate()" class="w-fit rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">Tambah bidang karier</button>

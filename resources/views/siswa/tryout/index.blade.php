@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Tryout BK" description="Tryout aktif untuk kelasmu dan riwayat pengerjaan." />
         <x-alert class="mt-4" type="success" :message="session('success')" />
         @if($belumPunyaKelas ?? false)
@@ -10,7 +10,7 @@
         @endif
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Tryout aktif</h2>
         <div class="mt-4 grid gap-4 md:grid-cols-2">
             @forelse($tryouts as $tryout)
@@ -27,7 +27,7 @@
         </div>
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Riwayat tryout</h2>
         <ul class="mt-4 space-y-2 text-sm">
             @forelse($riwayat as $item)

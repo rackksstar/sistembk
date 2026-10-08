@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title
                 title="Persetujuan Guru BK"
@@ -10,7 +10,7 @@
             />
 
             <form method="GET" action="{{ route('admin.approvals.index') }}" class="flex flex-col gap-3 sm:flex-row">
-                <select name="status" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+                <select name="status" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
                     <option value="semua" @selected($status === 'semua')>Semua status</option>
                     @foreach(\App\Models\User::STATUSES as $item)
                         <option value="{{ $item }}" @selected($status === $item)>{{ ucfirst($item) }}</option>

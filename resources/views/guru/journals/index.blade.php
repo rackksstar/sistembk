@@ -2,13 +2,13 @@
 
 @section('content')
 <div class="space-y-6" x-data="{ createOpen: {{ $errors->any() ? 'true' : 'false' }}, editOpen: null }">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Jurnal Bulanan BK" description="Catat rekap layanan bulanan dan export ke PDF." />
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <form method="GET" class="flex flex-col gap-3 sm:flex-row sm:items-center">
                     <label for="year" class="sr-only">Filter Tahun</label>
-                    <select id="year" name="year" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 shadow-sm focus:border-blue-500 focus:outline-none">
+                    <select id="year" name="year" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 shadow-xs focus:border-blue-500 focus:outline-hidden">
                         <option value="">Semua Tahun</option>
                         @foreach($years as $filterYear)
                             <option value="{{ $filterYear }}" @selected($filterYear === $year)>{{ $filterYear }}</option>
@@ -27,12 +27,12 @@
 
     @if($groupedJournals->isNotEmpty())
         @foreach($groupedJournals as $groupYear => $yearJournals)
-            <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-sm">
+            <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-xs">
                 <h2 class="text-lg font-semibold text-slate-950 dark:text-white">Tahun {{ $groupYear }}</h2>
             </section>
             <section class="grid gap-4 xl:grid-cols-2">
                 @foreach($yearJournals as $journal)
-                    <article class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-sm">
+                    <article class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-xs">
                         <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <div>
                                 <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-300">{{ $journal->periodLabel() }}</p>

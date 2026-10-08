@@ -31,7 +31,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-full bg-slate-50 dark:bg-slate-800/60 text-slate-900 dark:text-slate-100 antialiased dark:bg-slate-950 dark:text-slate-100">
-    <div class="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#f8fbff_0%,#edf5ff_52%,#dbe7f5_100%)] dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div class="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#f8fbff_0%,#edf5ff_52%,#dbe7f5_100%)] dark:bg-linear-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
         <div class="absolute left-[-120px] top-[-120px] h-80 w-80 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-900/20"></div>
         <div class="absolute bottom-[-140px] right-[-120px] h-96 w-96 rounded-full bg-sky-300/30 blur-3xl dark:bg-sky-900/15"></div>
 
@@ -55,13 +55,13 @@
         <main class="relative z-10 flex min-h-[calc(100vh-112px)] items-center justify-center px-4 pb-10 sm:px-6">
             <div class="w-full max-w-lg">
                 <div class="mb-5 text-center">
-                    <span class="inline-flex rounded-full border border-white/80 dark:border-slate-700/80 bg-white/80 dark:bg-slate-900/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-blue-600 shadow-sm dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-blue-400">
+                    <span class="inline-flex rounded-full border border-white/80 dark:border-slate-700/80 bg-white/80 dark:bg-slate-900/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-blue-600 shadow-xs dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-blue-400">
                         {{ $roleConfig['label'] }}
                     </span>
                 </div>
 
                 <div class="overflow-hidden rounded-2xl border border-white dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg shadow-blue-200/60 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/30">
-                    <div class="h-2 bg-gradient-to-r {{ $roleConfig['accent'] }}"></div>
+                    <div class="h-2 bg-linear-to-r {{ $roleConfig['accent'] }}"></div>
                     <div class="p-6 sm:p-8">
                         {{ $slot }}
                     </div>

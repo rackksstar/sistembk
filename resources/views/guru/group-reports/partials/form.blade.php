@@ -44,7 +44,7 @@
     @foreach(['result' => 'Hasil Konseling Kelompok', 'evaluation' => 'Evaluasi', 'follow_up' => 'Tindak Lanjut'] as $field => $label)
         <div class="space-y-2">
             <x-input-label for="{{ $field }}_{{ $formId }}" :value="$label" />
-            <textarea id="{{ $field }}_{{ $formId }}" name="{{ $field }}" rows="4" @required($field !== 'follow_up') class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100">{{ old($field, $report?->{$field}) }}</textarea>
+            <textarea id="{{ $field }}_{{ $formId }}" name="{{ $field }}" rows="4" @required($field !== 'follow_up') class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 shadow-xs focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100">{{ old($field, $report?->{$field}) }}</textarea>
         </div>
     @endforeach
 

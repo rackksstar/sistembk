@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title
             title="Rapor BK"
             description="Siswa di sekolah Anda atau yang pernah konseling / memiliki rapor dengan Anda."
@@ -32,7 +32,7 @@
         </form>
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">

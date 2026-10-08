@@ -14,8 +14,8 @@
         <x-alert class="mt-5" type="success" :message="session('success')" />
 
         <form method="GET" action="{{ route('admin.careers.index') }}" class="mt-6 grid gap-3 md:grid-cols-[minmax(0,1fr)_220px_auto]">
-            <input name="search" value="{{ $search }}" class="rounded-2xl border border-white/80 dark:border-slate-700/80 bg-white/80 dark:bg-slate-900/80 px-4 py-3 text-sm shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Cari judul atau deskripsi..." />
-            <select name="category" class="rounded-2xl border border-white/80 dark:border-slate-700/80 bg-white/80 dark:bg-slate-900/80 px-4 py-3 text-sm shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+            <input name="search" value="{{ $search }}" class="rounded-2xl border border-white/80 dark:border-slate-700/80 bg-white/80 dark:bg-slate-900/80 px-4 py-3 text-sm shadow-xs focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Cari judul atau deskripsi..." />
+            <select name="category" class="rounded-2xl border border-white/80 dark:border-slate-700/80 bg-white/80 dark:bg-slate-900/80 px-4 py-3 text-sm shadow-xs focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
                 <option value="">Semua kategori</option>
                 @foreach($categories as $item)
                     <option value="{{ $item }}" @selected($category === $item)>{{ $item }}</option>
@@ -27,13 +27,13 @@
 
     <section class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         @forelse($careers as $career)
-            <article class="overflow-hidden rounded-3xl border border-blue-100 dark:border-blue-900/50 bg-white dark:bg-slate-900 shadow-sm transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-100">
-                <div class="aspect-[16/10] bg-gradient-to-br from-blue-100 via-sky-100 to-white">
+            <article class="overflow-hidden rounded-3xl border border-blue-100 dark:border-blue-900/50 bg-white dark:bg-slate-900 shadow-xs transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-100">
+                <div class="aspect-[16/10] bg-linear-to-br from-blue-100 via-sky-100 to-white">
                     @if($career->image_path)
                         <img src="{{ asset('storage/'.$career->image_path) }}" alt="{{ $career->title }}" class="h-full w-full object-cover">
                     @else
                         <div class="flex h-full items-center justify-center text-blue-600">
-                            <span class="rounded-full bg-white/80 dark:bg-slate-900/80 px-4 py-2 text-sm font-semibold shadow-sm">{{ $career->category }}</span>
+                            <span class="rounded-full bg-white/80 dark:bg-slate-900/80 px-4 py-2 text-sm font-semibold shadow-xs">{{ $career->category }}</span>
                         </div>
                     @endif
                 </div>

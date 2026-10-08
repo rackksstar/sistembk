@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Kelola Instrumen Sosiometri" description="Aktifkan atau nonaktifkan instrumen sosiometri per kelas." />
         <div class="mt-4 overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-sm">

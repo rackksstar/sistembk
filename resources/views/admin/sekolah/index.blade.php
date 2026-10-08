@@ -5,7 +5,7 @@
     createOpen: {{ $errors->any() && old('form_context') !== 'edit' ? 'true' : 'false' }},
     editOpen: {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }}
 }">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Daftar Sekolah MOU" description="Kelola sekolah yang sudah MOU dengan PCR dan bisa dipilih saat Guru BK mendaftar." />
             <button type="button" x-on:click="createOpen = !createOpen" class="w-fit rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">
@@ -30,38 +30,38 @@
             <div class="mt-5 grid gap-4 lg:grid-cols-2">
                 <div class="space-y-2">
                     <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="create-nama">Nama Sekolah</label>
-                    <input id="create-nama" name="nama" value="{{ old('nama') }}" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="SMA Negeri 1 ..." />
+                    <input id="create-nama" name="nama" value="{{ old('nama') }}" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="SMA Negeri 1 ..." />
                     <x-input-error :messages="$errors->get('nama')" class="text-sm text-red-600" />
                 </div>
 
                 <div class="space-y-2">
                     <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="create-npsn">NPSN</label>
-                    <input id="create-npsn" name="npsn" value="{{ old('npsn') }}" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="NPSN sekolah" />
+                    <input id="create-npsn" name="npsn" value="{{ old('npsn') }}" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="NPSN sekolah" />
                     <x-input-error :messages="$errors->get('npsn')" class="text-sm text-red-600" />
                 </div>
 
                 <div class="space-y-2 lg:col-span-2">
                     <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="create-alamat">Alamat Sekolah</label>
-                    <textarea id="create-alamat" name="alamat" required rows="3" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Alamat lengkap sekolah">{{ old('alamat') }}</textarea>
+                    <textarea id="create-alamat" name="alamat" required rows="3" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Alamat lengkap sekolah">{{ old('alamat') }}</textarea>
                     <x-input-error :messages="$errors->get('alamat')" class="text-sm text-red-600" />
                 </div>
 
                 <div class="space-y-2">
                     <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="create-logo">Logo (opsional)</label>
-                    <input id="create-logo" name="logo" type="file" accept="image/*" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" />
+                    <input id="create-logo" name="logo" type="file" accept="image/*" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" />
                     <x-input-error :messages="$errors->get('logo')" class="text-sm text-red-600" />
                 </div>
             </div>
         </form>
 
         <form method="GET" action="{{ route('admin.sekolah.index') }}" class="mt-6 grid gap-3 lg:grid-cols-[minmax(0,1fr)_160px_160px_auto_auto]">
-            <input name="search" value="{{ $search }}" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Cari nama/NPSN..." />
-            <select name="mou" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+            <input name="search" value="{{ $search }}" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Cari nama/NPSN..." />
+            <select name="mou" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
                 <option value="">Semua status MOU</option>
                 <option value="1" @selected($mou === '1')>Sudah MOU</option>
                 <option value="0" @selected($mou === '0')>Belum MOU</option>
             </select>
-            <select name="active" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+            <select name="active" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
                 <option value="">Semua status</option>
                 <option value="1" @selected($active === '1')>Aktif</option>
                 <option value="0" @selected($active === '0')>Nonaktif</option>

@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title :title="$tryout->judul" :description="'Rata-rata keseluruhan: '.number_format($rataKeseluruhan, 1)" />
         <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ $tryout->mulai_at->format('d M Y H:i') }} – {{ $tryout->selesai_at->format('d M Y H:i') }} · {{ $tryout->durasi_menit }} menit</p>
         @if($tryout->kelas->isNotEmpty())
@@ -17,7 +17,7 @@
         </div>
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Hasil per siswa" description="Peserta yang sudah mengumpulkan jawaban." />
         <div class="mt-6 overflow-x-auto rounded-3xl border border-slate-200 dark:border-slate-700">
             <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">

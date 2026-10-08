@@ -83,8 +83,8 @@ $replacements = [
 ];
 
 $gradientReplacements = [
-    'bg-[linear-gradient(135deg,#f8fbff_0%,#edf5ff_52%,#dbe7f5_100%)]' => 'bg-[linear-gradient(135deg,#f8fbff_0%,#edf5ff_52%,#dbe7f5_100%)] dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950',
-    'bg-[linear-gradient(135deg,#ffffff_0%,#eef5ff_48%,#b7d3ff_100%)]' => 'bg-[linear-gradient(135deg,#ffffff_0%,#eef5ff_48%,#b7d3ff_100%)] dark:bg-gradient-to-br dark:from-slate-900 dark:via-slate-900 dark:to-slate-800',
+    'bg-[linear-gradient(135deg,#f8fbff_0%,#edf5ff_52%,#dbe7f5_100%)]' => 'bg-[linear-gradient(135deg,#f8fbff_0%,#edf5ff_52%,#dbe7f5_100%)] dark:bg-linear-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950',
+    'bg-[linear-gradient(135deg,#ffffff_0%,#eef5ff_48%,#b7d3ff_100%)]' => 'bg-[linear-gradient(135deg,#ffffff_0%,#eef5ff_48%,#b7d3ff_100%)] dark:bg-linear-to-br dark:from-slate-900 dark:via-slate-900 dark:to-slate-800',
 ];
 
 $iterator = new RecursiveIteratorIterator(
@@ -120,7 +120,7 @@ foreach ($iterator as $file) {
     }
 
     foreach ($gradientReplacements as $search => $replace) {
-        if (str_contains($content, $search) && ! str_contains($content, 'dark:bg-gradient-to-br')) {
+        if (str_contains($content, $search) && ! str_contains($content, 'dark:bg-linear-to-br')) {
             $content = str_replace($search, $replace, $content);
         }
     }

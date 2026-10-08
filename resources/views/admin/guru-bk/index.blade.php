@@ -5,7 +5,7 @@
     createOpen: {{ $errors->any() && old('form_context') !== 'edit' ? 'true' : 'false' }},
     editOpen: {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }}
 }">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Manajemen Guru BK" description="Input manual Guru BK langsung menjadi akun aktif sesuai status yang dipilih." />
             <button type="button" x-on:click="createOpen = true" class="w-fit rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">Tambah Guru BK</button>
@@ -15,14 +15,14 @@
         <x-alert class="mt-5" type="error" :message="session('error')" />
 
         <form method="GET" action="{{ route('admin.guru-bk.index') }}" class="mt-6 grid gap-3 lg:grid-cols-[minmax(0,1fr)_260px_180px_auto_auto]">
-            <input name="search" value="{{ $search }}" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Cari nama/no HP/NIP..." />
-            <select name="sekolah_id" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+            <input name="search" value="{{ $search }}" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Cari nama/no HP/NIP..." />
+            <select name="sekolah_id" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
                 <option value="">Semua sekolah</option>
                 @foreach($sekolahs as $s)
                     <option value="{{ $s->id }}" @selected((string) $sekolahId === (string) $s->id)>{{ $s->nama }}</option>
                 @endforeach
             </select>
-            <select name="status" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+            <select name="status" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
                 <option value="">Semua status</option>
                 @foreach($statuses as $item)
                     <option value="{{ $item }}" @selected($status === $item)>{{ ucfirst($item) }}</option>

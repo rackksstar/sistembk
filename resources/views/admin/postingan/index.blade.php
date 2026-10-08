@@ -5,7 +5,7 @@
     createOpen: {{ $errors->any() && old('form_context') !== 'edit' ? 'true' : 'false' }},
     editOpen: {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }}
 }">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Postingan Artikel" description="Kelola artikel BK untuk dibaca siswa." />
             <button type="button" x-on:click="createOpen = true" class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">Tambah postingan</button>
@@ -32,7 +32,7 @@
         </form>
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="overflow-x-auto rounded-3xl border border-slate-200 dark:border-slate-700">
             <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
                 <thead class="bg-slate-50 dark:bg-slate-800/60 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">

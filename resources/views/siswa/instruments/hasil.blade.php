@@ -38,8 +38,8 @@
         </section>
     @endif
 
-    <section class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
-        <div class="bg-gradient-to-r {{ $isKerja ? 'from-emerald-500 to-teal-600' : 'from-indigo-500 to-blue-600' }} px-6 py-5 text-center">
+    <section class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xs">
+        <div class="bg-linear-to-r {{ $isKerja ? 'from-emerald-500 to-teal-600' : 'from-indigo-500 to-blue-600' }} px-6 py-5 text-center">
             <h2 class="text-lg font-bold text-white">
                 {{ $isKerja ? 'Hasil Minat Bakat Kerja — Talents Mapping' : 'Hasil Minat Bakat Kuliah — Talents Mapping' }}
             </h2>
@@ -90,7 +90,7 @@
         </div>
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Rincian per Dimensi RIASEC" description="Semakin tinggi persentase, semakin kuat kecenderungan minatmu pada dimensi tersebut." />
 
         <div class="mt-6 space-y-5">
@@ -119,7 +119,7 @@
         </div>
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         @php $hasilJenjang = strtoupper((string) $submission->jenjang); @endphp
         @if($isKerja || $hasilJenjang === 'SMK')
             <h2 class="text-lg font-bold text-slate-950 dark:text-white">Rekomendasi Karier</h2>

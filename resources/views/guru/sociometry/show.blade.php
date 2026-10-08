@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title :title="'Analisis Sosiometri: '. $student->name" description="Preview analisis sosiometri untuk siswa" />
         <div class="mt-4 grid gap-4 md:grid-cols-3">
             <div class="rounded-lg border p-4">
@@ -24,7 +24,7 @@
         </div>
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Pilihan Masuk (Diterima)" description="Siapa saja yang memilih siswa ini." />
         <div class="mt-4">
             @if($inbound->isEmpty())
@@ -45,7 +45,7 @@
         </div>
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Pilihan Keluar (Dipilih oleh siswa ini)" description="Siapa yang dipilih oleh siswa." />
         <div class="mt-4">
             @if($outbound->isEmpty())

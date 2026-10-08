@@ -57,7 +57,7 @@
     <section class="ui-panel flex min-h-[72vh] flex-col p-0">
         <div class="flex items-center justify-between gap-4 border-b border-slate-200 p-5 dark:border-slate-700">
             <div class="flex min-w-0 items-center gap-3">
-                <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm shadow-blue-500/30">
+                <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-xs shadow-blue-500/30">
                     <x-nav-icon name="chat" class="h-5 w-5" />
                 </span>
                 <div class="min-w-0">
@@ -72,7 +72,7 @@
             <template x-for="(item, index) in messages" :key="index">
                 <div class="flex" :class="item.role === 'user' ? 'justify-end' : 'justify-start'">
                     <div
-                        class="max-w-[82%] rounded-3xl px-4 py-3 text-sm leading-6 shadow-sm"
+                        class="max-w-[82%] rounded-3xl px-4 py-3 text-sm leading-6 shadow-xs"
                         :class="item.role === 'user'
                             ? 'rounded-br-lg bg-blue-600 text-white shadow-blue-500/20'
                             : 'rounded-bl-lg border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200'"
@@ -83,7 +83,7 @@
             </template>
 
             <div x-show="sending" x-cloak class="flex justify-start">
-                <div class="rounded-3xl rounded-bl-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                <div class="rounded-3xl rounded-bl-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-xs dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
                     Mengetik...
                 </div>
             </div>

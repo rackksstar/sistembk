@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Feedback Layanan BK" description="Kirim penilaian dan masukan setelah menerima layanan." />
         <x-alert class="mt-5" type="success" :message="session('success')" />
         @if($errors->any())
@@ -11,7 +11,7 @@
     </section>
 
     <section class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <form method="POST" action="{{ route('siswa.feedback.store') }}" class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <form method="POST" action="{{ route('siswa.feedback.store') }}" class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             @csrf
             <div class="space-y-4">
                 <div>
@@ -31,7 +31,7 @@
             </div>
         </form>
 
-        <aside class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <aside class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             <x-section-title title="Riwayat Feedback" description="Feedback yang sudah Anda kirim." />
             <div class="mt-5 space-y-3">
                 @forelse($feedback as $item)

@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6" x-data="{ createOpen: false, editOpen: null }">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Kelas Bimbingan" description="Buat kelas dan tambahkan siswa ke kelompok bimbingan." />
             <button x-on:click="createOpen = true" class="w-fit rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">Tambah kelas</button>
@@ -12,7 +12,7 @@
 
     <section class="grid gap-5 xl:grid-cols-2">
         @forelse($classes as $class)
-            <article class="rounded-3xl border border-blue-100 dark:border-blue-900/50 bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <article class="rounded-3xl border border-blue-100 dark:border-blue-900/50 bg-white dark:bg-slate-900 p-6 shadow-xs">
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <h3 class="text-lg font-semibold text-slate-950 dark:text-white">{{ $class->name }}</h3>

@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-700 dark:bg-slate-900">
         <x-section-title
             title="Statistik Layanan Guru BK"
             description="Rekap layanan individu dan kelompok serta kategori kasus per tahun."
@@ -33,14 +33,14 @@
     </section>
 
     <section class="grid gap-4 lg:grid-cols-2">
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-700 dark:bg-slate-900">
             <x-section-title title="Distribusi Kasus per Kategori" description="Perbandingan kasus individu dan kelompok per kategori." />
             <div class="mt-6">
                 <canvas id="categoryChart" width="400" height="300"></canvas>
             </div>
         </div>
 
-        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-700 dark:bg-slate-900">
             <x-section-title title="Perbandingan Layanan" description="Total layanan individu vs kelompok." />
             <div class="mt-6">
                 <canvas id="serviceTypeChart" width="400" height="300"></canvas>
@@ -49,7 +49,7 @@
                 <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Proporsi Layanan</p>
                 <div class="mt-4 grid gap-3 sm:grid-cols-2">
                     @foreach($serviceTypeStats as $stat)
-                        <div class="rounded-2xl bg-white p-4 text-center shadow-sm dark:bg-slate-900">
+                        <div class="rounded-2xl bg-white p-4 text-center shadow-xs dark:bg-slate-900">
                             <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ $stat['label'] }}</p>
                             <p class="mt-2 text-2xl font-semibold text-slate-950 dark:text-white">{{ $stat['value'] }}</p>
                         </div>

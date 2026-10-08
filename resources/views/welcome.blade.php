@@ -18,7 +18,7 @@
         $currentUser = auth()->user();
     @endphp
 
-    <div class="min-h-screen bg-[linear-gradient(135deg,#f8fbff_0%,#edf5ff_44%,#dbe7f5_100%)] dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div class="min-h-screen bg-[linear-gradient(135deg,#f8fbff_0%,#edf5ff_44%,#dbe7f5_100%)] dark:bg-linear-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
         <header class="sticky top-4 z-50 px-4">
             <nav
                 class="mx-auto flex max-w-7xl items-center justify-between rounded-full border border-white/80 dark:border-slate-700/80 bg-white/85 dark:bg-slate-900/85 px-4 py-3 shadow-md shadow-blue-100/70 backdrop-blur sm:px-6">
@@ -36,7 +36,7 @@
 
         <main class="mx-auto max-w-7xl px-6 pb-16 pt-20 sm:px-8 lg:px-10">
             @if (session('status'))
-                <div class="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium leading-6 text-emerald-800 shadow-sm shadow-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-200">
+                <div class="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium leading-6 text-emerald-800 shadow-xs shadow-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-200">
                     {{ session('status') }}
                 </div>
             @endif
@@ -44,7 +44,7 @@
             <section class="grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-center">
                 <div>
                     <p
-                        class="inline-flex rounded-full border border-blue-100 dark:border-blue-900/50 bg-white/80 dark:bg-slate-900/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-blue-600 shadow-sm">
+                        class="inline-flex rounded-full border border-blue-100 dark:border-blue-900/50 bg-white/80 dark:bg-slate-900/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-blue-600 shadow-xs">
                         SISTEM BK
                     </p>
 
@@ -164,7 +164,7 @@
     </footer>
 
     @if ($requiresLogoutConfirmation && $currentUser)
-        <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm"
+        <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-xs"
             role="dialog" aria-modal="true" aria-labelledby="logout-confirmation-title">
             <div
                 class="w-full max-w-md rounded-2xl border border-white dark:border-slate-700 bg-white dark:bg-slate-900 p-6 text-center shadow-2xl shadow-slate-950/20">

@@ -136,7 +136,7 @@
         x-cloak
         x-show="logoutOpen"
         x-transition.opacity
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm dark:bg-slate-950/80"
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-xs dark:bg-slate-950/80"
         role="dialog"
         aria-modal="true"
         aria-labelledby="logout-confirmation-title"

@@ -63,10 +63,10 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-full bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
-    <div class="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#f8fbff_0%,#edf5ff_44%,#dbe7f5_100%)] dark:bg-gradient-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-        <div class="absolute -left-28 -top-20 h-96 w-96 rotate-[-28deg] rounded-[42%] bg-gradient-to-br {{ $roleConfig['accent'] }} opacity-20"></div>
-        <div class="absolute -right-32 bottom-20 h-96 w-96 rotate-[30deg] rounded-[44%] bg-gradient-to-br {{ $roleConfig['accent'] }} opacity-20"></div>
-        <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white/90 to-transparent dark:from-slate-950/90"></div>
+    <div class="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#f8fbff_0%,#edf5ff_44%,#dbe7f5_100%)] dark:bg-linear-to-br dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+        <div class="absolute -left-28 -top-20 h-96 w-96 rotate-[-28deg] rounded-[42%] bg-linear-to-br {{ $roleConfig['accent'] }} opacity-20"></div>
+        <div class="absolute -right-32 bottom-20 h-96 w-96 rotate-[30deg] rounded-[44%] bg-linear-to-br {{ $roleConfig['accent'] }} opacity-20"></div>
+        <div class="absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-white/90 to-transparent dark:from-slate-950/90"></div>
 
         <div class="relative mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-4 sm:px-6 lg:px-8">
             <header class="sticky top-4 z-30 flex items-center justify-between gap-4 rounded-full border border-white/80 dark:border-slate-700/80 bg-white/85 dark:bg-slate-900/85 px-4 py-3 shadow-md shadow-blue-100/70 backdrop-blur sm:px-6">
@@ -79,7 +79,7 @@
                     @if($role === 'login')
                         <span class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400">Admin</span>
                     @endif
-                    <a href="{{ route('login') }}" class="rounded-full bg-slate-100 dark:bg-slate-800 px-4 py-2 font-semibold shadow-sm transition hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-950 dark:text-white">Masuk</a>
+                    <a href="{{ route('login') }}" class="rounded-full bg-slate-100 dark:bg-slate-800 px-4 py-2 font-semibold shadow-xs transition hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-950 dark:text-white">Masuk</a>
                     <a href="{{ route('register') }}" class="rounded-full bg-blue-600 px-4 py-2 font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">Daftar Siswa</a>
                 </div>
             </header>
@@ -87,7 +87,7 @@
             <div class="grid flex-1 gap-8 py-12 lg:grid-cols-[1fr_480px] lg:items-center">
                 <section class="hidden lg:block">
                     <div class="max-w-xl">
-                        <p class="inline-flex rounded-full border border-white/80 dark:border-slate-700/80 bg-white/70 dark:bg-slate-900/70 px-4 py-2 text-sm font-bold uppercase tracking-[0.24em] text-blue-600 shadow-sm backdrop-blur">{{ $roleConfig['badge'] }}</p>
+                        <p class="inline-flex rounded-full border border-white/80 dark:border-slate-700/80 bg-white/70 dark:bg-slate-900/70 px-4 py-2 text-sm font-bold uppercase tracking-[0.24em] text-blue-600 shadow-xs backdrop-blur">{{ $roleConfig['badge'] }}</p>
                         <h1 class="mt-6 text-5xl font-bold tracking-tight text-slate-950 dark:text-white">{{ $roleConfig['title'] }}</h1>
                         <p class="mt-5 text-base leading-8 text-slate-600 dark:text-slate-400">{{ $roleConfig['description'] }}</p>
                     </div>
@@ -104,7 +104,7 @@
 
                 <main class="mx-auto w-full max-w-md">
                     <div class="overflow-hidden rounded-2xl border border-white dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg shadow-blue-200/60">
-                        <div class="h-2 bg-gradient-to-r {{ $roleConfig['accent'] }}"></div>
+                        <div class="h-2 bg-linear-to-r {{ $roleConfig['accent'] }}"></div>
                         <div class="p-8">
                         {{ $slot }}
                         </div>

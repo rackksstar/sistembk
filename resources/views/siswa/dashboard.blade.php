@@ -83,7 +83,7 @@
     <x-alert type="success" :message="session('success')" />
 
     @unless($studentProfile)
-        <section class="rounded-3xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 p-6 shadow-sm">
+        <section class="rounded-3xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 p-6 shadow-xs">
             <x-section-title
                 title="Profil siswa belum terhubung"
                 description="Akun Anda belum punya data NISN/kelas. Hubungi Guru BK agar modul penilaian, angket, dan tryout bisa dipakai."
@@ -113,7 +113,7 @@
                 </div>
             </div>
 
-            <div class="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-800/80">
+            <div class="rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-xs backdrop-blur dark:border-slate-700 dark:bg-slate-800/80">
                 <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Ringkasan Anda</p>
                 <div class="mt-4 grid gap-3">
                     @foreach($metrics as $metric)
@@ -123,7 +123,7 @@
                                     <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $metric['title'] }}</p>
                                     <p class="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">{{ $metric['description'] }}</p>
                                 </div>
-                                <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br {{ $metric['color'] }} text-base font-bold text-white shadow-sm">
+                                <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br {{ $metric['color'] }} text-base font-bold text-white shadow-xs">
                                     {{ $metric['value'] }}
                                 </span>
                             </div>
@@ -153,7 +153,7 @@
         </div>
     </section>
 
-    <section id="smk-profile" class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+    <section id="smk-profile" class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xs dark:border-slate-700 dark:bg-slate-900">
         <div class="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div class="p-6">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -208,14 +208,14 @@
             <div class="border-t border-slate-100 bg-[linear-gradient(135deg,#eff6ff_0%,#ecfdf5_100%)] p-6 dark:border-slate-700 dark:bg-none dark:bg-slate-800/70 lg:border-l lg:border-t-0">
                 <div class="flex h-full flex-col justify-between gap-6">
                     <div>
-                        <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-emerald-600 shadow-sm dark:bg-slate-900 dark:text-emerald-300">
+                        <span class="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-emerald-600 shadow-xs dark:bg-slate-900 dark:text-emerald-300">
                             <x-nav-icon name="graduation-cap" class="h-6 w-6" />
                         </span>
                         <h3 class="mt-5 text-xl font-bold text-slate-950 dark:text-slate-100">{{ $siswaSmk?->sekolah ?? 'Data SMK' }}</h3>
                         <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">Profil ini menjadi dasar pencocokan siswa dengan informasi karier dan lowongan kerja sesuai kompetensi.</p>
                     </div>
                     @if($siswaSmk)
-                        <div class="rounded-2xl bg-white/80 p-4 text-sm shadow-sm dark:bg-slate-900/80">
+                        <div class="rounded-2xl bg-white/80 p-4 text-sm shadow-xs dark:bg-slate-900/80">
                             <p class="font-semibold text-slate-950 dark:text-slate-100">{{ $siswaSmk->siap_dihubungi ? 'Siap dihubungi' : 'Belum siap dihubungi' }}</p>
                             <p class="mt-1 text-slate-500 dark:text-slate-400">{{ $siswaSmk->nomor_hp ?? $siswaSmk->email ?? 'Kontak belum dicatat.' }}</p>
                         </div>
@@ -433,7 +433,7 @@
     >
         <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-950 px-4 py-3 text-white dark:border-slate-700">
             <div class="flex min-w-0 items-center gap-3">
-                <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-500 text-white shadow-sm shadow-blue-500/40">
+                <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-500 text-white shadow-xs shadow-blue-500/40">
                     <x-nav-icon name="chat" class="h-5 w-5" />
                 </span>
                 <div class="min-w-0">
@@ -444,7 +444,7 @@
             <button
                 type="button"
                 x-on:click="open = false"
-                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-300 transition hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+                class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-300 transition hover:bg-white/10 hover:text-white focus:outline-hidden focus:ring-2 focus:ring-blue-300"
                 aria-label="Tutup chatbot"
             >
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -457,7 +457,7 @@
             <template x-for="(item, index) in messages" :key="index">
                 <div class="flex" :class="item.role === 'user' ? 'justify-end' : 'justify-start'">
                     <div
-                        class="max-w-[86%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm"
+                        class="max-w-[86%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-xs"
                         :class="item.role === 'user'
                             ? 'rounded-br-md bg-blue-600 text-white shadow-blue-500/20'
                             : 'rounded-bl-md border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200'"
@@ -468,7 +468,7 @@
             </template>
 
             <div x-show="sending" x-cloak class="flex justify-start">
-                <div class="rounded-2xl rounded-bl-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+                <div class="rounded-2xl rounded-bl-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-xs dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
                     Sedang menulis...
                 </div>
             </div>
@@ -518,7 +518,7 @@
     <button
         type="button"
         x-on:click="toggle"
-        class="group relative inline-flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-white shadow-2xl shadow-blue-500/30 transition hover:-translate-y-0.5 hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900/50"
+        class="group relative inline-flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 text-white shadow-2xl shadow-blue-500/30 transition hover:-translate-y-0.5 hover:bg-blue-500 focus:outline-hidden focus:ring-4 focus:ring-blue-200 dark:focus:ring-blue-900/50"
         aria-label="Buka chatbot konseling"
         x-bind:aria-expanded="open.toString()"
     >

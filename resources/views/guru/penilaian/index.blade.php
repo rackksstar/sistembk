@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title
             title="Laporan Penilaian Layanan"
             description="Ringkasan penilaian siswa untuk konseling yang sudah selesai."
@@ -37,7 +37,7 @@
         <x-dashboard-card title="Overall" :value="number_format($summary['rata_overall'], 1)" :description="$summary['total_dinilai'].' / '.$summary['total_konseling'].' dinilai'" />
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Detail penilaian" description="Per konseling pada periode filter." />
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">

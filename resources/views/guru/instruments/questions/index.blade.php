@@ -5,7 +5,7 @@
     class="space-y-6"
     x-data="modalCrud({{ $errors->any() ? 'true' : 'false' }}, null)"
 >
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
                 <x-section-title
@@ -56,7 +56,7 @@
         </form>
     </section>
 
-    <section class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm">
+    <section class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xs">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-sm">
                 <thead class="bg-slate-50 dark:bg-slate-800/60 text-left text-xs font-bold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">

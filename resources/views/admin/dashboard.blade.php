@@ -11,7 +11,7 @@
             </div>
             <div class="grid gap-3 sm:grid-cols-2">
                 <a href="{{ route('admin.users.index') }}" class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">Kelola Semua Role</a>
-                <a href="{{ route('admin.students.index') }}" class="rounded-2xl border border-white/80 dark:border-slate-700/80 bg-white/80 dark:bg-slate-900/80 px-5 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm transition hover:text-blue-700 dark:text-blue-300">Kelola Siswa</a>
+                <a href="{{ route('admin.students.index') }}" class="rounded-2xl border border-white/80 dark:border-slate-700/80 bg-white/80 dark:bg-slate-900/80 px-5 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-xs transition hover:text-blue-700 dark:text-blue-300">Kelola Siswa</a>
             </div>
         </div>
     </section>
@@ -28,7 +28,7 @@
     </section>
 
     <section class="grid gap-6 xl:grid-cols-[0.8fr_1.2fr]">
-        <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             <x-section-title title="Ringkasan Role" description="Jumlah akun berdasarkan role aktif di sistem." />
             <div class="mt-6 space-y-4">
                 @foreach($roleSummary as $item)
@@ -43,7 +43,7 @@
             </div>
         </div>
 
-        <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             <x-section-title title="Modul Admin" description="Semua fitur utama sesuai kebutuhan sistem BK." />
             <div class="mt-6 grid gap-3 md:grid-cols-2">
                 @foreach($modules as $module)
@@ -61,7 +61,7 @@
         </div>
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <x-section-title
                 title="Aktivitas Konseling Terbaru"
@@ -88,11 +88,11 @@
     </section>
 
     @if(isset($coreSummary))
-        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             <x-section-title title="Ringkasan layanan BK (Core)" description="Metrik modul tim inti." />
             <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach($coreSummary as $item)
-                    <a href="{{ $item['href'] }}" class="group rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-blue-50 p-4 transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-blue-950/40 dark:hover:border-blue-700 dark:hover:bg-blue-950/60 dark:focus-visible:ring-offset-slate-900">
+                    <a href="{{ $item['href'] }}" class="group rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-blue-50 p-4 transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:bg-blue-950/40 dark:hover:border-blue-700 dark:hover:bg-blue-950/60 dark:focus-visible:ring-offset-slate-900">
                         <p class="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">{{ $item['label'] }}</p>
                         <p class="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $item['value'] }}</p>
                         <span class="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-blue-600 opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100 dark:text-blue-300">Kelola <span aria-hidden="true">&rarr;</span></span>
@@ -103,7 +103,7 @@
     @endif
 
     @if(isset($sekolahStats))
-        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             <div class="flex flex-wrap items-end justify-between gap-4">
                 <x-section-title title="Sekolah aktif" description="Pantau sekolah MOU, paket aktivasi, dan status aktif." />
                 <a href="{{ route('admin.sekolah.index') }}" class="ui-btn-secondary">Kelola sekolah</a>
@@ -152,7 +152,7 @@
     @endif
 
     @if(isset($postinganTerbaru) && $postinganTerbaru->isNotEmpty())
-        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             <div class="flex items-end justify-between gap-4">
                 <x-section-title title="Postingan terbaru" description="Artikel BK yang baru disimpan." />
                 <a href="{{ route('admin.postingan.index') }}" class="text-sm font-semibold text-blue-600">Kelola postingan</a>

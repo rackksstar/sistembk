@@ -64,7 +64,7 @@
             @endphp
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <label class="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                    <input type="checkbox" name="categories[{{ $cat->id }}][enabled]" value="1" @checked($enabled) class="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                    <input type="checkbox" name="categories[{{ $cat->id }}][enabled]" value="1" @checked($enabled) class="rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500" />
                     <span class="font-semibold">{{ $cat->kode }}</span>
                     <span>{{ $cat->nama }}</span>
                 </label>

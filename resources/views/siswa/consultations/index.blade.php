@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6" x-data="{ formOpen: {{ $errors->any() ? 'true' : 'false' }} }">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title
                 title="Pengajuan Konseling"
@@ -85,7 +85,7 @@
         </div>
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <x-section-title title="Riwayat pengajuan" description="Semua permintaan konseling Anda." />
             <form method="GET" class="flex gap-2">

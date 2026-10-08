@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6" x-data="{ confirmOpen: false }">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <x-section-title
                 title="Isi Angket BK"
@@ -59,7 +59,7 @@
         x-cloak
         x-show="confirmOpen"
         x-transition.opacity
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm"
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-xs"
         role="dialog"
         aria-modal="true"
     >

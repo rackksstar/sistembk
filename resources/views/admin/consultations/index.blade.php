@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title
             title="Konseling & Laporan"
             description="Monitoring semua pengajuan, jadwal, hasil konseling, dan evaluasi dari Guru BK."
@@ -11,11 +11,11 @@
             <div class="min-w-0">
                 <label for="search" class="sr-only">Cari konseling</label>
                 <input type="search" id="search" name="search" value="{{ $search }}" placeholder="Cari topik, siswa, NISN, atau guru BK..."
-                    class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+                    class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm placeholder:text-slate-400 focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
             </div>
             <div class="min-w-0">
                 <label for="filter-status" class="sr-only">Filter status</label>
-                <select id="filter-status" name="status" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+                <select id="filter-status" name="status" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
                     <option value="">Semua status</option>
                     @foreach($statuses as $value => $label)
                         <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
@@ -24,7 +24,7 @@
             </div>
             <div class="min-w-0">
                 <label for="filter-kategori" class="sr-only">Filter kategori</label>
-                <select id="filter-kategori" name="kategori" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+                <select id="filter-kategori" name="kategori" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
                     <option value="">Semua kategori</option>
                     @foreach($caseCategories as $value => $label)
                         <option value="{{ $value }}" @selected($kategori === $value)>{{ $label }}</option>

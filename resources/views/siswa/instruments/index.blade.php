@@ -15,8 +15,8 @@
     ];
 @endphp
 <div class="space-y-6">
-    <section class="overflow-hidden rounded-3xl border border-slate-200 shadow-sm dark:border-slate-700">
-        <div class="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-5 text-center sm:text-left">
+    <section class="overflow-hidden rounded-3xl border border-slate-200 shadow-xs dark:border-slate-700">
+        <div class="bg-linear-to-r from-emerald-500 to-teal-600 px-6 py-5 text-center sm:text-left">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-100">Modul Yola · Siap Kerja</p>
@@ -25,7 +25,7 @@
                         Asesmen kesiapan kerja dan pemahaman diri (minat kerja, strategi belajar, kepribadian, masalah).
                     </p>
                 </div>
-                <span class="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-sm">
+                <span class="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-xs">
                     Yola
                 </span>
             </div>
@@ -104,7 +104,7 @@
         </div>
     </section>
 
-    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-700 dark:bg-slate-900">
         <div class="mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-slate-100 pb-4 dark:border-slate-800">
             <div>
                 <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-600 dark:text-emerald-400">Sedang diisi</p>

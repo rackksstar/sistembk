@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title
                 title="Riwayat Siswa"
@@ -24,7 +24,7 @@
     </section>
 
     @if($selectedStudent)
-        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
                 <div>
                     <h2 class="text-xl font-semibold text-slate-950 dark:text-white">{{ $selectedStudent->name }}</h2>
@@ -45,7 +45,7 @@
         </section>
 
         <section class="grid gap-4 xl:grid-cols-2">
-            <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
                 <div class="flex items-center justify-between gap-4">
                     <div>
                         <h3 class="text-lg font-semibold text-slate-950 dark:text-white">Layanan Individu</h3>
@@ -74,7 +74,7 @@
                 </div>
             </div>
 
-            <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
                 <div class="flex items-center justify-between gap-4">
                     <div>
                         <h3 class="text-lg font-semibold text-slate-950 dark:text-white">Laporan Kelompok</h3>
@@ -102,7 +102,7 @@
             </div>
         </section>
     @else
-        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             <x-empty-state title="Siswa belum dipilih" description="Pilih siswa untuk melihat riwayat layanan dan perkembangan kasus." />
         </section>
     @endif

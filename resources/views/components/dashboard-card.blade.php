@@ -10,7 +10,7 @@
                 @endif
                 <p class="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-400">{{ $description }}</p>
             </div>
-            <div class="rounded-2xl bg-gradient-to-br p-3 text-white {{ $color }}">
+            <div class="rounded-2xl bg-linear-to-br p-3 text-white {{ $color }}">
                 @if($icon)
                     {!! $icon !!}
                 @else

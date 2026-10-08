@@ -4,7 +4,7 @@
 <div class="space-y-6">
     @php($konselingBelumDinilai = $konseling->first(fn ($item) => ! $item->penilaianPelayanan))
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title
                 title="Penilaian Layanan BK"
@@ -22,7 +22,7 @@
         <x-alert class="mt-5" type="success" :message="session('success')" />
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Konseling selesai" description="Satu penilaian per sesi konseling." />
 
         <div class="mt-6 overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700">

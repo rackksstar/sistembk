@@ -10,7 +10,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-wrap items-start justify-between gap-3">
             <x-section-title
                 :title="$module === 'key' ? 'Hasil Minat Bakat Kuliah (Key)' : 'Hasil Instrumen Siap Kerja (Yola)'"
@@ -43,7 +43,7 @@
 
     <section class="grid gap-4 xl:grid-cols-2">
         @forelse($submissions as $submission)
-            <article class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-sm">
+            <article class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-xs">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                         <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">{{ $submission->categoryLabel() }}</p>

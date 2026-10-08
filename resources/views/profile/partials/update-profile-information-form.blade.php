@@ -42,7 +42,7 @@
 
             <div>
                 <x-input-label value="Sekolah" />
-                <x-text-input type="text" class="mt-1 block w-full !bg-slate-100 dark:!bg-slate-800" :value="$user->guruBkProfile?->sekolah?->nama ?? $user->school ?? '-'" disabled />
+                <x-text-input type="text" class="mt-1 block w-full bg-slate-100! dark:bg-slate-800!" :value="$user->guruBkProfile?->sekolah?->nama ?? $user->school ?? '-'" disabled />
             </div>
         @else
             <div>
@@ -55,7 +55,7 @@
                         <p class="text-sm mt-2 text-slate-800 dark:text-slate-200">
                             {{ __('Your email address is unverified.') }}
 
-                            <button form="send-verification" class="underline text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900">
+                            <button form="send-verification" class="underline text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900">
                                 {{ __('Click here to re-send the verification email.') }}
                             </button>
                         </p>

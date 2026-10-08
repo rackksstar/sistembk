@@ -5,7 +5,7 @@
 <div class="grid gap-4 sm:grid-cols-2">
     <div class="space-y-2">
         <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="kode-{{ $suffix }}">Kode</label>
-        <input id="kode-{{ $suffix }}" name="kode" value="{{ old('kode', $category?->kode) }}" required maxlength="5" class="js-select2 w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm uppercase focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="R" />
+        <input id="kode-{{ $suffix }}" name="kode" value="{{ old('kode', $category?->kode) }}" required maxlength="5" class="js-select2 w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm uppercase focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="R" />
         <x-input-error :messages="$errors->get('kode')" class="text-sm text-red-600" />
     </div>
     <div class="space-y-2">

@@ -21,7 +21,7 @@
         return m + ' menit ' + s + ' detik';
     }
 }">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title :title="$tryout->judul" :description="$tryout->deskripsi" />
         <p class="mt-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm font-semibold text-amber-800 dark:text-amber-300">
             Sisa waktu: <span x-text="formatWaktu()"></span>
@@ -32,7 +32,7 @@
     <form id="tryout-form" method="POST" action="{{ route('siswa.tryout.store', $tryout) }}" class="space-y-4">
         @csrf
         @foreach($soal as $index => $item)
-            <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+            <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
                 <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Soal {{ $index + 1 }}</p>
                 <p class="mt-2 font-medium text-slate-900 dark:text-slate-100">{{ $item->teks_pertanyaan }}</p>
                 @if($item->tipe_input === \App\Models\MasterQuestion::TIPE_SKALA)

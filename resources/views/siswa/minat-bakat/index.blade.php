@@ -2,8 +2,8 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="overflow-hidden rounded-3xl border border-slate-200 shadow-sm dark:border-slate-700">
-        <div class="bg-gradient-to-r from-indigo-500 to-blue-600 px-6 py-5 text-center sm:text-left">
+    <section class="overflow-hidden rounded-3xl border border-slate-200 shadow-xs dark:border-slate-700">
+        <div class="bg-linear-to-r from-indigo-500 to-blue-600 px-6 py-5 text-center sm:text-left">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100">Modul Key · Lanjut Kuliah</p>
@@ -12,7 +12,7 @@
                         Asesmen RIASEC (99 item) → Kode Minat Holland + rekomendasi prodi PCR (SMA) atau bidang karier (SMK).
                     </p>
                 </div>
-                <span class="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-sm">
+                <span class="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-xs">
                     Key
                 </span>
             </div>
@@ -56,7 +56,7 @@
         </div>
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         @if(! empty($jenjangBlocked))
             <x-empty-state title="Asesmen tidak tersedia" description="Asesmen Minat Bakat Key untuk siswa SMA/SMK." />
         @elseif(! empty($needsJenjangChooser) && ! $jenjang && ! request()->boolean('start'))

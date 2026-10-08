@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title
                 title="Dashboard Guru BK"
@@ -30,7 +30,7 @@
     </section>
 
     <section class="grid gap-4 lg:grid-cols-2">
-        <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             <div class="flex items-end justify-between gap-4">
                 <x-section-title title="Jadwal minggu ini" description="Sesi konseling yang sudah dijadwalkan untuk Anda." />
                 <a href="{{ route('guru.consultations.index') }}" class="text-sm font-semibold text-blue-600 hover:text-blue-500">Kalender lengkap</a>
@@ -58,7 +58,7 @@
             </div>
         </div>
 
-        <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             <x-section-title title="Statistik Kategori Kasus" description="Ringkasan layanan selesai berdasarkan kategori kasus." />
             <div class="mt-5 space-y-3">
                 @foreach(\App\Models\ConsultationRequest::CASE_CATEGORIES as $value => $label)
@@ -76,7 +76,7 @@
             </div>
         </div>
 
-        <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm lg:col-span-2">
+        <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs lg:col-span-2">
             <x-section-title title="Riwayat Siswa" description="Monitoring layanan konseling individu terbaru yang sudah selesai." />
             <div class="mt-5 grid gap-3 md:grid-cols-2">
                 @forelse($recentStudentHistories as $history)
@@ -108,7 +108,7 @@
     </section>
 
     @if(isset($penilaianAggregate))
-        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             <div class="flex flex-wrap items-end justify-between gap-4">
                 <x-section-title
                     title="Rata-rata skor penilaian"
@@ -162,7 +162,7 @@
     @endif
 
     @if(isset($angketAggregate))
-        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             <div class="flex flex-wrap items-end justify-between gap-4">
                 <x-section-title
                     title="Progres angket siswa"
@@ -208,7 +208,7 @@
         </section>
     @endif
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <x-section-title
                 title="Antrian Konseling"

@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Log Aktivitas" description="Catatan aksi penting di sistem (read-only)." />
 
         <form method="GET" class="mt-6 grid gap-3 md:grid-cols-[minmax(0,1fr)_220px_auto_auto]">
@@ -18,7 +18,7 @@
         </form>
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="overflow-x-auto rounded-3xl border border-slate-200 dark:border-slate-700">
             <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
                 <thead class="bg-slate-50 dark:bg-slate-800/60 text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">

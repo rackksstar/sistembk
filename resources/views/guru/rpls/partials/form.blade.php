@@ -71,7 +71,7 @@
 
     <div x-show="jenis === 'individu'" class="rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
         <x-input-label value="Siswa RPL Individu" />
-        <input type="search" x-model="cariIndividu" placeholder="Cari nama siswa" class="mt-2 w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100">
+        <input type="search" x-model="cariIndividu" placeholder="Cari nama siswa" class="mt-2 w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100">
         <div class="mt-3 max-h-52 space-y-2 overflow-y-auto">
             @foreach($students as $student)
                 <label
@@ -88,14 +88,14 @@
 
     <div x-show="jenis === 'kelompok'" class="rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
         <x-input-label value="Anggota RPL Kelompok" />
-        <input type="search" x-model="cariKelompok" placeholder="Cari nama siswa" class="mt-2 w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100">
+        <input type="search" x-model="cariKelompok" placeholder="Cari nama siswa" class="mt-2 w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100">
         <div class="mt-3 max-h-56 space-y-2 overflow-y-auto">
             @foreach($students as $student)
                 <label
                     x-show="cocokSiswa(@js($student->name), @js($student->class_id), cariKelompok)"
                     class="flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 dark:border-slate-700 dark:text-slate-200"
                 >
-                    <input type="checkbox" name="group_student_ids[]" value="{{ $student->id }}" @checked(in_array((string) $student->id, $selectedGroupIds, true)) class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600">
+                    <input type="checkbox" name="group_student_ids[]" value="{{ $student->id }}" @checked(in_array((string) $student->id, $selectedGroupIds, true)) class="rounded-sm border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600">
                     <span>{{ $student->name }}</span>
                 </label>
             @endforeach
@@ -106,7 +106,7 @@
     @foreach(['tujuan' => 'Tujuan', 'materi' => 'Materi', 'metode' => 'Metode', 'evaluasi' => 'Evaluasi'] as $field => $label)
         <div class="space-y-2">
             <x-input-label for="{{ $field }}_{{ $formId }}" :value="$label" />
-            <textarea id="{{ $field }}_{{ $formId }}" name="{{ $field }}" rows="4" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100">{{ old($field, $rpl?->{$field}) }}</textarea>
+            <textarea id="{{ $field }}_{{ $formId }}" name="{{ $field }}" rows="4" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 shadow-xs focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100">{{ old($field, $rpl?->{$field}) }}</textarea>
         </div>
     @endforeach
 

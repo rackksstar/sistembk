@@ -76,7 +76,7 @@
             @else
                 <div class="mt-4 grid gap-3 md:grid-cols-2">
                     @foreach($options as $index => $option)
-                        <label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-white bg-white p-4 text-sm font-medium text-slate-700 shadow-sm transition hover:border-blue-200 has-[:checked]:border-blue-500 has-[:checked]:ring-2 has-[:checked]:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-blue-700 dark:has-[:checked]:ring-blue-900/50">
+                        <label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-white bg-white p-4 text-sm font-medium text-slate-700 shadow-xs transition hover:border-blue-200 has-[:checked]:border-blue-500 has-[:checked]:ring-2 has-[:checked]:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-blue-700 dark:has-[:checked]:ring-blue-900/50">
                             <input
                                 type="radio"
                                 name="answers[{{ $question->id }}]"

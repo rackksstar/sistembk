@@ -6,7 +6,7 @@
     skor_cara: {{ old('skor_cara', 0) }},
     skor_manfaat: {{ old('skor_manfaat', 0) }},
 }">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title
             title="Form Penilaian Layanan"
             description="Berikan skor 1–5 untuk tiga aspek layanan konseling berikut."

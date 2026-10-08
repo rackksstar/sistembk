@@ -2,13 +2,13 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Feedback Layanan" description="Masukan siswa untuk peningkatan layanan BK." />
     </section>
 
     <section class="grid gap-4 xl:grid-cols-2">
         @forelse($feedback as $item)
-            <article class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-sm">
+            <article class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-xs">
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <p class="font-semibold text-slate-950 dark:text-white">{{ $item->student?->name }}</p>

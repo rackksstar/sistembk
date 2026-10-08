@@ -32,8 +32,8 @@
 <div class="space-y-6">
     <x-alert type="success" :message="session('success')" />
 
-    <section class="overflow-hidden rounded-3xl border border-slate-200 shadow-sm dark:border-slate-700">
-        <div class="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-5 text-center">
+    <section class="overflow-hidden rounded-3xl border border-slate-200 shadow-xs dark:border-slate-700">
+        <div class="bg-linear-to-r from-emerald-500 to-teal-600 px-6 py-5 text-center">
             <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-100">Modul Yola</p>
             <h1 class="mt-1 text-lg font-bold text-white">Hasil {{ $categoryLabel }}</h1>
         </div>
@@ -50,7 +50,7 @@
             </p>
 
             <div class="mt-6 flex flex-col gap-5 sm:flex-row sm:items-center">
-                <div class="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl bg-gradient-to-br {{ $scoreTone['ring'] }} text-white shadow-lg shadow-emerald-500/20">
+                <div class="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl bg-linear-to-br {{ $scoreTone['ring'] }} text-white shadow-lg shadow-emerald-500/20">
                     @if($percentage !== null)
                         <div class="text-center">
                             <p class="text-2xl font-bold leading-none">{{ number_format($percentage, 0) }}</p>

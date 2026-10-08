@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title
             :title="'Rapor BK — '.($student->user?->name ?? $student->name)"
             :description="'Periode '.(\App\Models\RaporBk::SEMESTERS[$semester] ?? $semester).' · '.$tahunAjaran"

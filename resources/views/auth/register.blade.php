@@ -16,26 +16,26 @@
 
             <div class="space-y-2">
                 <label for="name" class="block text-sm font-semibold text-slate-900 dark:text-slate-100">Nama Lengkap</label>
-                <input id="name" name="name" type="text" value="{{ old('name') }}" required autofocus class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Nama lengkap" />
+                <input id="name" name="name" type="text" value="{{ old('name') }}" required autofocus class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Nama lengkap" />
                 <x-input-error :messages="$errors->get('name')" class="mt-1 text-sm text-red-600" />
             </div>
 
             <div class="space-y-2">
                 <label for="email" class="block text-sm font-semibold text-slate-900 dark:text-slate-100">Email</label>
-                <input id="email" name="email" type="email" value="{{ old('email') }}" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="email@sekolah.id" />
+                <input id="email" name="email" type="email" value="{{ old('email') }}" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="email@sekolah.id" />
                 <x-input-error :messages="$errors->get('email')" class="mt-1 text-sm text-red-600" />
             </div>
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <div class="space-y-2">
                     <label for="nisn" class="block text-sm font-semibold text-slate-900 dark:text-slate-100">NISN</label>
-                    <input id="nisn" name="nisn" type="text" value="{{ old('nisn') }}" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="NISN siswa" />
+                    <input id="nisn" name="nisn" type="text" value="{{ old('nisn') }}" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="NISN siswa" />
                     <x-input-error :messages="$errors->get('nisn')" class="mt-1 text-sm text-red-600" />
                 </div>
 
                 <div class="space-y-2">
                     <label for="birth_date" class="block text-sm font-semibold text-slate-900 dark:text-slate-100">Tanggal Lahir</label>
-                    <input id="birth_date" name="birth_date" type="date" value="{{ old('birth_date') }}" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" />
+                    <input id="birth_date" name="birth_date" type="date" value="{{ old('birth_date') }}" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" />
                     <x-input-error :messages="$errors->get('birth_date')" class="mt-1 text-sm text-red-600" />
                 </div>
             </div>
@@ -43,13 +43,13 @@
             <div class="grid gap-4 sm:grid-cols-2">
                 <div class="space-y-2">
                     <label for="password" class="block text-sm font-semibold text-slate-900 dark:text-slate-100">Password</label>
-                    <input id="password" name="password" type="password" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Password" />
+                    <input id="password" name="password" type="password" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Password" />
                     <x-input-error :messages="$errors->get('password')" class="mt-1 text-sm text-red-600" />
                 </div>
 
                 <div class="space-y-2">
                     <label for="password_confirmation" class="block text-sm font-semibold text-slate-900 dark:text-slate-100">Konfirmasi</label>
-                    <input id="password_confirmation" name="password_confirmation" type="password" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Ulangi" />
+                    <input id="password_confirmation" name="password_confirmation" type="password" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Ulangi" />
                 </div>
             </div>
 

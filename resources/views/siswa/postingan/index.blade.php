@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Artikel BK" description="Baca informasi dan artikel bimbingan konseling." />
 
         <form method="GET" class="mt-6 grid gap-3 md:grid-cols-[1fr_200px_auto_auto]">
@@ -20,8 +20,8 @@
 
     <section class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         @forelse($postingan as $item)
-            <article class="overflow-hidden rounded-3xl border border-blue-100 dark:border-blue-900/50 bg-white dark:bg-slate-900 shadow-sm">
-                <div class="aspect-[16/10] bg-gradient-to-br from-blue-50 to-sky-100 dark:from-slate-800 dark:to-slate-900">
+            <article class="overflow-hidden rounded-3xl border border-blue-100 dark:border-blue-900/50 bg-white dark:bg-slate-900 shadow-xs">
+                <div class="aspect-[16/10] bg-linear-to-br from-blue-50 to-sky-100 dark:from-slate-800 dark:to-slate-900">
                     @if($item->gambar_path)
                         <img src="{{ asset('storage/'.$item->gambar_path) }}" alt="{{ $item->judul }}" class="h-full w-full object-cover">
                     @endif

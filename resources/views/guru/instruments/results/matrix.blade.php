@@ -13,14 +13,14 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <a href="{{ route('guru.instrument-results.index', ['module' => 'key', 'category' => 'minat_bakat']) }}" class="text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline">
             &larr; Kembali ke Hasil Minat Bakat
         </a>
         <x-section-title class="mt-3" title="Matriks Talents Mapping" description="Peta skor RIASEC (Realistic, Investigative, Artistic, Social, Enterprising, Conventional) tiap siswa dari hasil Minat Bakat terakhir mereka." />
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xs">
         @if($submissions->isEmpty())
             <div class="p-6">
                 <x-empty-state title="Belum ada hasil" description="Matriks akan muncul setelah siswa mengisi instrumen Minat Bakat." />

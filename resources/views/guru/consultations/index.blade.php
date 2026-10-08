@@ -7,7 +7,7 @@
     reportOpen: {{ $errors->any() && old('modal_action') === 'report' ? (int) old('modal_consultation_id') : 'null' }},
     rejectOpen: {{ $errors->any() && old('modal_action') === 'reject' ? (int) old('modal_consultation_id') : 'null' }}
 }">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Kalender Jadwal Konseling" description="Visualisasi sesi yang sudah dijadwalkan." />
         <div id="consultation-calendar" class="mt-6 min-h-[420px] rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 p-2"></div>
         @if($upcomingWeek->isNotEmpty())
@@ -27,13 +27,13 @@
         @endif
     </section>
 
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Pengajuan & Approval Konseling" description="Setujui, tolak, jadwalkan, dan isi laporan konseling." />
         <form method="GET" class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_190px_190px_auto]">
             <div class="min-w-0">
                 <label for="search" class="sr-only">Cari konseling</label>
                 <input type="search" id="search" name="search" value="{{ $search }}" placeholder="Cari topik, siswa, NISN, atau guru BK..."
-                    class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+                    class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm placeholder:text-slate-400 focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
             </div>
             <div class="min-w-0">
                 <label for="filter-status" class="sr-only">Filter status</label>

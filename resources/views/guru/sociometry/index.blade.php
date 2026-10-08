@@ -2,12 +2,12 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Peta Sosiometri" description="Ringkasan pilihan teman untuk melihat siswa populer dan siswa yang belum mendapat pilihan." />
     </section>
 
     @if(isset($classSummaries))
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Rekap Per Kelas" description="Total siswa, sudah mengisi, dan belum mengisi sosiometri." />
         <div class="mt-4 overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-sm">
@@ -35,7 +35,7 @@
     @endif
 
     <section class="grid gap-5 md:grid-cols-2">
-        <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             <x-section-title title="Siswa Populer" description="Urutan berdasarkan jumlah dipilih." />
             <div class="mt-5 space-y-3">
                 @forelse($popular as $student)
@@ -49,7 +49,7 @@
             </div>
         </div>
 
-        <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <div class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             <x-section-title title="Siswa Terisolasi" description="Siswa yang belum dipilih oleh teman lain." />
             <div class="mt-5 flex flex-wrap gap-2">
                 @forelse($isolated as $student)
@@ -61,7 +61,7 @@
         </div>
     </section>
 
-    <section class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm">
+    <section class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-xs">
         <div class="border-b border-slate-100 p-6">
             <div class="flex items-start justify-between gap-4">
                 <x-section-title title="Relasi Sosiometri" description="Daftar hubungan yang dikirim siswa." />

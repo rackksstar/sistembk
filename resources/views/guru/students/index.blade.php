@@ -6,7 +6,7 @@
     importOpen: {{ $errors->has('csv_file') ? 'true' : 'false' }},
     editOpen: {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }}
 }">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Data Login Siswa" description="Masukkan NISN dan tanggal lahir siswa agar siswa dapat login ke dashboard." />
             <div class="flex flex-wrap gap-3">
@@ -18,7 +18,7 @@
         <x-alert class="mt-5" type="success" :message="session('success')" />
 
         <form method="GET" class="mt-6 grid gap-3 md:grid-cols-[1fr_auto_auto]">
-            <input name="search" value="{{ $search }}" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Cari nama, NISN, sekolah..." />
+            <input name="search" value="{{ $search }}" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="Cari nama, NISN, sekolah..." />
             <button class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">Cari</button>
             <x-filter-reset />
         </form>
@@ -95,7 +95,7 @@
                 @csrf
                 <div class="space-y-2">
                     <label for="csv-file" class="block text-sm font-semibold text-slate-900 dark:text-slate-100">File CSV</label>
-                    <input id="csv-file" name="csv_file" type="file" accept=".csv,text/csv" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" />
+                    <input id="csv-file" name="csv_file" type="file" accept=".csv,text/csv" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" />
                     <x-input-error :messages="$errors->get('csv_file')" class="text-sm text-red-600" />
                 </div>
                 <button class="w-full rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-500">Upload dan import</button>

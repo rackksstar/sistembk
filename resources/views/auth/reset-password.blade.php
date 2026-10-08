@@ -12,19 +12,19 @@
 
             <div class="space-y-2">
                 <label for="email" class="block text-sm font-semibold text-slate-900 dark:text-slate-100">Email</label>
-                <x-text-input id="email" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
+                <x-text-input id="email" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
                 <x-input-error :messages="$errors->get('email')" class="mt-1 text-sm text-red-600" />
             </div>
 
             <div class="space-y-2">
                 <label for="password" class="block text-sm font-semibold text-slate-900 dark:text-slate-100">Password</label>
-                <x-text-input id="password" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" type="password" name="password" required autocomplete="new-password" />
+                <x-text-input id="password" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" type="password" name="password" required autocomplete="new-password" />
                 <x-input-error :messages="$errors->get('password')" class="mt-1 text-sm text-red-600" />
             </div>
 
             <div class="space-y-2">
                 <label for="password_confirmation" class="block text-sm font-semibold text-slate-900 dark:text-slate-100">Konfirmasi Password</label>
-                <x-text-input id="password_confirmation" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" type="password" name="password_confirmation" required autocomplete="new-password" />
+                <x-text-input id="password_confirmation" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" type="password" name="password_confirmation" required autocomplete="new-password" />
                 <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1 text-sm text-red-600" />
             </div>
 
