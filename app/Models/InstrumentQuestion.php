@@ -85,6 +85,18 @@ class InstrumentQuestion extends Model
         ['label' => 'Sangat Suka', 'score' => 5],
     ];
 
+    /**
+     * Skala persetujuan baku Tes Kepribadian ala 16Personalities — gaya
+     * tampilannya sama seperti instrumen asesmen minat bakat (Likert 1-5).
+     */
+    public const KEPRIBADIAN_LIKERT_OPTIONS = [
+        ['label' => 'Sangat Tidak Sesuai', 'score' => 1],
+        ['label' => 'Tidak Sesuai', 'score' => 2],
+        ['label' => 'Netral', 'score' => 3],
+        ['label' => 'Sesuai', 'score' => 4],
+        ['label' => 'Sangat Sesuai', 'score' => 5],
+    ];
+
     public static function isYolaCategory(string $category): bool
     {
         return array_key_exists($category, self::YOLA_CATEGORIES);
@@ -102,6 +114,8 @@ class InstrumentQuestion extends Model
         'talent_code',
         'jenjang_target',
         'bobot',
+        'mbti_axis',
+        'mbti_pole',
         'question',
         'options',
         'is_active',
@@ -170,5 +184,36 @@ class InstrumentQuestion extends Model
     public function isCategorizedForMinat(): bool
     {
         return $this->category === self::CATEGORY_MINAT_BAKAT && $this->interest_category_id !== null;
+    }
+
+    /**
+     * Soal Kepribadian format baru (pernyataan Likert ala 16Personalities):
+     * dimensi + kutub tersimpan di kolom, bukan di opsi jawaban.
+     */
+    public function isMbtiLikert(): bool
+    {
+        return $this->category === self::CATEGORY_KEPRIBADIAN
+            && is_string($this->mbti_axis)
+            && $this->mbti_axis !== ''
+            && is_string($this->mbti_pole)
+            && $this->mbti_pole !== '';
+    }
+
+    /**
+     * Kutub lawan dari kutub yang didukung jawaban "Setuju" pada soal ini.
+     */
+    public function mbtiOppositePole(): ?string
+    {
+        if (! $this->isMbtiLikert()) {
+            return null;
+        }
+
+        foreach (\App\Support\Mbti::AXES[$this->mbti_axis] ?? [] as $letter => $name) {
+            if ($letter !== $this->mbti_pole) {
+                return $letter;
+            }
+        }
+
+        return null;
     }
 }

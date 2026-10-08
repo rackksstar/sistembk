@@ -277,27 +277,27 @@ class ReferencePortModulesTest extends TestCase
         $this->actingAs($guru)
             ->post(route('guru.instrument-questions.store'), [
                 'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
-                'question' => 'Ketika berada di tempat ramai, saya...',
+                'question' => 'Saya bersemangat mengobrol dengan banyak teman.',
                 'is_active' => 1,
                 'mbti_axis' => 'EI',
-                'mbti_options' => [
-                    'Saya senang mengobrol dengan banyak orang.',
-                    'Saya lebih suka menyendiri.',
-                ],
+                'mbti_pole' => 'E',
             ])
             ->assertSessionHas('success');
 
         $question = InstrumentQuestion::query()->firstOrFail();
 
-        $this->assertSame('EI', \App\Support\Mbti::axisForPole($question->options[0]['pole']));
+        $this->assertSame('EI', $question->mbti_axis);
+        $this->assertSame('E', $question->mbti_pole);
+        $this->assertTrue($question->isMbtiLikert());
+        // Opsi jawaban dikunci ke skala Likert persetujuan baku (1-5).
         $this->assertSame(
-            ['E', 'I'],
-            array_column($question->options, 'pole')
+            ['Sangat Tidak Sesuai', 'Tidak Sesuai', 'Netral', 'Sesuai', 'Sangat Sesuai'],
+            array_column($question->options, 'label')
         );
-        $this->assertArrayNotHasKey('score', $question->options[0]);
+        $this->assertSame([1, 2, 3, 4, 5], array_column($question->options, 'score'));
     }
 
-    public function test_soal_kepribadian_wajib_menyertakan_dan_kutub_mbti(): void
+    public function test_soal_kepribadian_wajib_menyertakan_dimensi_dan_kutub_mbti(): void
     {
         $guru = $this->buatGuru();
 
@@ -306,9 +306,25 @@ class ReferencePortModulesTest extends TestCase
                 'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
                 'question' => 'Soal tanpa dimensi MBTI.',
                 'is_active' => 1,
-                'mbti_options' => ['Hanya satu pernyataan.'],
             ])
-            ->assertSessionHasErrors(['mbti_axis', 'mbti_options']);
+            ->assertSessionHasErrors(['mbti_axis', 'mbti_pole']);
+
+        $this->assertDatabaseCount('instrument_questions', 0);
+    }
+
+    public function test_soal_kepribadian_menolak_kutub_di_luar_dimensi(): void
+    {
+        $guru = $this->buatGuru();
+
+        $this->actingAs($guru)
+            ->post(route('guru.instrument-questions.store'), [
+                'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
+                'question' => 'Kutub T tidak termasuk dimensi EI.',
+                'is_active' => 1,
+                'mbti_axis' => 'EI',
+                'mbti_pole' => 'T',
+            ])
+            ->assertSessionHasErrors(['mbti_pole']);
 
         $this->assertDatabaseCount('instrument_questions', 0);
     }
@@ -319,11 +335,10 @@ class ReferencePortModulesTest extends TestCase
 
         InstrumentQuestion::query()->create([
             'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
-            'question' => 'Ketika berada di tempat ramai, saya...',
-            'options' => [
-                ['label' => 'Saya senang mengobrol.', 'pole' => 'E'],
-                ['label' => 'Saya lebih suka menyendiri.', 'pole' => 'I'],
-            ],
+            'question' => 'Saya bersemangat mengobrol dengan banyak teman.',
+            'mbti_axis' => 'EI',
+            'mbti_pole' => 'E',
+            'options' => InstrumentQuestion::KEPRIBADIAN_LIKERT_OPTIONS,
             'is_active' => true,
             'created_by' => $guru->id,
         ]);

@@ -77,11 +77,17 @@
                             <td class="px-5 py-4 text-slate-600 dark:text-slate-400">
                                 {{ $question->question }}
                                 @if($question->category === \App\Models\InstrumentQuestion::CATEGORY_KEPRIBADIAN
+                                    && $question->isMbtiLikert())
+                                    @php($mbtiAxis = \App\Support\Mbti::AXES[$question->mbti_axis] ?? [])
+                                    <span class="mt-1 block text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-300">
+                                        Dimensi {{ $question->mbti_axis }} · Setuju → {{ $mbtiAxis[$question->mbti_pole] ?? $question->mbti_pole }} ({{ $question->mbti_pole }}) · Likert 1–5
+                                    </span>
+                                @elseif($question->category === \App\Models\InstrumentQuestion::CATEGORY_KEPRIBADIAN
                                     && count($question->options ?? []) === 2
                                     && \App\Support\Mbti::optionHasPole($question->options[0]))
                                     @php($mbtiPoles = array_column($question->options, 'pole'))
-                                    <span class="mt-1 block text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-300">
-                                        Dimensi {{ \App\Support\Mbti::axisForPole($mbtiPoles[0]) }} · {{ $question->options[0]['label'] }} vs {{ $question->options[1]['label'] ?? '' }}
+                                    <span class="mt-1 block text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                        Format lama (nonaktif): Dimensi {{ \App\Support\Mbti::axisForPole($mbtiPoles[0]) }}
                                     </span>
                                 @elseif(($question->options ?? []) === [])
                                     <span class="text-slate-400">—</span>

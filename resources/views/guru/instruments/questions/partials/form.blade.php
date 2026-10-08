@@ -10,19 +10,9 @@
     $mbtiAxes = $mbtiAxes ?? \App\Support\Mbti::AXES;
     $isKepribadianForm = old('category', $question?->category) === \App\Models\InstrumentQuestion::CATEGORY_KEPRIBADIAN;
 
-    // Kutub yang sudah dipakai soal ini (format MBTI), untuk memilih ulang dimensi.
-    $existingPoles = $question?->category === \App\Models\InstrumentQuestion::CATEGORY_KEPRIBADIAN
-        ? array_column($question->options ?? [], 'pole')
-        : [];
-    $existingAxis = null;
-    foreach ($mbtiAxes as $axisKey => $letters) {
-        if (array_intersect(array_keys($letters), $existingPoles)) {
-            $existingAxis = $axisKey;
-            break;
-        }
-    }
-    $selectedAxis = old('mbti_axis', $existingAxis ?? array_key_first($mbtiAxes));
-    $mbtiLabels = old('mbti_options', $existingPoles !== [] ? array_column($question->options, 'label') : ['', '']);
+    // Dimensi + kutub tersimpan di kolom (format Likert ala 16Personalities).
+    $selectedAxis = old('mbti_axis', $question?->mbti_axis ?? array_key_first($mbtiAxes));
+    $selectedPole = old('mbti_pole', $question?->mbti_pole ?? '');
 
     $defaultOptions = (($module ?? 'yola') === 'key')
         ? \App\Models\InstrumentQuestion::TALENTS_LIKERT_OPTIONS
@@ -50,6 +40,7 @@
         bobot: @js((int) old('bobot', $question?->bobot ?? 1)),
         options: @js($initialOptions),
         axis: @js($selectedAxis),
+        pole: @js($selectedPole),
         axes: @js($mbtiAxes),
         likertTemplate: @js($defaultOptions),
         get isMinatBakat() {
@@ -60,11 +51,6 @@
         },
         get isStrategiBelajar() {
             return this.category === 'gaya_belajar';
-        },
-        poleLabel(index) {
-            const letters = Object.keys(this.axes[this.axis] || {});
-            const names = Object.values(this.axes[this.axis] || {});
-            return letters[index] ? (names[index] + ' (' + letters[index] + ')') : '';
         },
         get interestCategoryId() {
             const match = this.interestCategories.find((item) => item.kode === this.talentCode);
@@ -112,7 +98,7 @@
                 <option value="{{ $value }}">{{ $label }}</option>
             @endforeach
         </x-form-select>
-        <p class="text-xs text-slate-500 dark:text-slate-400">Kategori "Kepribadian" memakai format tes MBTI (pilihan paksa dua kutub), kategori lain memakai skor Likert seperti biasa.</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Kategori "Kepribadian" memakai pernyataan skala Likert ala 16Personalities, kategori lain memakai skor Likert seperti biasa.</p>
     </div>
 
     <div class="space-y-2">
@@ -185,32 +171,37 @@
     </div>
 
     <div x-show="isKepribadian" x-cloak class="space-y-3 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50/60 dark:bg-blue-950/30 p-4">
-        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Format Tes MBTI</p>
-        <p class="text-xs text-slate-600 dark:text-slate-400">Pilih dimensi kepribadian, lalu tulis satu pernyataan untuk tiap kutubnya. Siswa memilih salah satu pernyataan yang paling sesuai dengan dirinya, dan sistem menyusun kode 4 huruf (mis. INFP).</p>
+        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Format Tes Kepribadian (ala 16Personalities)</p>
+        <p class="text-xs text-slate-600 dark:text-slate-400">Tulis satu pernyataan, pilih dimensinya, lalu tentukan kutub yang didukung jawaban "Setuju". Siswa menilai dengan skala Likert 1–5 (Sangat Tidak Sesuai – Sangat Sesuai) dan sistem menyusun kode 4 huruf (mis. INFP).</p>
 
-        <div class="space-y-2">
-            <x-input-label value="Dimensi kepribadian" />
-            <x-form-select name="mbti_axis" x-model="axis" x-bind:required="isKepribadian">
-                @foreach($mbtiAxes as $axisKey => $letters)
-                    <option value="{{ $axisKey }}" @selected($selectedAxis === $axisKey)>
-                        {{ implode(' vs ', array_map(fn ($name, $letter) => "{$name} ({$letter})", $letters, array_keys($letters))) }}
-                    </option>
-                @endforeach
-            </x-form-select>
-            <x-input-error :messages="$errors->get('mbti_axis')" />
+        <div class="grid gap-3 sm:grid-cols-2">
+            <div class="space-y-2">
+                <x-input-label value="Dimensi kepribadian" />
+                <x-form-select name="mbti_axis" x-model="axis" x-on:change="pole = ''" x-bind:required="isKepribadian">
+                    @foreach($mbtiAxes as $axisKey => $letters)
+                        <option value="{{ $axisKey }}" @selected($selectedAxis === $axisKey)>
+                            {{ implode(' vs ', array_map(fn ($name, $letter) => "{$name} ({$letter})", $letters, array_keys($letters))) }}
+                        </option>
+                    @endforeach
+                </x-form-select>
+                <x-input-error :messages="$errors->get('mbti_axis')" />
+            </div>
+
+            <div class="space-y-2">
+                <x-input-label value='Kutub yang didukung jawaban "Setuju"' />
+                <x-form-select name="mbti_pole" x-model="pole" x-bind:required="isKepribadian">
+                    <option value="">Pilih kutub</option>
+                    <template x-for="(name, letter) in (axes[axis] || {})" :key="letter">
+                        <option :value="letter" x-text="name + ' (' + letter + ')'"></option>
+                    </template>
+                </x-form-select>
+                <x-input-error :messages="$errors->get('mbti_pole')" />
+            </div>
         </div>
 
-        <div class="space-y-2">
-            <x-input-label x-text="'Pernyataan untuk kutub ' + poleLabel(0)" />
-            <x-text-input name="mbti_options[0]" value="{{ $mbtiLabels[0] ?? '' }}" x-bind:required="isKepribadian" placeholder="Contoh: Saya senang berbicara di depan banyak orang" />
-            <x-input-error :messages="$errors->get('mbti_options.0')" />
-        </div>
-
-        <div class="space-y-2">
-            <x-input-label x-text="'Pernyataan untuk kutub ' + poleLabel(1)" />
-            <x-text-input name="mbti_options[1]" value="{{ $mbtiLabels[1] ?? '' }}" x-bind:required="isKepribadian" placeholder="Contoh: Saya lebih suka menulis daripada berbicara" />
-            <x-input-error :messages="$errors->get('mbti_options.1')" />
-        </div>
+        <p class="rounded-xl bg-white/70 px-3 py-2 text-xs font-medium text-slate-600 dark:bg-slate-900/60 dark:text-slate-400">
+            Skala jawaban terkunci: Sangat Tidak Sesuai (1) · Tidak Sesuai (2) · Netral (3) · Sesuai (4) · Sangat Sesuai (5) — sama seperti instrumen minat bakat.
+        </p>
     </div>
 
     <div x-show="!isKepribadian" x-cloak class="space-y-3">

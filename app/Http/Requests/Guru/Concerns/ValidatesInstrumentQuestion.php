@@ -91,10 +91,11 @@ trait ValidatesInstrumentQuestion
         ];
 
         if ($isKepribadian) {
-            // Tes MBTI: dua kutub berlawanan, tanpa skor.
+            // Tes Kepribadian ala 16Personalities: satu pernyataan + dimensi
+            // dan kutub yang didukung jawaban "Setuju". Opsi jawaban selalu
+            // skala Likert persetujuan 1-5 (sama seperti minat bakat).
             $rules['mbti_axis'] = ['required', Rule::in(array_keys(Mbti::AXES))];
-            $rules['mbti_options'] = ['required', 'array', 'size:2'];
-            $rules['mbti_options.*'] = ['required', 'string', 'max:255'];
+            $rules['mbti_pole'] = ['required', 'string', 'size:1', Rule::in(['E', 'I', 'S', 'N', 'T', 'F', 'J', 'P'])];
 
             return $rules;
         }
@@ -104,6 +105,27 @@ trait ValidatesInstrumentQuestion
         $rules['options.*.score'] = ['required', 'integer', 'min:0', 'max:100'];
 
         return $rules;
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if ($this->input('category') !== InstrumentQuestion::CATEGORY_KEPRIBADIAN) {
+                return;
+            }
+
+            $axis = $this->input('mbti_axis');
+            $pole = $this->input('mbti_pole');
+
+            if (is_string($axis) && is_string($pole) && $pole !== ''
+                && array_key_exists($axis, Mbti::AXES)
+                && ! array_key_exists($pole, Mbti::AXES[$axis])) {
+                $validator->errors()->add(
+                    'mbti_pole',
+                    'Kutub '.$pole.' tidak termasuk dimensi '.$axis.'.'
+                );
+            }
+        });
     }
 
     public function messages(): array
@@ -122,10 +144,9 @@ trait ValidatesInstrumentQuestion
             'jenjang_target.in' => 'Target jenjang harus semua, SMA, atau SMK.',
             'mbti_axis.required' => 'Dimensi kepribadian MBTI wajib dipilih.',
             'mbti_axis.in' => 'Dimensi kepribadian MBTI tidak valid.',
-            'mbti_options.required' => 'Pernyataan untuk kedua kutub wajib diisi.',
-            'mbti_options.size' => 'Tes MBTI harus berisi tepat 2 pernyataan (satu untuk tiap kutub).',
-            'mbti_options.*.required' => 'Pernyataan kutub wajib diisi.',
-            'mbti_options.*.max' => 'Pernyataan kutub maksimal 255 karakter.',
+            'mbti_pole.required' => 'Kutub yang didukung jawaban "Setuju" wajib dipilih.',
+            'mbti_pole.size' => 'Kutub kepribadian harus satu huruf (E/I/S/N/T/F/J/P).',
+            'mbti_pole.in' => 'Kutub kepribadian harus E, I, S, N, T, F, J, atau P.',
             'bobot.integer' => 'Bobot harus berupa angka.',
             'bobot.min' => 'Bobot minimal 1.',
             'bobot.max' => 'Bobot maksimal 5.',
@@ -160,20 +181,14 @@ trait ValidatesInstrumentQuestion
         }
 
         if (($validated['category'] ?? null) === InstrumentQuestion::CATEGORY_KEPRIBADIAN) {
-            $poles = array_keys(Mbti::AXES[$validated['mbti_axis']]);
-
-            // Disimpan tanpa 'score': penskoran MBTI memakai huruf kutub.
-            $validated['options'] = [
-                ['label' => $validated['mbti_options'][0], 'pole' => $poles[0]],
-                ['label' => $validated['mbti_options'][1], 'pole' => $poles[1]],
-            ];
-
-            unset($validated['mbti_axis'], $validated['mbti_options']);
+            // Opsi jawaban dikunci ke skala Likert persetujuan baku.
+            $validated['options'] = InstrumentQuestion::KEPRIBADIAN_LIKERT_OPTIONS;
 
             return $validated;
         }
 
-        unset($validated['mbti_axis'], $validated['mbti_options']);
+        $validated['mbti_axis'] = null;
+        $validated['mbti_pole'] = null;
 
         $validated['options'] = collect($validated['options'] ?? [])
             ->map(fn (array $option) => [

@@ -7,6 +7,12 @@
     $isMbti = $category === \App\Models\InstrumentQuestion::CATEGORY_KEPRIBADIAN;
     $mbtiTally = $isMbti ? (array) ($submission->category_scores['tally'] ?? []) : [];
     $mbtiBreakdown = $isMbti ? \App\Support\Mbti::axisBreakdown($mbtiTally) : [];
+    $mbtiCode = $isMbti ? (string) ($submission->category_scores['code'] ?? substr((string) $submission->result_label, 0, 4)) : '';
+    $mbtiDetail = $isMbti
+        ? (is_array($submission->category_scores['detail'] ?? null)
+            ? $submission->category_scores['detail']
+            : \App\Support\Mbti::detailFor($mbtiCode))
+        : null;
     $scoreTone = match (true) {
         $percentage === null => [
             'ring' => 'from-slate-400 to-slate-500',
@@ -99,18 +105,24 @@
 
     @if($isMbti)
         <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-700 dark:bg-slate-900">
-            <x-section-title title="Rincian 4 Dimensi Kepribadian" description="Persentase pilihan tiap dimensi MBTI berdasarkan jawabanmu." />
+            <x-section-title title="Rincian 4 Dimensi Kepribadian" description="Kecenderungan tiap dimensi MBTI berdasarkan jawabanmu — makin besar persentase, makin kuat kecenderungannya." />
 
             @if($mbtiBreakdown !== [])
-                <div class="mt-5 space-y-4">
+                <div class="mt-5 space-y-5">
                     @foreach($mbtiBreakdown as $axis)
+                        @php($otherPercentage = 100 - $axis['percentage'])
                         <div>
-                            <div class="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-300">
-                                <span>{{ $axis['chosen_label'] }} ({{ $axis['code'] }}) <span class="font-normal text-slate-400">vs {{ $axis['other_label'] }} ({{ $axis['other'] }})</span></span>
-                                <span>{{ $axis['count'] }}/{{ $axis['total'] }} · {{ $axis['percentage'] }}%</span>
+                            <div class="flex items-center justify-between gap-3 text-xs font-semibold">
+                                <span class="text-slate-800 dark:text-slate-100">{{ $axis['chosen_label'] }} ({{ $axis['code'] }}) · {{ $axis['percentage'] }}%</span>
+                                <span class="text-right font-normal text-slate-400">{{ $axis['other_label'] }} ({{ $axis['other'] }}) · {{ $otherPercentage }}%</span>
                             </div>
-                            <div class="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                                <div class="h-full rounded-full bg-blue-600" style="width: {{ $axis['percentage'] }}%"></div>
+                            <div class="mt-1.5 flex h-2.5 w-full gap-1">
+                                <div class="flex h-full justify-end overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800" style="width: {{ $axis['percentage'] }}%">
+                                    <div class="h-full rounded-full bg-blue-600" style="width: 100%"></div>
+                                </div>
+                                <div class="h-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800" style="width: {{ $otherPercentage }}%">
+                                    <div class="h-full rounded-full bg-slate-300 dark:bg-slate-600" style="width: 100%"></div>
+                                </div>
                             </div>
                         </div>
                     @endforeach
@@ -119,6 +131,39 @@
                 <p class="mt-4 text-sm text-slate-500 dark:text-slate-400">Rincian per dimensi belum tersedia untuk jawaban ini.</p>
             @endif
         </section>
+
+        @if($mbtiDetail)
+            <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-700 dark:bg-slate-900">
+                <x-section-title title="Kelompok Peran: {{ $mbtiDetail['role']['name'] ?? '' }}" description="{{ $mbtiDetail['role']['description'] ?? '' }}" />
+
+                @if(! empty($mbtiDetail['strengths']))
+                    <p class="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-emerald-600 dark:text-emerald-300">Kekuatanmu</p>
+                    <ul class="mt-2 space-y-1.5 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                        @foreach($mbtiDetail['strengths'] as $strength)
+                            <li class="flex gap-2"><span class="text-emerald-500">✓</span><span>{{ $strength }}</span></li>
+                        @endforeach
+                    </ul>
+                @endif
+
+                @if(! empty($mbtiDetail['challenges']))
+                    <p class="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-amber-600 dark:text-amber-300">Tantangan yang perlu dilatih</p>
+                    <ul class="mt-2 space-y-1.5 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                        @foreach($mbtiDetail['challenges'] as $challenge)
+                            <li class="flex gap-2"><span class="text-amber-500">•</span><span>{{ $challenge }}</span></li>
+                        @endforeach
+                    </ul>
+                @endif
+
+                @if(! empty($mbtiDetail['study_tips']))
+                    <p class="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-300">Tips belajar untukmu</p>
+                    <ul class="mt-2 space-y-1.5 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                        @foreach($mbtiDetail['study_tips'] as $tip)
+                            <li class="flex gap-2"><span class="text-blue-500">→</span><span>{{ $tip }}</span></li>
+                        @endforeach
+                    </ul>
+                @endif
+            </section>
+        @endif
     @endif
 
     <section class="rounded-3xl border border-amber-200 bg-amber-50/80 p-5 text-sm leading-6 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-200">

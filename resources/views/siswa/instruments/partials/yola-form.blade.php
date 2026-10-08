@@ -14,7 +14,7 @@
         <p class="font-semibold text-slate-950 dark:text-white">{{ $categoryLabel }}</p>
         <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
             @if($isMbtiForm)
-                Pilih satu pernyataan yang paling sesuai dengan dirimu. Tidak ada jawaban benar atau salah — jawabanmu disusun jadi kode tipe kepribadian 4 huruf.
+                Nilai setiap pernyataan dengan skala 1–5 sesuai keadaan dirimu. Tidak ada jawaban benar atau salah — jawabanmu disusun jadi kode tipe kepribadian 4 huruf (mis. INFP).
             @else
                 Jawab sejujurnya pada skala 1–5. Tidak ada jawaban benar atau salah.
             @endif

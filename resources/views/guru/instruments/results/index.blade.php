@@ -100,9 +100,11 @@
                     @php
                         $mbtiTally = (array) ($submission->category_scores['tally'] ?? []);
                         $mbtiBreakdown = \App\Support\Mbti::axisBreakdown($mbtiTally);
+                        $mbtiCode = (string) ($submission->category_scores['code'] ?? substr((string) $submission->result_label, 0, 4));
+                        $mbtiRole = \App\Support\Mbti::roleFor($mbtiCode);
                     @endphp
                     <div class="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
-                        <p class="text-xs font-bold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-300">Tipe Kepribadian MBTI</p>
+                        <p class="text-xs font-bold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-300">Tipe Kepribadian MBTI · Peran {{ $mbtiRole['name'] }}</p>
                         <p class="mt-1 text-lg font-bold text-slate-950 dark:text-white">{{ $submission->result_label }}</p>
                         <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">{{ $submission->result_description }}</p>
                         @if($submission->percentage !== null)

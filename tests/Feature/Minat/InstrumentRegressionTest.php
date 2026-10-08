@@ -107,32 +107,28 @@ class InstrumentRegressionTest extends TestCase
             'status' => User::STATUS_APPROVED,
         ]);
 
-        $ei = InstrumentQuestion::query()->create([
+        $likert = InstrumentQuestion::KEPRIBADIAN_LIKERT_OPTIONS;
+
+        $make = fn (string $axis, string $pole, string $text) => InstrumentQuestion::query()->create([
             'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
-            'question' => 'Ketika berada di tempat ramai, saya...',
-            'options' => [
-                ['label' => 'merasa berenergi dan senang mengobrol', 'pole' => 'E'],
-                ['label' => 'lebih suka menyendiri', 'pole' => 'I'],
-            ],
+            'question' => $text,
+            'mbti_axis' => $axis,
+            'mbti_pole' => $pole,
+            'options' => $likert,
             'is_active' => true,
         ]);
 
-        $sn = InstrumentQuestion::query()->create([
-            'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
-            'question' => 'Saat belajar hal baru, saya lebih suka...',
-            'options' => [
-                ['label' => 'contoh nyata dan langkah yang jelas', 'pole' => 'S'],
-                ['label' => 'memahami konsep besar dan kemungkinan', 'pole' => 'N'],
-            ],
-            'is_active' => true,
-        ]);
+        $ei = $make('EI', 'E', 'Saya bersemangat mengobrol dengan banyak teman.');
+        $sn = $make('SN', 'N', 'Saya senang membayangkan kemungkinan masa depan.');
+        $tf = $make('TF', 'T', 'Saya mengutamakan logika dalam keputusan.');
+        $jp = $make('JP', 'J', 'Saya membuat rencana sebelum mengerjakan tugas.');
 
-        // E (1) + N (1) → dimensi kosong lainnya jatuh ke kutub pertama (T, J)
-        // → kode "ENTJ" — Sang Komandan. Keyakinan 100% pada 2 dimensi terisi.
+        // SS(5)→E+2, SS(5)→N+2, STS(1) pada kutub T→F+2, TS(2) pada kutub J→P+1
+        // → kode "ENFP" — Sang Kampanyer. Keyakinan 100% pada 4 dimensi terisi.
         $response = $this->actingAs($siswa)
             ->post(route('siswa.instruments.store'), [
                 'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
-                'answers' => [$ei->id => 0, $sn->id => 1],
+                'answers' => [$ei->id => 4, $sn->id => 4, $tf->id => 0, $jp->id => 1],
             ]);
 
         $submission = InstrumentSubmission::query()
@@ -142,24 +138,36 @@ class InstrumentRegressionTest extends TestCase
 
         $response->assertRedirect(route('siswa.instruments.hasil', $submission));
 
-        $this->assertSame(2, $submission->total_score);
-        $this->assertSame('ENTJ — Sang Komandan', $submission->result_label);
+        $this->assertSame(13, $submission->total_score);
+        $this->assertSame('ENFP — Sang Kampanyer', $submission->result_label);
         $this->assertSame(100.0, (float) $submission->percentage);
-        $this->assertSame('ENTJ', $submission->category_scores['code']);
-        $this->assertSame(['E' => 1, 'N' => 1], $submission->category_scores['tally']);
+        $this->assertSame('ENFP', $submission->category_scores['code']);
+        $this->assertSame(['E' => 2, 'N' => 2, 'F' => 2, 'P' => 1], $submission->category_scores['tally']);
+        $this->assertSame('Diplomat', $submission->category_scores['detail']['role']['name']);
+        $this->assertNotEmpty($submission->category_scores['detail']['strengths']);
         $this->assertNotEmpty($submission->result_description);
+
+        // Halaman hasil menampilkan rincian ala 16Personalities.
+        $this->actingAs($siswa)
+            ->get(route('siswa.instruments.hasil', $submission))
+            ->assertOk()
+            ->assertSee('Rincian 4 Dimensi Kepribadian', false)
+            ->assertSee('Diplomat', false)
+            ->assertSee('Kekuatanmu', false)
+            ->assertSee('Tips belajar untukmu', false);
     }
 
-    public function test_soal_kepribadian_lama_tanpa_kutub_ditolak(): void
+    public function test_soal_kepribadian_lama_tanpa_dimensi_ditolak(): void
     {
         $siswa = User::factory()->create([
             'role' => User::ROLE_SISWA,
             'status' => User::STATUS_APPROVED,
         ]);
 
+        // Format lama: opsi Likert biasa tanpa kolom mbti_axis/mbti_pole.
         $legacy = InstrumentQuestion::query()->create([
             'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
-            'question' => 'Soal format lama tanpa huruf kutub.',
+            'question' => 'Soal format lama tanpa dimensi MBTI.',
             'options' => [
                 ['label' => 'Sangat Tidak Sesuai', 'score' => 1],
                 ['label' => 'Sangat Sesuai', 'score' => 4],

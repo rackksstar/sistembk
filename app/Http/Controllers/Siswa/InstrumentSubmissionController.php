@@ -220,24 +220,31 @@ class InstrumentSubmissionController extends Controller
             $isKepribadian = $validated['category'] === InstrumentQuestion::CATEGORY_KEPRIBADIAN;
             $totalScore = 0;
             $answerRows = [];
-            $poles = [];
+            $ballots = [];
 
             foreach ($validated['answers'] as $questionId => $optionIndex) {
                 $question = $questions[(int) $questionId];
                 $options = array_values($question->options ?? []);
                 $option = $options[(int) $optionIndex] ?? null;
 
-                // Tes MBTI: setiap opsi wajib membawa huruf kutub (E/I/S/N/T/F/J/P).
-                if (! $option || ($isKepribadian && empty($option['pole']))) {
+                if (! $option) {
+                    abort(422, 'Pilihan jawaban tidak valid.');
+                }
+
+                // Tes Kepribadian ala 16Personalities: soal wajib punya
+                // dimensi + kutub (format lama tanpa itu ditolak).
+                if ($isKepribadian && ! $question->isMbtiLikert()) {
                     abort(422, 'Pilihan jawaban tidak valid.');
                 }
 
                 if ($isKepribadian) {
-                    $poles[] = $option['pole'];
+                    $score = (int) ($option['score'] ?? 0);
+                    $ballots[] = ['pole' => $question->mbti_pole, 'score' => $score];
+                    $totalScore += $score;
                     $answerRows[] = new InstrumentAnswer([
                         'instrument_question_id' => $question->id,
                         'answer_label' => $option['label'] ?? '',
-                        'score' => 0,
+                        'score' => $score,
                     ]);
 
                     continue;
@@ -253,17 +260,18 @@ class InstrumentSubmissionController extends Controller
             }
 
             if ($isKepribadian) {
-                $mbti = Mbti::score($poles);
+                $mbti = Mbti::scoreLikert($ballots);
 
                 $submission = InstrumentSubmission::create([
                     'student_id' => auth()->id(),
                     'category' => $validated['category'],
-                    'total_score' => count($poles),
+                    'total_score' => $totalScore,
                     'percentage' => $mbti['confidence'],
                     'category_scores' => [
                         'code' => $mbti['code'],
                         'type' => $mbti['type'],
                         'tally' => $mbti['tally'],
+                        'detail' => Mbti::detailFor($mbti['code']),
                     ],
                     'result_label' => $mbti['code'].' — '.$mbti['type']['name'],
                     'result_description' => $mbti['type']['description'],
