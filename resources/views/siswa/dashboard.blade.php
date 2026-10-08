@@ -62,6 +62,13 @@
             'accent' => 'bg-blue-600',
         ],
         [
+            'title' => 'Konsultasi Prodi',
+            'description' => 'Diskusikan pilihan program studi PCR dengan Guru BK setelah asesmen minat bakat.',
+            'href' => route('siswa.konsultasi-prodi.index'),
+            'cta' => 'Ajukan Konsultasi',
+            'accent' => 'bg-indigo-600',
+        ],
+        [
             'title' => 'Profil Siswa SMK',
             'description' => 'Lihat kesiapan kerja, jurusan, dan keahlian untuk rekomendasi lowongan.',
             'href' => '#smk-profile',

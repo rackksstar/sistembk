@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CareerInfo;
 use App\Models\ConsultationRequest;
 use App\Models\GuidanceClass;
+use App\Models\GuruBk;
 use App\Models\GuruProfileChange;
 use App\Models\Kelas;
 use App\Models\MasterQuestion;
@@ -100,9 +101,50 @@ class DashboardController extends Controller
             ->take(5)
             ->get(['id', 'nama', 'npsn', 'is_active', 'is_mou', 'paket_aktif', 'tanggal_aktivasi', 'created_at']);
 
+        // Penggunaan sistem per sekolah (siap uji min. 3 sekolah — catatan dosen).
+        $penggunaanPerSekolah = Sekolah::query()
+            ->orderBy('nama')
+            ->get(['id', 'nama', 'is_active', 'is_mou'])
+            ->map(function (Sekolah $sekolah) {
+                $siswaCount = Student::query()
+                    ->whereHas('kelas', fn ($q) => $q->where('sekolah_id', $sekolah->id))
+                    ->count();
+
+                $guruCount = GuruBk::query()
+                    ->where('sekolah_id', $sekolah->id)
+                    ->count();
+
+                $konselingCount = ConsultationRequest::query()
+                    ->whereHas(
+                        'student.studentProfile.kelas',
+                        fn ($q) => $q->where('sekolah_id', $sekolah->id)
+                    )
+                    ->count();
+
+                $prodiCount = ConsultationRequest::query()
+                    ->where('case_category', ConsultationRequest::CASE_PRODI_KULIAH)
+                    ->whereHas(
+                        'student.studentProfile.kelas',
+                        fn ($q) => $q->where('sekolah_id', $sekolah->id)
+                    )
+                    ->count();
+
+                return [
+                    'id' => $sekolah->id,
+                    'nama' => $sekolah->nama,
+                    'is_active' => $sekolah->is_active,
+                    'is_mou' => $sekolah->is_mou,
+                    'siswa' => $siswaCount,
+                    'guru' => $guruCount,
+                    'konseling' => $konselingCount,
+                    'konsultasi_prodi' => $prodiCount,
+                ];
+            });
+
         return view('admin.dashboard', compact(
             'metrics', 'recentRequests', 'roleSummary', 'modules',
-            'postinganTerbaru', 'coreSummary', 'sekolahStats', 'sekolahTerbaru'
+            'postinganTerbaru', 'coreSummary', 'sekolahStats', 'sekolahTerbaru',
+            'penggunaanPerSekolah'
         ));
     }
 }

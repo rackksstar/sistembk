@@ -35,6 +35,7 @@ class ConsultationController extends Controller
             'student.studentProfile.kelas:id,nama',
             'counselor:id,name',
             'rpl:id,title,class_id,type',
+            'programStudi:id,nama,jenjang_pendidikan',
         ];
 
         $consultations = ConsultationRequest::with($studentWithKelas)
@@ -48,7 +49,8 @@ class ConsultationController extends Controller
                     ->orWhere('details', 'like', "%{$search}%")
                     ->orWhereHas('student', fn ($s) => $s->where('name', 'like', "%{$search}%"))
                     ->orWhereHas('student.studentProfile', fn ($sp) => $sp->where('nisn', 'like', "%{$search}%"))
-                    ->orWhereHas('counselor', fn ($c) => $c->where('name', 'like', "%{$search}%"));
+                    ->orWhereHas('counselor', fn ($c) => $c->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('programStudi', fn ($p) => $p->where('nama', 'like', "%{$search}%"));
             }))
             ->latest()
             ->paginate(10)
@@ -180,6 +182,7 @@ class ConsultationController extends Controller
             'student.studentProfile.kelas.sekolah:id,nama',
             'counselor:id,name',
             'rpl:id,title',
+            'programStudi:id,nama,jenjang_pendidikan,institusi',
         ]);
 
         $school = $consultation->counselor?->schoolModel

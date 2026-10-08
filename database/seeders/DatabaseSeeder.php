@@ -765,6 +765,7 @@ class DatabaseSeeder extends Seeder
             MinatQuestionSeeder::class,
             ProgramStudiPcrSeeder::class,
             CareerFieldSeeder::class,
+            MultiSchoolTestingSeeder::class,
         ]);
 
         unset($admin);

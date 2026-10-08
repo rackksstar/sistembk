@@ -238,6 +238,13 @@ return [
                     'active' => ['siswa.minat-bakat.*', 'siswa.instruments.hasil', 'siswa.instruments.hasil.pdf'],
                     'icon' => 'academic',
                 ],
+                [
+                    'label' => 'Konsultasi Prodi',
+                    'title' => 'Layanan Konsultasi Prodi Kuliah',
+                    'route' => 'siswa.konsultasi-prodi.index',
+                    'active' => 'siswa.konsultasi-prodi.*',
+                    'icon' => 'chat',
+                ],
             ],
         ],
     ],
