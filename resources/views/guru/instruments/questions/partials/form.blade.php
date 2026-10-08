@@ -3,8 +3,9 @@
     $defaultOptions = [
         ['label' => 'Sangat Tidak Sesuai', 'score' => 1],
         ['label' => 'Tidak Sesuai', 'score' => 2],
-        ['label' => 'Sesuai', 'score' => 3],
-        ['label' => 'Sangat Sesuai', 'score' => 4],
+        ['label' => 'Cukup Sesuai', 'score' => 3],
+        ['label' => 'Sesuai', 'score' => 4],
+        ['label' => 'Sangat Sesuai', 'score' => 5],
     ];
     $initialOptions = collect(old('options', $question?->options ?? $defaultOptions))
         ->map(fn ($option) => [
@@ -18,7 +19,7 @@
 <div
     class="space-y-4"
     x-data="{
-        category: @js(old('category', $question?->category ?? '')),
+        category: @js(old('category', $question?->category ?? (($module ?? 'yola') === 'key' ? 'minat_bakat' : ''))),
         interestCategoryId: @js(old('interest_category_id', $question?->interest_category_id)),
         jenjangTarget: @js(old('jenjang_target', $question?->jenjang_target ?? 'semua')),
         bobot: @js((int) old('bobot', $question?->bobot ?? 1)),

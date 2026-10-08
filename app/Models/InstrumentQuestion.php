@@ -24,13 +24,35 @@ class InstrumentQuestion extends Model
 
     public const CATEGORIES = [
         self::CATEGORY_MINAT_BAKAT => 'Minat Bakat',
-        self::CATEGORY_GAYA_BELAJAR => 'Gaya Belajar',
+        self::CATEGORY_GAYA_BELAJAR => 'Strategi Belajar',
         self::CATEGORY_KEPRIBADIAN => 'Kepribadian',
         self::CATEGORY_SOSIOMETRI => 'Sosiometri',
         self::CATEGORY_ANGKET_MASALAH => 'Masalah',
     ];
 
+    /** Kategori instrumen klasik modul Yola (kerja/diri). */
+    public const YOLA_CATEGORIES = [
+        self::CATEGORY_GAYA_BELAJAR => 'Strategi Belajar',
+        self::CATEGORY_KEPRIBADIAN => 'Kepribadian',
+        self::CATEGORY_ANGKET_MASALAH => 'Masalah',
+    ];
+
+    /** Kategori asesmen RIASEC modul Key (lanjut kuliah / PCR). */
+    public const KEY_CATEGORIES = [
+        self::CATEGORY_MINAT_BAKAT => 'Minat Bakat RIASEC',
+    ];
+
     public const JENJANG_TARGETS = ['semua', 'SMA', 'SMK'];
+
+    public static function isYolaCategory(string $category): bool
+    {
+        return array_key_exists($category, self::YOLA_CATEGORIES);
+    }
+
+    public static function isKeyCategory(string $category): bool
+    {
+        return array_key_exists($category, self::KEY_CATEGORIES);
+    }
 
     protected $fillable = [
         'category',

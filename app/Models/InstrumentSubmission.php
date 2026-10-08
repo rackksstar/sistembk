@@ -18,6 +18,7 @@ class InstrumentSubmission extends Model
         'secondary_interest_id',
         'is_tied',
         'total_score',
+        'percentage',
         'result_label',
         'result_description',
         'submitted_at',
@@ -29,6 +30,7 @@ class InstrumentSubmission extends Model
             'submitted_at' => 'datetime',
             'category_scores' => 'array',
             'is_tied' => 'boolean',
+            'percentage' => 'float',
         ];
     }
 

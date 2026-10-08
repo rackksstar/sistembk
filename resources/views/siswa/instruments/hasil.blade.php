@@ -184,7 +184,7 @@
 
     {{-- 6. Tombol aksi --}}
     <section class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <a href="{{ route('siswa.instruments.index', ['category' => \App\Models\InstrumentQuestion::CATEGORY_MINAT_BAKAT]) }}" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-700">
+        <a href="{{ route('siswa.minat-bakat.index') }}" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-700">
             Ulangi asesmen
         </a>
         <a href="{{ route('siswa.instruments.hasil.pdf', $submission) }}" class="inline-flex items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60">

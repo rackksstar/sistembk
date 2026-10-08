@@ -320,8 +320,9 @@ class DatabaseSeeder extends Seeder
         $defaultOptions = [
             ['label' => 'Sangat Tidak Sesuai', 'score' => 1],
             ['label' => 'Tidak Sesuai', 'score' => 2],
-            ['label' => 'Sesuai', 'score' => 3],
-            ['label' => 'Sangat Sesuai', 'score' => 4],
+            ['label' => 'Cukup Sesuai', 'score' => 3],
+            ['label' => 'Sesuai', 'score' => 4],
+            ['label' => 'Sangat Sesuai', 'score' => 5],
         ];
 
         foreach ($instrumentQuestions as $category => $questions) {

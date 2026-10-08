@@ -26,67 +26,111 @@ class InstrumentSubmissionController extends Controller
         private readonly RecommendationService $recommendationService,
     ) {}
 
-    public function index(Request $request): View
+    /**
+     * Index modul Yola: instrumen klasik (Strategi Belajar, Kepribadian, Masalah).
+     */
+    public function index(Request $request): View|RedirectResponse
     {
-        $category = $request->string('category', InstrumentQuestion::CATEGORY_MINAT_BAKAT)->toString();
-        abort_unless(array_key_exists($category, InstrumentQuestion::CATEGORIES), 404);
+        $rawCategory = $request->string('category')->toString();
 
-        $profileJenjang = $this->resolveProfileJenjang();
-        $jenjang = $profileJenjang;
-        $needsJenjangChooser = false;
-
-        if ($category === InstrumentQuestion::CATEGORY_MINAT_BAKAT) {
-            // Di luar SMA/SMK (kecuali SD/SMP yang diblok view): anggap belum dipilih.
-            if ($jenjang && ! in_array($jenjang, ['SMA', 'SMK', 'SD', 'SMP'], true)) {
-                $jenjang = null;
-            }
-
-            if (! $jenjang) {
-                $requestedJenjang = strtoupper((string) $request->query('jenjang', ''));
-                if (in_array($requestedJenjang, ['SMA', 'SMK'], true)) {
-                    $jenjang = $requestedJenjang;
-                }
-            }
-
-            // Chooser hanya jika jenjang asesmen belum ditentukan (jangan biarkan ganti setelah soal dimuat).
-            $needsJenjangChooser = ! in_array((string) $jenjang, ['SMA', 'SMK'], true)
-                && ! in_array((string) $profileJenjang, ['SD', 'SMP'], true);
-
-            $questionsQuery = InstrumentQuestion::query()
-                ->where('category', $category)
-                ->active()
-                ->whereNotNull('interest_category_id')
-                ->whereHas('interestCategory', fn ($q) => $q->active())
-                ->with('interestCategory')
-                ->oldest();
-
-            if (in_array((string) $jenjang, ['SMA', 'SMK'], true)) {
-                $questionsQuery->forJenjang($jenjang);
-            } else {
-                $questionsQuery->whereRaw('0 = 1');
-            }
-
-            $questions = $questionsQuery->get();
-        } else {
-            $questions = InstrumentQuestion::query()
-                ->where('category', $category)
-                ->where('is_active', true)
-                ->oldest()
-                ->get();
+        // Alias lama / label UI Yola.
+        if ($rawCategory === 'strategi_belajar') {
+            return redirect()->route('siswa.instruments.index', ['category' => InstrumentQuestion::CATEGORY_GAYA_BELAJAR]);
         }
+
+        // Link lama minat_bakat diarahkan ke index Key.
+        if ($rawCategory === InstrumentQuestion::CATEGORY_MINAT_BAKAT) {
+            return redirect()->route('siswa.minat-bakat.index', $request->query());
+        }
+
+        $category = $rawCategory !== ''
+            ? $rawCategory
+            : InstrumentQuestion::CATEGORY_GAYA_BELAJAR;
+        abort_unless(InstrumentQuestion::isYolaCategory($category), 404);
+
+        $questions = InstrumentQuestion::query()
+            ->where('category', $category)
+            ->where('is_active', true)
+            ->oldest()
+            ->get();
 
         $latestSubmissions = InstrumentSubmission::query()
             ->where('student_id', auth()->id())
+            ->whereIn('category', array_keys(InstrumentQuestion::YOLA_CATEGORIES))
             ->latest('submitted_at')
             ->get()
             ->unique('category')
             ->keyBy('category');
 
+        $latestMinatSubmission = InstrumentSubmission::query()
+            ->where('student_id', auth()->id())
+            ->where('category', InstrumentQuestion::CATEGORY_MINAT_BAKAT)
+            ->latest('submitted_at')
+            ->first();
+
         return view('siswa.instruments.index', [
-            'categories' => InstrumentQuestion::CATEGORIES,
+            'module' => 'yola',
+            'categories' => InstrumentQuestion::YOLA_CATEGORIES,
             'category' => $category,
             'questions' => $questions,
+            'sections' => $this->groupClassicSections($questions, $category),
             'latestSubmissions' => $latestSubmissions,
+            'latestMinatSubmission' => $latestMinatSubmission,
+        ]);
+    }
+
+    /**
+     * Index modul Key: Asesmen Minat Bakat RIASEC + rekomendasi kuliah/PCR atau karier.
+     */
+    public function minatBakatIndex(Request $request): View
+    {
+        $category = InstrumentQuestion::CATEGORY_MINAT_BAKAT;
+        $profileJenjang = $this->resolveProfileJenjang();
+        $jenjang = $profileJenjang;
+        $needsJenjangChooser = false;
+
+        if ($jenjang && ! in_array($jenjang, ['SMA', 'SMK', 'SD', 'SMP'], true)) {
+            $jenjang = null;
+        }
+
+        if (! $jenjang) {
+            $requestedJenjang = strtoupper((string) $request->query('jenjang', ''));
+            if (in_array($requestedJenjang, ['SMA', 'SMK'], true)) {
+                $jenjang = $requestedJenjang;
+            }
+        }
+
+        $needsJenjangChooser = ! in_array((string) $jenjang, ['SMA', 'SMK'], true)
+            && ! in_array((string) $profileJenjang, ['SD', 'SMP'], true);
+
+        $questionsQuery = InstrumentQuestion::query()
+            ->where('category', $category)
+            ->active()
+            ->whereNotNull('interest_category_id')
+            ->whereHas('interestCategory', fn ($q) => $q->active())
+            ->with('interestCategory')
+            ->oldest();
+
+        if (in_array((string) $jenjang, ['SMA', 'SMK'], true)) {
+            $questionsQuery->forJenjang($jenjang);
+        } else {
+            $questionsQuery->whereRaw('0 = 1');
+        }
+
+        $questions = $questionsQuery->get();
+
+        $latestSubmission = InstrumentSubmission::query()
+            ->where('student_id', auth()->id())
+            ->where('category', $category)
+            ->latest('submitted_at')
+            ->first();
+
+        return view('siswa.minat-bakat.index', [
+            'module' => 'key',
+            'category' => $category,
+            'questions' => $questions,
+            'latestSubmission' => $latestSubmission,
+            'oldAnswers' => collect(old('answers', [])),
             'profileJenjang' => $profileJenjang,
             'jenjang' => $jenjang,
             'needsJenjangChooser' => $needsJenjangChooser,
@@ -146,12 +190,21 @@ class InstrumentSubmissionController extends Controller
                 ]);
             }
 
-            $result = $this->scoreResult($validated['category'], $totalScore, $questions->count());
+            $maxPerQuestion = $questions->max(function (InstrumentQuestion $question) {
+                $scores = collect($question->options ?? [])
+                    ->filter(fn ($option) => is_array($option) && array_key_exists('score', $option))
+                    ->map(fn ($option) => (int) $option['score']);
+
+                return $scores->max() ?: 0;
+            }) ?: 4;
+
+            $result = $this->scoreResult($validated['category'], $totalScore, $questions->count(), (int) $maxPerQuestion);
 
             $submission = InstrumentSubmission::create([
                 'student_id' => auth()->id(),
                 'category' => $validated['category'],
                 'total_score' => $totalScore,
+                'percentage' => $result['percentage'],
                 'result_label' => $result['label'],
                 'result_description' => $result['description'],
                 'submitted_at' => now(),
@@ -160,8 +213,14 @@ class InstrumentSubmissionController extends Controller
             $submission->answers()->saveMany($answerRows);
         });
 
+        $redirectRoute = InstrumentQuestion::isKeyCategory($validated['category'])
+            ? 'siswa.minat-bakat.index'
+            : 'siswa.instruments.index';
+
         return redirect()
-            ->route('siswa.instruments.index', ['category' => $validated['category']])
+            ->route($redirectRoute, InstrumentQuestion::isKeyCategory($validated['category'])
+                ? []
+                : ['category' => $validated['category']])
             ->with('success', 'Jawaban instrumen berhasil dikirim dan diskor otomatis.');
     }
 
@@ -408,23 +467,51 @@ class InstrumentSubmissionController extends Controller
         abort_unless((int) $submission->student_id === (int) auth()->id(), 403);
     }
 
-    private function scoreResult(string $category, int $score, int $questionCount): array
+    /**
+     * @param  \Illuminate\Support\Collection<int, InstrumentQuestion>  $questions
+     * @return \Illuminate\Support\Collection<int, array{title: ?string, questions: \Illuminate\Support\Collection}>
+     */
+    private function groupClassicSections($questions, string $category)
     {
-        $maxScore = max($questionCount * 4, 1);
-        $percentage = ($score / $maxScore) * 100;
+        if ($questions->isEmpty()) {
+            return collect();
+        }
 
-        if ($category === InstrumentQuestion::CATEGORY_ANGKET_MASALAH) {
-            return match (true) {
+        if ($category === InstrumentQuestion::CATEGORY_GAYA_BELAJAR && $questions->count() >= 3) {
+            $titles = ['Perencanaan Belajar', 'Pelaksanaan Belajar', 'Evaluasi Belajar'];
+            $chunks = $questions->chunk((int) ceil($questions->count() / 3))->values();
+
+            return $chunks->map(fn ($items, $index) => [
+                'title' => $titles[$index] ?? ('Bagian '.($index + 1)),
+                'questions' => $items->values(),
+            ]);
+        }
+
+        return collect([
+            [
+                'title' => null,
+                'questions' => $questions->values(),
+            ],
+        ]);
+    }
+
+    private function scoreResult(string $category, int $score, int $questionCount, int $maxPerQuestion = 4): array
+    {
+        $maxScore = max($questionCount * max($maxPerQuestion, 1), 1);
+        $percentage = round(($score / $maxScore) * 100, 2);
+
+        $result = $category === InstrumentQuestion::CATEGORY_ANGKET_MASALAH
+            ? match (true) {
                 $percentage >= 70 => ['label' => 'Prioritas Tinggi', 'description' => 'Siswa membutuhkan perhatian dan tindak lanjut Guru BK lebih cepat.'],
                 $percentage >= 40 => ['label' => 'Perlu Dipantau', 'description' => 'Ada beberapa area masalah yang perlu didalami melalui percakapan lanjutan.'],
                 default => ['label' => 'Ringan', 'description' => 'Belum tampak indikasi masalah berat dari jawaban instrumen.'],
+            }
+            : match (true) {
+                $percentage >= 70 => ['label' => 'Sangat Menonjol', 'description' => 'Potensi atau kecenderungan siswa terlihat kuat pada instrumen ini.'],
+                $percentage >= 40 => ['label' => 'Cukup Berkembang', 'description' => 'Potensi siswa sudah terlihat dan dapat diperkuat melalui bimbingan.'],
+                default => ['label' => 'Perlu Eksplorasi', 'description' => 'Siswa masih perlu mengeksplorasi diri pada area ini.'],
             };
-        }
 
-        return match (true) {
-            $percentage >= 70 => ['label' => 'Sangat Menonjol', 'description' => 'Potensi atau kecenderungan siswa terlihat kuat pada instrumen ini.'],
-            $percentage >= 40 => ['label' => 'Cukup Berkembang', 'description' => 'Potensi siswa sudah terlihat dan dapat diperkuat melalui bimbingan.'],
-            default => ['label' => 'Perlu Eksplorasi', 'description' => 'Siswa masih perlu mengeksplorasi diri pada area ini.'],
-        };
+        return $result + ['percentage' => $percentage];
     }
 }

@@ -5,24 +5,34 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ConsultationRequest extends Model
 {
     use HasFactory;
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_APPROVED = 'disetujui';
+
     public const STATUS_REJECTED = 'ditolak';
+
     public const STATUS_RESCHEDULED = 'dijadwalkan_ulang';
+
     public const STATUS_SELESAI = 'selesai';
 
     public const STATUS_MENUNGGU = self::STATUS_PENDING;
+
     public const STATUS_DIJADWALKAN = self::STATUS_APPROVED;
 
     public const CASE_PRIBADI = 'pribadi';
+
     public const CASE_SOSIAL = 'sosial';
+
     public const CASE_BELAJAR = 'belajar';
+
     public const CASE_KARIER = 'karier';
+
     public const CASE_KEDISIPLINAN = 'kedisiplinan';
 
     public const CASE_CATEGORIES = [
@@ -44,6 +54,7 @@ class ConsultationRequest extends Model
     protected $fillable = [
         'student_id',
         'counselor_id',
+        'rpl_id',
         'subject',
         'case_category',
         'preferred_time',
@@ -77,6 +88,11 @@ class ConsultationRequest extends Model
     public function counselor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'counselor_id');
+    }
+
+    public function rpl(): BelongsTo
+    {
+        return $this->belongsTo(Rpl::class);
     }
 
     public function caseCategoryLabel(): string
@@ -116,8 +132,8 @@ class ConsultationRequest extends Model
         return $this->counselor_id === null || $this->counselor_id === $counselorId;
     }
 
-    public function penilaianPelayanan(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function penilaianPelayanan(): HasOne
     {
-        return $this->hasOne(\App\Models\PenilaianPelayanan::class);
+        return $this->hasOne(PenilaianPelayanan::class);
     }
 }

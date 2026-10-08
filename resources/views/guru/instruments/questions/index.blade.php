@@ -7,7 +7,17 @@
 >
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <x-section-title title="Soal Instrumen Asesmen" description="Kelola soal Minat Bakat, Gaya Belajar, dan Masalah." />
+            <div>
+                <x-section-title
+                    :title="$module === 'key' ? 'Soal Minat Bakat RIASEC (Key)' : 'Soal Instrumen (Yola)'"
+                    :description="$module === 'key'
+                        ? 'Kelola soal asesmen minat RIASEC untuk rekomendasi kuliah/PCR atau bidang karier.'
+                        : 'Kelola soal Strategi Belajar, Kepribadian, dan Masalah.'"
+                />
+                <span class="mt-2 inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] {{ $module === 'key' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' }}">
+                    Modul {{ strtoupper($module) }}
+                </span>
+            </div>
             <button type="button" x-on:click="openCreate()" class="w-fit rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">Tambah soal</button>
         </div>
 
@@ -16,29 +26,32 @@
             <x-alert class="mt-5" type="error" message="Periksa kembali data soal dan pilihan jawaban." />
         @endif
 
-        <form method="GET" action="{{ route('guru.instrument-questions.index') }}" class="mt-6 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+        <form method="GET" action="{{ route('guru.instrument-questions.index') }}" class="mt-6 grid gap-3 {{ $module === 'key' ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]' : 'lg:grid-cols-[minmax(0,1fr)_auto]' }}">
+            <input type="hidden" name="module" value="{{ $module }}">
             <x-form-select name="category" data-placeholder="Semua kategori instrumen">
                 <option value="">Semua kategori instrumen</option>
                 @foreach($categories as $value => $label)
                     <option value="{{ $value }}" @selected($category === $value)>{{ $label }}</option>
                 @endforeach
             </x-form-select>
-            <x-form-select name="interest_category_id" data-placeholder="Semua kategori minat">
-                <option value="">Semua kategori minat</option>
-                @foreach($interestCategories as $interestCategory)
-                    <option value="{{ $interestCategory->id }}" @selected((string) $interest_category_id === (string) $interestCategory->id)>
-                        {{ $interestCategory->kode }} — {{ $interestCategory->nama }}
-                    </option>
-                @endforeach
-            </x-form-select>
-            <x-form-select name="jenjang_target" data-placeholder="Semua jenjang">
-                <option value="">Semua jenjang</option>
-                @foreach($jenjangTargets as $target)
-                    <option value="{{ $target }}" @selected($jenjang_target === $target)>
-                        {{ $target === 'semua' ? 'Semua' : $target }}
-                    </option>
-                @endforeach
-            </x-form-select>
+            @if($module === 'key')
+                <x-form-select name="interest_category_id" data-placeholder="Semua kategori minat">
+                    <option value="">Semua kategori minat</option>
+                    @foreach($interestCategories as $interestCategory)
+                        <option value="{{ $interestCategory->id }}" @selected((string) $interest_category_id === (string) $interestCategory->id)>
+                            {{ $interestCategory->kode }} — {{ $interestCategory->nama }}
+                        </option>
+                    @endforeach
+                </x-form-select>
+                <x-form-select name="jenjang_target" data-placeholder="Semua jenjang">
+                    <option value="">Semua jenjang</option>
+                    @foreach($jenjangTargets as $target)
+                        <option value="{{ $target }}" @selected($jenjang_target === $target)>
+                            {{ $target === 'semua' ? 'Semua' : $target }}
+                        </option>
+                    @endforeach
+                </x-form-select>
+            @endif
             <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">Filter</button>
         </form>
     </section>

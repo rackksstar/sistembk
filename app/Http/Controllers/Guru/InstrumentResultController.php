@@ -17,7 +17,23 @@ class InstrumentResultController extends Controller
 
     public function index(Request $request): View
     {
+        $module = $request->string('module', 'yola')->toString();
+        if (! in_array($module, ['yola', 'key'], true)) {
+            $module = 'yola';
+        }
+
+        $categories = $module === 'key'
+            ? InstrumentQuestion::KEY_CATEGORIES
+            : InstrumentQuestion::YOLA_CATEGORIES;
+
         $category = $request->string('category')->toString();
+        if ($category !== '' && ! array_key_exists($category, $categories)) {
+            $category = '';
+        }
+
+        if ($module === 'key' && $category === '') {
+            $category = InstrumentQuestion::CATEGORY_MINAT_BAKAT;
+        }
 
         $accessibleUserIds = $this->counselorStudentService
             ->queryForCounselor($request->user())
@@ -31,14 +47,16 @@ class InstrumentResultController extends Controller
                 'answers.question:id,question',
             ])
             ->whereIn('student_id', $accessibleUserIds)
+            ->whereIn('category', array_keys($categories))
             ->when($category, fn ($query) => $query->where('category', $category))
             ->latest('submitted_at')
             ->paginate(12)
             ->withQueryString();
 
         return view('guru.instruments.results.index', [
+            'module' => $module,
             'submissions' => $submissions,
-            'categories' => InstrumentQuestion::CATEGORIES,
+            'categories' => $categories,
             'category' => $category,
         ]);
     }

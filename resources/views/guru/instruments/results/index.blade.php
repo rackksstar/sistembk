@@ -3,8 +3,19 @@
 @section('content')
 <div class="space-y-6">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
-        <x-section-title title="Hasil Skoring Instrumen" description="Pantau hasil skor otomatis dari jawaban siswa." />
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <x-section-title
+                :title="$module === 'key' ? 'Hasil Minat Bakat RIASEC (Key)' : 'Hasil Instrumen (Yola)'"
+                :description="$module === 'key'
+                    ? 'Pantau Kode Minat dan skor RIASEC siswa untuk rekomendasi kuliah/karier.'
+                    : 'Pantau hasil skor instrumen klasik siswa (Strategi Belajar, Kepribadian, Masalah).'"
+            />
+            <span class="rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] {{ $module === 'key' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' }}">
+                Modul {{ strtoupper($module) }}
+            </span>
+        </div>
         <form method="GET" action="{{ route('guru.instrument-results.index') }}" class="mt-6 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+            <input type="hidden" name="module" value="{{ $module }}">
             <x-form-select name="category">
                 <option value="">Semua kategori</option>
                 @foreach($categories as $value => $label)
@@ -30,7 +41,7 @@
                     </div>
                     <div class="rounded-2xl bg-blue-50 dark:bg-blue-950/40 px-4 py-3 text-right">
                         <p class="text-xs font-semibold text-blue-700 dark:text-blue-300">Skor</p>
-                        <p class="text-2xl font-bold text-blue-900">{{ $submission->total_score }}</p>
+                        <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ $submission->total_score }}</p>
                     </div>
                 </div>
                 <div class="mt-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-4">

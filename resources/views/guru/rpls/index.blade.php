@@ -4,7 +4,7 @@
 <div class="space-y-6" x-data="{ createOpen: {{ $errors->any() ? 'true' : 'false' }}, editOpen: null }">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <x-section-title title="RPL" description="Susun dan kelola RPL layanan individu maupun kelompok." />
+            <x-section-title title="RPL" description="Susun RPL konseling individu dan kelompok sesuai kelas serta siswa." />
             <button type="button" x-on:click="createOpen = true" class="w-fit rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">Tambah RPL</button>
         </div>
         <x-alert class="mt-5" type="success" :message="session('success')" />
@@ -12,14 +12,36 @@
             <x-alert class="mt-5" type="error" message="Periksa kembali data RPL." />
         @endif
 
-        <form method="GET" action="{{ route('guru.rpls.index') }}" class="mt-6 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
+        <form method="GET" action="{{ route('guru.rpls.index') }}" class="mt-6 grid gap-3 md:grid-cols-3 xl:grid-cols-7">
             <x-form-select name="type">
                 <option value="">Semua jenis</option>
                 @foreach($types as $value => $label)
                     <option value="{{ $value }}" @selected($type === $value)>{{ $label }}</option>
                 @endforeach
             </x-form-select>
-            <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">Filter</button>
+            <x-form-select name="class_id">
+                <option value="">Semua kelas</option>
+                @foreach($classes as $class)
+                    <option value="{{ $class->id }}" @selected($classId === $class->id)>{{ $class->name }}</option>
+                @endforeach
+            </x-form-select>
+            <x-form-select name="semester">
+                <option value="">Semua semester</option>
+                <option value="1" @selected($semester === 1)>Semester 1</option>
+                <option value="2" @selected($semester === 2)>Semester 2</option>
+            </x-form-select>
+            <x-form-select name="status">
+                <option value="">Semua status</option>
+                @foreach($statuses as $value => $label)
+                    <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
+                @endforeach
+            </x-form-select>
+            <x-text-input name="year" type="number" min="2020" max="2100" value="{{ $year }}" placeholder="Tahun" />
+            <x-form-select name="sort">
+                <option value="baru" @selected($sort === 'baru')>Terbaru</option>
+                <option value="lama" @selected($sort === 'lama')>Terlama</option>
+            </x-form-select>
+            <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white dark:bg-slate-100 dark:text-slate-900 transition hover:bg-slate-700">Filter</button>
         </form>
     </section>
 
@@ -29,15 +51,37 @@
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                         <span class="rounded-full bg-blue-50 dark:bg-blue-950/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700 dark:text-blue-300">{{ $rpl->typeLabel() }}</span>
+                        <span class="ml-2 rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-300">{{ $rpl->statusLabel() }}</span>
                         <h3 class="mt-4 text-lg font-bold text-slate-950 dark:text-white">{{ $rpl->title }}</h3>
-                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ $rpl->target ?: 'Sasaran belum diisi' }} - {{ $rpl->service_date?->format('d M Y') ?: 'Tanggal fleksibel' }}</p>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                            {{ $rpl->classRoom?->name ?? 'Kelas belum dipilih' }} -
+                            Semester {{ $rpl->semester ?? '-' }} -
+                            {{ $rpl->year ?? 'Tahun belum diisi' }}
+                        </p>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                            {{ $rpl->service_date?->format('d M Y') ?: 'Tanggal fleksibel' }}
+                        </p>
                     </div>
                     <div class="flex gap-2">
-                        <a href="{{ route('guru.rpls.print', $rpl) }}" target="_blank" class="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-700">Cetak PDF</a>
+                        <a href="{{ route('guru.rpls.print', $rpl) }}" target="_blank" class="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">Cetak PDF</a>
                         <button type="button" x-on:click="editOpen = {{ $rpl->id }}" class="rounded-xl border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60">Edit</button>
                     </div>
                 </div>
                 <div class="mt-5 grid gap-3 md:grid-cols-2">
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4">
+                        <p class="font-semibold text-slate-900 dark:text-slate-100">Sasaran</p>
+                        <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">
+                            @if($rpl->type === \App\Models\Rpl::TYPE_INDIVIDU)
+                                {{ $rpl->student?->name ?: ($rpl->target ?: '-') }}
+                            @else
+                                {{ $rpl->groupStudents->pluck('name')->join(', ') ?: ($rpl->target ?: '-') }}
+                            @endif
+                        </p>
+                    </div>
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4">
+                        <p class="font-semibold text-slate-900 dark:text-slate-100">Laporan Terkait</p>
+                        <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">{{ $rpl->consultation_reports_count ?? $rpl->consultationReports()->count() }} laporan konseling</p>
+                    </div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><p class="font-semibold text-slate-900 dark:text-slate-100">Tujuan</p><p class="mt-1 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-400">{{ $rpl->tujuan }}</p></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><p class="font-semibold text-slate-900 dark:text-slate-100">Materi</p><p class="mt-1 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-400">{{ $rpl->materi }}</p></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><p class="font-semibold text-slate-900 dark:text-slate-100">Metode</p><p class="mt-1 line-clamp-3 text-sm leading-6 text-slate-600 dark:text-slate-400">{{ $rpl->metode }}</p></div>
@@ -59,10 +103,10 @@
     {{ $rpls->links() }}
 
     <div x-show="createOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-        <div x-on:click.outside="createOpen = false" class="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+        <div x-on:click.outside="createOpen = false" class="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
             <div class="flex items-start justify-between gap-4">
                 <x-section-title title="Tambah RPL" description="Lengkapi komponen layanan BK." />
-                <button type="button" x-on:click="createOpen = false" class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-600 dark:text-slate-400">x</button>
+                <button type="button" x-on:click="createOpen = false" class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-600 dark:text-slate-300">x</button>
             </div>
             <form method="POST" action="{{ route('guru.rpls.store') }}" class="mt-6">
                 @csrf
@@ -73,10 +117,10 @@
 
     @foreach($rpls as $rpl)
         <div x-show="editOpen === {{ $rpl->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="editOpen = null" class="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <div x-on:click.outside="editOpen = null" class="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <div class="flex items-start justify-between gap-4">
                     <x-section-title title="Edit RPL" description="Perbarui rencana layanan." />
-                    <button type="button" x-on:click="editOpen = null" class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-600 dark:text-slate-400">x</button>
+                    <button type="button" x-on:click="editOpen = null" class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-600 dark:text-slate-300">x</button>
                 </div>
                 <form method="POST" action="{{ route('guru.rpls.update', $rpl) }}" class="mt-6">
                     @csrf

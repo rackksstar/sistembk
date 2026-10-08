@@ -103,7 +103,7 @@ class GuruInstrumentResultScopeTest extends TestCase
         ]);
 
         $this->actingAs($guru)
-            ->get(route('guru.instrument-results.index'))
+            ->get(route('guru.instrument-results.index', ['module' => 'key']))
             ->assertOk()
             ->assertSee('Siswa Sekolah A')
             ->assertDontSee('Siswa Sekolah B');

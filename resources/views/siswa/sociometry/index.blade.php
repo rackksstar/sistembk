@@ -38,7 +38,7 @@
 
                 <div class="space-y-2">
                     <x-input-label for="reason" value="Alasan singkat" />
-                    <textarea id="reason" name="reason" rows="5" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">{{ old('reason') }}</textarea>
+                    <textarea id="reason" name="reason" rows="5" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100">{{ old('reason') }}</textarea>
                 </div>
 
                 <x-primary-button class="rounded-full px-6 py-3">Simpan Pilihan</x-primary-button>
@@ -50,7 +50,7 @@
             <div class="mt-5 space-y-3">
                 @forelse($responses as $response)
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4">
-                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-blue-600">{{ \App\Models\SociometryResponse::TYPES[$response->relation_type] ?? $response->relation_type }}</p>
+                        <p class="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-300">{{ \App\Models\SociometryResponse::TYPES[$response->relation_type] ?? $response->relation_type }}</p>
                         <p class="mt-2 font-semibold text-slate-950 dark:text-white">{{ $response->chosenStudent?->name }}</p>
                     </div>
                 @empty

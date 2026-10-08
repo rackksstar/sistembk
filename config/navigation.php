@@ -4,7 +4,12 @@
  * Menu sidebar vertikal untuk dashboard admin, Guru BK, dan siswa.
  *
  * Keys per group: group, section, icon?, items[]
- * Keys per item: label, route, active?, icon?, title? (judul topbar; default = label)
+ * Keys per item: label, route, params?, active?, icon?, title?
+ *
+ * section:
+ * - main / core / platform → selalu terbuka
+ * - yola → modul asesmen & RPL (kerja langsung)
+ * - key → modul karier lanjut kuliah (PCR / RIASEC)
  */
 return [
     'admin' => [
@@ -33,12 +38,19 @@ return [
                 ['label' => 'Sekolah', 'route' => 'admin.sekolah.index', 'active' => 'admin.sekolah.*', 'icon' => 'building'],
                 ['label' => 'Kelas', 'route' => 'admin.kelas.index', 'active' => 'admin.kelas.*', 'icon' => 'academic'],
                 ['label' => 'Guru BK', 'route' => 'admin.guru-bk.index', 'active' => 'admin.guru-bk.*', 'icon' => 'users'],
-                ['label' => 'Kategori Minat', 'route' => 'admin.interest-categories.index', 'active' => 'admin.interest-categories.*', 'icon' => 'tag'],
-                ['label' => 'Program Studi PCR', 'route' => 'admin.program-studi.index', 'active' => 'admin.program-studi.*', 'icon' => 'academic'],
-                ['label' => 'Bidang Karier', 'route' => 'admin.bidang-karier.index', 'active' => 'admin.bidang-karier.*', 'icon' => 'briefcase'],
                 ['label' => 'Master Pertanyaan', 'route' => 'admin.master-pertanyaan.index', 'active' => 'admin.master-pertanyaan.*', 'icon' => 'question'],
                 ['label' => 'Kategori Artikel', 'route' => 'admin.kategori-postingan.index', 'active' => 'admin.kategori-postingan.*', 'icon' => 'tag'],
                 ['label' => 'Artikel BK', 'route' => 'admin.postingan.index', 'active' => 'admin.postingan.*', 'icon' => 'newspaper'],
+            ],
+        ],
+        [
+            'group' => 'Karier Lanjut Kuliah (Key)',
+            'section' => 'key',
+            'icon' => 'academic',
+            'items' => [
+                ['label' => 'Kategori Minat RIASEC', 'route' => 'admin.interest-categories.index', 'active' => 'admin.interest-categories.*', 'icon' => 'tag'],
+                ['label' => 'Program Studi PCR', 'route' => 'admin.program-studi.index', 'active' => 'admin.program-studi.*', 'icon' => 'academic'],
+                ['label' => 'Bidang Karier', 'route' => 'admin.bidang-karier.index', 'active' => 'admin.bidang-karier.*', 'icon' => 'briefcase'],
             ],
         ],
         [
@@ -54,9 +66,9 @@ return [
             ],
         ],
         [
-            'group' => 'Modul Tim Lain',
-            'section' => 'other',
-            'icon' => 'puzzle',
+            'group' => 'Informasi Umum',
+            'section' => 'core',
+            'icon' => 'briefcase',
             'items' => [
                 ['label' => 'Informasi Karier', 'route' => 'admin.careers.index', 'active' => 'admin.careers.*', 'icon' => 'briefcase'],
             ],
@@ -93,15 +105,56 @@ return [
             ],
         ],
         [
-            'group' => 'Modul Tim Lain',
-            'section' => 'other',
-            'icon' => 'puzzle',
+            'group' => 'Asesmen & RPL (Yola)',
+            'section' => 'yola',
+            'icon' => 'beaker',
             'items' => [
-                ['label' => 'Soal Instrumen', 'route' => 'guru.instrument-questions.index', 'active' => 'guru.instrument-questions.*', 'icon' => 'beaker'],
-                ['label' => 'Hasil Instrumen', 'route' => 'guru.instrument-results.index', 'active' => 'guru.instrument-results.*', 'icon' => 'chart'],
+                [
+                    'label' => 'Soal Instrumen',
+                    'route' => 'guru.instrument-questions.index',
+                    'params' => ['module' => 'yola'],
+                    'active' => 'guru.instrument-questions.*',
+                    'match' => ['module' => 'yola'],
+                    'icon' => 'beaker',
+                ],
+                [
+                    'label' => 'Hasil Instrumen',
+                    'route' => 'guru.instrument-results.index',
+                    'params' => ['module' => 'yola'],
+                    'active' => 'guru.instrument-results.*',
+                    'match' => ['module' => 'yola'],
+                    'icon' => 'chart',
+                ],
                 ['label' => 'Peta Sosiometri', 'route' => 'guru.sociometry.index', 'active' => 'guru.sociometry.*', 'icon' => 'chart'],
-                ['label' => 'RPL', 'route' => 'guru.rpls.index', 'active' => 'guru.rpls.*', 'icon' => 'book'],
+                ['label' => 'RPL Individu & Kelompok', 'route' => 'guru.rpls.index', 'active' => 'guru.rpls.*', 'icon' => 'book'],
+                ['label' => 'Laporan Kelompok', 'route' => 'guru.group-reports.index', 'active' => 'guru.group-reports.*', 'icon' => 'document'],
+                ['label' => 'Riwayat Siswa', 'route' => 'guru.student-histories.index', 'active' => 'guru.student-histories.*', 'icon' => 'user'],
                 ['label' => 'Jurnal Bulanan', 'route' => 'guru.journals.index', 'active' => 'guru.journals.*', 'icon' => 'calendar'],
+                ['label' => 'Statistik Layanan', 'route' => 'guru.service-statistics.index', 'active' => 'guru.service-statistics.*', 'icon' => 'chart'],
+                ['label' => 'Feedback Siswa', 'route' => 'guru.feedback.index', 'active' => 'guru.feedback.*', 'icon' => 'chat'],
+            ],
+        ],
+        [
+            'group' => 'Karier Lanjut Kuliah (Key)',
+            'section' => 'key',
+            'icon' => 'academic',
+            'items' => [
+                [
+                    'label' => 'Soal Minat Bakat RIASEC',
+                    'route' => 'guru.instrument-questions.index',
+                    'params' => ['module' => 'key'],
+                    'active' => 'guru.instrument-questions.*',
+                    'match' => ['module' => 'key'],
+                    'icon' => 'beaker',
+                ],
+                [
+                    'label' => 'Hasil Minat Bakat RIASEC',
+                    'route' => 'guru.instrument-results.index',
+                    'params' => ['module' => 'key'],
+                    'active' => 'guru.instrument-results.*',
+                    'match' => ['module' => 'key'],
+                    'icon' => 'academic',
+                ],
             ],
         ],
     ],
@@ -128,12 +181,52 @@ return [
         ],
         [
             'group' => 'Modul Tim Lain',
-            'section' => 'other',
-            'icon' => 'puzzle',
+            'section' => 'yola',
+            'icon' => 'beaker',
             'items' => [
-                ['label' => 'Instrumen', 'title' => 'Instrumen Asesmen', 'route' => 'siswa.instruments.index', 'active' => 'siswa.instruments.*', 'icon' => 'beaker'],
+                [
+                    'label' => 'Strategi Belajar',
+                    'title' => 'Instrumen Asesmen',
+                    'route' => 'siswa.instruments.index',
+                    'params' => ['category' => 'gaya_belajar'],
+                    'active' => 'siswa.instruments.*',
+                    'match' => ['category' => 'gaya_belajar'],
+                    'icon' => 'book',
+                ],
+                [
+                    'label' => 'Kepribadian',
+                    'title' => 'Instrumen Asesmen',
+                    'route' => 'siswa.instruments.index',
+                    'params' => ['category' => 'kepribadian'],
+                    'active' => 'siswa.instruments.*',
+                    'match' => ['category' => 'kepribadian'],
+                    'icon' => 'user',
+                ],
+                [
+                    'label' => 'Masalah',
+                    'title' => 'Instrumen Asesmen',
+                    'route' => 'siswa.instruments.index',
+                    'params' => ['category' => 'angket_masalah'],
+                    'active' => 'siswa.instruments.*',
+                    'match' => ['category' => 'angket_masalah'],
+                    'icon' => 'clipboard',
+                ],
                 ['label' => 'Sosiometri', 'route' => 'siswa.sociometry.index', 'active' => 'siswa.sociometry.*', 'icon' => 'chart'],
                 ['label' => 'Karier', 'title' => 'Informasi Karier', 'route' => 'siswa.careers.index', 'active' => 'siswa.careers.*', 'icon' => 'briefcase'],
+            ],
+        ],
+        [
+            'group' => 'Karier Lanjut Kuliah (Key)',
+            'section' => 'key',
+            'icon' => 'academic',
+            'items' => [
+                [
+                    'label' => 'Minat Bakat RIASEC',
+                    'title' => 'Asesmen minat + rekomendasi prodi PCR / bidang karier',
+                    'route' => 'siswa.minat-bakat.index',
+                    'active' => ['siswa.minat-bakat.*', 'siswa.instruments.hasil', 'siswa.instruments.hasil.pdf'],
+                    'icon' => 'academic',
+                ],
             ],
         ],
     ],

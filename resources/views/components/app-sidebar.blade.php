@@ -19,8 +19,32 @@
 
     $isItemActive = function (array $item): bool {
         $patterns = (array) ($item['active'] ?? $item['route'] ?? '');
+        $routeMatches = collect($patterns)->contains(fn ($pattern) => request()->routeIs($pattern));
 
-        return collect($patterns)->contains(fn ($pattern) => request()->routeIs($pattern));
+        if (! $routeMatches) {
+            return false;
+        }
+
+        // Cocokkan query params (category / module) agar index Yola vs Key tidak saling aktif.
+        foreach ((array) ($item['match'] ?? []) as $key => $value) {
+            $actual = request()->query($key);
+
+            if ($actual === null || $actual === '') {
+                if ($key === 'category' && request()->routeIs('siswa.instruments.*')) {
+                    $actual = 'gaya_belajar';
+                } elseif ($key === 'module' && request()->routeIs(['guru.instrument-questions.*', 'guru.instrument-results.*'])) {
+                    $actual = 'yola';
+                } else {
+                    return false;
+                }
+            }
+
+            if ((string) $actual !== (string) $value) {
+                return false;
+            }
+        }
+
+        return true;
     };
 @endphp
 
@@ -53,18 +77,30 @@
             @php
                 $section = $group['section'] ?? 'main';
                 $groupActive = collect($group['items'] ?? [])->contains(fn ($item) => $isItemActive($item));
-                // Utama + core selalu terbuka; modul tim lain hanya jika aktif.
-                $defaultOpen = $groupActive || in_array($section, ['main', 'core', 'platform'], true);
+                // Utama, core, yola, key, platform selalu terbuka agar fitur tidak "hilang".
+                $defaultOpen = $groupActive || in_array($section, ['main', 'core', 'yola', 'key', 'platform'], true);
                 $groupIcon = $group['icon'] ?? match ($section) {
                     'core' => 'clipboard',
+                    'yola' => 'beaker',
+                    'key' => 'academic',
                     'other' => 'puzzle',
                     'platform' => 'grid',
                     default => 'home',
                 };
+                $isYola = $section === 'yola';
+                $isKey = $section === 'key';
                 $isOther = $section === 'other';
             @endphp
 
-            @if($isOther)
+            @if($isYola)
+                <div class="app-sidebar__divider" role="separator">
+                    <span>Tim lain</span>
+                </div>
+            @elseif($isKey)
+                <div class="app-sidebar__divider" role="separator">
+                    <span>Modul Key</span>
+                </div>
+            @elseif($isOther)
                 <div class="app-sidebar__divider" role="separator">
                     <span>Tim lain</span>
                 </div>
@@ -120,7 +156,9 @@
                     @foreach($group['items'] as $item)
                         @php
                             $active = $isItemActive($item);
-                            $href = isset($item['route']) ? route($item['route']) : $dashboardRoute;
+                            $href = isset($item['route'])
+                                ? route($item['route'], $item['params'] ?? [])
+                                : $dashboardRoute;
                             $icon = $item['icon'] ?? NavigationIcons::forRoute($item['route'] ?? '');
                         @endphp
                         <li>
@@ -130,7 +168,7 @@
                                 @class([
                                     'app-sidebar__link',
                                     'app-sidebar__link--active' => $active,
-                                    'app-sidebar__link--muted' => $isOther && ! $active,
+                                    'app-sidebar__link--muted' => ($isOther || $isKey) && ! $active,
                                 ])
                                 @if($active) aria-current="page" @endif
                             >

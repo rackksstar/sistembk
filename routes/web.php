@@ -24,6 +24,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Guru\AngketController;
 use App\Http\Controllers\Guru\ConsultationController as GuruConsultationController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
+use App\Http\Controllers\Guru\GroupConsultationReportController;
 use App\Http\Controllers\Guru\InstrumentQuestionController;
 use App\Http\Controllers\Guru\InstrumentResultController;
 use App\Http\Controllers\Guru\MonthlyJournalController;
@@ -31,8 +32,11 @@ use App\Http\Controllers\Guru\PenilaianController;
 use App\Http\Controllers\Guru\RaporController;
 use App\Http\Controllers\Guru\RplController;
 use App\Http\Controllers\Guru\ServiceFeedbackController as GuruServiceFeedbackController;
+use App\Http\Controllers\Guru\ServiceStatisticController;
 use App\Http\Controllers\Guru\SociometryMapController;
+use App\Http\Controllers\Guru\SosiometryInstrumentController;
 use App\Http\Controllers\Guru\StudentController as GuruStudentController;
+use App\Http\Controllers\Guru\StudentHistoryController;
 use App\Http\Controllers\Guru\TryoutController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Siswa\CareerInfoController as SiswaCareerInfoController;
@@ -115,9 +119,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->parameters(['instrument-questions' => 'question'])
             ->except(['create', 'show', 'edit']);
         Route::get('/instrument-results', [InstrumentResultController::class, 'index'])->name('instrument-results.index');
+
+        // Modul Yola — sosiometri, RPL, laporan individu/kelompok, jurnal
         Route::get('/sociometry', [SociometryMapController::class, 'index'])->name('sociometry.index');
+        Route::get('/sociometry/manage', [SosiometryInstrumentController::class, 'index'])->name('sociometry.manage');
+        Route::post('/sociometry/manage/toggle', [SosiometryInstrumentController::class, 'toggle'])->name('sociometry.manage.toggle');
+        Route::get('/sociometry/export', [SociometryMapController::class, 'exportClass'])->name('sociometry.export');
+        Route::get('/sociometry/{student}/export', [SociometryMapController::class, 'exportStudent'])->name('sociometry.export.student');
+        Route::get('/sociometry/{student}', [SociometryMapController::class, 'show'])->name('sociometry.show');
         Route::resource('rpls', RplController::class)->except(['create', 'show', 'edit']);
         Route::get('/rpls/{rpl}/print', [RplController::class, 'print'])->name('rpls.print');
+        Route::resource('group-reports', GroupConsultationReportController::class)
+            ->parameters(['group-reports' => 'groupReport'])
+            ->except(['create', 'show', 'edit']);
+        Route::get('/group-reports/{groupReport}/print', [GroupConsultationReportController::class, 'print'])->name('group-reports.print');
+        Route::get('/student-histories', [StudentHistoryController::class, 'index'])->name('student-histories.index');
+        Route::get('/service-statistics', [ServiceStatisticController::class, 'index'])->name('service-statistics.index');
         Route::resource('journals', MonthlyJournalController::class)->parameters(['journals' => 'journal'])->except(['create', 'show', 'edit']);
         Route::get('/journals/{journal}/print', [MonthlyJournalController::class, 'print'])->name('journals.print');
         Route::get('/feedback', [GuruServiceFeedbackController::class, 'index'])->name('feedback.index');
@@ -149,8 +166,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('siswa')->name('siswa.')->middleware('role:siswa')->group(function () {
         Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->name('dashboard');
+        // Modul Yola — instrumen klasik
         Route::get('/instruments', [InstrumentSubmissionController::class, 'index'])->name('instruments.index');
         Route::post('/instruments', [InstrumentSubmissionController::class, 'store'])->name('instruments.store');
+        // Modul Key — Minat Bakat RIASEC
+        Route::get('/minat-bakat', [InstrumentSubmissionController::class, 'minatBakatIndex'])->name('minat-bakat.index');
         Route::get('/instruments/hasil/{submission}', [InstrumentSubmissionController::class, 'hasil'])->name('instruments.hasil');
         Route::get('/instruments/hasil/{submission}/pdf', [InstrumentSubmissionController::class, 'hasilPdf'])->name('instruments.hasil.pdf');
         Route::get('/sociometry', [SociometryController::class, 'index'])->name('sociometry.index');

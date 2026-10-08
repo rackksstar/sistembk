@@ -20,17 +20,31 @@ class InstrumentQuestionController extends Controller
      */
     public function index(Request $request): View
     {
+        $module = $request->string('module', 'yola')->toString();
+        if (! in_array($module, ['yola', 'key'], true)) {
+            $module = 'yola';
+        }
+
         $category = $request->string('category')->toString();
         $interestCategoryId = $request->filled('interest_category_id')
             ? $request->integer('interest_category_id')
             : null;
         $jenjangTarget = $request->string('jenjang_target')->toString();
 
+        $categories = $module === 'key'
+            ? InstrumentQuestion::KEY_CATEGORIES
+            : InstrumentQuestion::YOLA_CATEGORIES;
+
+        if ($category !== '' && ! array_key_exists($category, $categories)) {
+            $category = '';
+        }
+
         $questions = InstrumentQuestion::query()
             ->with('interestCategory')
+            ->whereIn('category', array_keys($categories))
             ->when($category, fn ($query) => $query->where('category', $category))
-            ->when($interestCategoryId, fn ($query) => $query->where('interest_category_id', $interestCategoryId))
-            ->when($jenjangTarget, fn ($query) => $query->where('jenjang_target', $jenjangTarget))
+            ->when($module === 'key' && $interestCategoryId, fn ($query) => $query->where('interest_category_id', $interestCategoryId))
+            ->when($module === 'key' && $jenjangTarget, fn ($query) => $query->where('jenjang_target', $jenjangTarget))
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -53,8 +67,9 @@ class InstrumentQuestionController extends Controller
             ->get();
 
         return view('guru.instruments.questions.index', [
+            'module' => $module,
             'questions' => $questions,
-            'categories' => InstrumentQuestion::CATEGORIES,
+            'categories' => $categories,
             'category' => $category,
             'interestCategories' => $interestCategories,
             'interest_category_id' => $interestCategoryId,
