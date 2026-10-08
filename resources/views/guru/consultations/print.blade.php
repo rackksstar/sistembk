@@ -314,7 +314,12 @@
 
         <div class="narrative">
             <h2>Kategori Kasus</h2>
-            <p>{{ $consultation->caseCategoryLabel() }}{{ $consultation->rpl?->title ? ' — RPL terkait: '.$consultation->rpl->title : '' }}</p>
+            <p>
+                {{ $consultation->caseCategoryLabel() }}{{ $consultation->rpl?->title ? ' — RPL terkait: '.$consultation->rpl->title : '' }}
+                @if($consultation->isProdiKuliah() && $consultation->programStudi)
+                    — Prodi: {{ $consultation->programStudi->nama }}@if($consultation->programStudi->jenjang_pendidikan) ({{ $consultation->programStudi->jenjang_pendidikan }})@endif
+                @endif
+            </p>
             <h2>Evaluasi</h2>
             <p>{{ $consultation->evaluation ?: '-' }}</p>
             <h2>Tindak Lanjut</h2>

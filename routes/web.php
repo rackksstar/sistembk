@@ -47,6 +47,7 @@ use App\Http\Controllers\Siswa\ConsultationRequestController;
 use App\Http\Controllers\Siswa\DashboardController as SiswaDashboardController;
 use App\Http\Controllers\Siswa\InstrumentSubmissionController;
 use App\Http\Controllers\Siswa\PostinganController as SiswaPostinganController;
+use App\Http\Controllers\Siswa\ProdiConsultationController;
 use App\Http\Controllers\Siswa\ServiceFeedbackController;
 use App\Http\Controllers\Siswa\SociometryController;
 use Illuminate\Support\Facades\Auth;
@@ -182,6 +183,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/sociometry', [SociometryController::class, 'store'])->name('sociometry.store');
         Route::get('/consultations', [SiswaConsultationController::class, 'index'])->name('consultations.index');
         Route::post('/consultations', [SiswaConsultationController::class, 'store'])->name('consultations.store');
+        // Layanan Konsultasi Prodi Kuliah (catatan dosen)
+        Route::get('/konsultasi-prodi', [ProdiConsultationController::class, 'index'])->name('konsultasi-prodi.index');
+        Route::post('/konsultasi-prodi', [ProdiConsultationController::class, 'store'])->name('konsultasi-prodi.store');
         Route::get('/chatbot', [ChatbotController::class, 'index'])->name('chatbot.index');
         Route::post('/chatbot', [ChatbotController::class, 'store'])->name('chatbot.store');
         Route::post('/consultation-requests', [ConsultationRequestController::class, 'store'])->name('consultation-requests.store');

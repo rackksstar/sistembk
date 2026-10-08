@@ -92,6 +92,11 @@
                                 <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $consultation->student?->studentProfile?->kelas?->nama ?? '—' }}</td>
                                 <td class="px-5 py-4">
                                     <span class="font-medium text-slate-900 dark:text-slate-100">{{ $consultation->subject }}</span>
+                                    @if($consultation->isProdiKuliah() && $consultation->programStudi)
+                                        <span class="mt-1 inline-flex rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
+                                            Prodi: {{ $consultation->programStudi->nama }}
+                                        </span>
+                                    @endif
                                     @if($consultation->details)
                                         <span class="mt-0.5 block line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{{ $consultation->details }}</span>
                                     @endif
@@ -162,6 +167,17 @@
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Kelas</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->student?->studentProfile?->kelas?->nama ?? '—' }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Status</dt><dd class="mt-1"><x-status-badge :status="$consultation->status" /></dd></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Kategori</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->caseCategoryLabel() }}</dd></div>
+                    @if($consultation->isProdiKuliah())
+                        <div class="rounded-2xl bg-indigo-50 dark:bg-indigo-950/30 p-4 sm:col-span-2">
+                            <dt class="font-semibold text-indigo-900 dark:text-indigo-200">Program Studi</dt>
+                            <dd class="mt-1 text-indigo-800 dark:text-indigo-300">
+                                {{ $consultation->programStudi?->nama ?? '—' }}
+                                @if($consultation->programStudi?->jenjang_pendidikan)
+                                    · {{ $consultation->programStudi->jenjang_pendidikan }}
+                                @endif
+                            </dd>
+                        </div>
+                    @endif
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">RPL Terkait</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->rpl?->title ?? '-' }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Semester / Tahun</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">Semester {{ $consultation->semester ?? '-' }} / {{ $consultation->academicYearLabel() }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Pertemuan ke-</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->meeting_number ?? '-' }}</dd></div>

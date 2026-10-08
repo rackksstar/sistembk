@@ -7,10 +7,10 @@
             title="Konseling & Laporan"
             description="Monitoring semua pengajuan, jadwal, hasil konseling, dan evaluasi dari Guru BK."
         />
-        <form method="GET" class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_190px_190px_auto]">
+        <form method="GET" class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_170px_170px_190px_auto]">
             <div class="min-w-0">
                 <label for="search" class="sr-only">Cari konseling</label>
-                <input type="search" id="search" name="search" value="{{ $search }}" placeholder="Cari topik, siswa, NISN, atau guru BK..."
+                <input type="search" id="search" name="search" value="{{ $search }}" placeholder="Cari topik, siswa, NISN, prodi, atau guru BK..."
                     class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm placeholder:text-slate-400 focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
             </div>
             <div class="min-w-0">
@@ -31,7 +31,16 @@
                     @endforeach
                 </select>
             </div>
-            <div class="flex gap-3 sm:col-span-2 lg:col-span-1">
+            <div class="min-w-0">
+                <label for="filter-sekolah" class="sr-only">Filter sekolah</label>
+                <select id="filter-sekolah" name="sekolah_id" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+                    <option value="">Semua sekolah</option>
+                    @foreach($sekolahOptions as $sekolah)
+                        <option value="{{ $sekolah->id }}" @selected((string) $sekolahId === (string) $sekolah->id)>{{ $sekolah->nama }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="flex gap-3 sm:col-span-2 xl:col-span-1">
                 <button class="flex-1 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">Filter</button>
                 <x-filter-reset />
             </div>
@@ -43,7 +52,7 @@
                     <thead class="bg-slate-50 dark:bg-slate-800/60 text-left text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
                         <tr>
                             <th class="px-5 py-4">Siswa</th>
-                            <th class="px-5 py-4">Kelas</th>
+                            <th class="px-5 py-4">Sekolah / Kelas</th>
                             <th class="px-5 py-4">Guru BK</th>
                             <th class="px-5 py-4">Keluhan/Topik</th>
                             <th class="px-5 py-4">Jadwal</th>
@@ -55,9 +64,19 @@
                         @forelse($consultations as $consultation)
                             <tr>
                                 <td class="px-5 py-4 font-semibold text-slate-900 dark:text-slate-100">{{ $consultation->student?->name }}</td>
-                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $consultation->student?->studentProfile?->kelas?->nama ?? '—' }}</td>
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">
+                                    <span class="block">{{ $consultation->student?->studentProfile?->kelas?->sekolah?->nama ?? '—' }}</span>
+                                    <span class="text-xs text-slate-400">{{ $consultation->student?->studentProfile?->kelas?->nama ?? '—' }}</span>
+                                </td>
                                 <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $consultation->counselor?->name ?? '-' }}</td>
-                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $consultation->details ?? $consultation->subject }}</td>
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">
+                                    <span class="block">{{ $consultation->subject }}</span>
+                                    @if($consultation->isProdiKuliah())
+                                        <span class="mt-1 inline-flex rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
+                                            Prodi: {{ $consultation->programStudi?->nama ?? '—' }}
+                                        </span>
+                                    @endif
+                                </td>
                                 <td class="px-5 py-4 text-slate-600 dark:text-slate-400">
                                     @if($consultation->consultation_date)
                                         {{ $consultation->consultation_date->format('d M Y') }} {{ $consultation->consultation_time ? substr($consultation->consultation_time, 0, 5) : '' }}

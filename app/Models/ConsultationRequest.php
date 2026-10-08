@@ -35,12 +35,16 @@ class ConsultationRequest extends Model
 
     public const CASE_KEDISIPLINAN = 'kedisiplinan';
 
+    /** Layanan Konsultasi Prodi Kuliah (catatan dosen / modul Key). */
+    public const CASE_PRODI_KULIAH = 'prodi_kuliah';
+
     public const CASE_CATEGORIES = [
         self::CASE_PRIBADI => 'Pribadi',
         self::CASE_SOSIAL => 'Sosial',
         self::CASE_BELAJAR => 'Belajar',
         self::CASE_KARIER => 'Karier',
         self::CASE_KEDISIPLINAN => 'Kedisiplinan',
+        self::CASE_PRODI_KULIAH => 'Prodi Kuliah',
     ];
 
     public const STATUS_LABELS = [
@@ -57,6 +61,7 @@ class ConsultationRequest extends Model
         'rpl_id',
         'subject',
         'case_category',
+        'program_studi_id',
         'preferred_time',
         'preferred_date',
         'consultation_date',
@@ -103,6 +108,16 @@ class ConsultationRequest extends Model
     public function rpl(): BelongsTo
     {
         return $this->belongsTo(Rpl::class);
+    }
+
+    public function programStudi(): BelongsTo
+    {
+        return $this->belongsTo(ProgramStudi::class);
+    }
+
+    public function isProdiKuliah(): bool
+    {
+        return $this->case_category === self::CASE_PRODI_KULIAH;
     }
 
     public function caseCategoryLabel(): string

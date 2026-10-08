@@ -151,6 +151,59 @@
         </section>
     @endif
 
+    @if(isset($penggunaanPerSekolah) && $penggunaanPerSekolah->isNotEmpty())
+        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+                <x-section-title
+                    title="Penggunaan per sekolah"
+                    description="Verifikasi uji sistem di minimal 3 sekolah (siswa, guru BK, konseling, konsultasi prodi)."
+                />
+                <a href="{{ route('admin.consultations.index') }}" class="ui-btn-secondary">Filter konseling per sekolah</a>
+            </div>
+
+            <div class="mt-5 overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-800">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-100 text-sm dark:divide-slate-800">
+                        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
+                            <tr>
+                                <th class="px-4 py-3">Sekolah</th>
+                                <th class="px-4 py-3">Siswa</th>
+                                <th class="px-4 py-3">Guru BK</th>
+                                <th class="px-4 py-3">Konseling</th>
+                                <th class="px-4 py-3">Konsultasi Prodi</th>
+                                <th class="px-4 py-3"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            @foreach($penggunaanPerSekolah as $row)
+                                <tr>
+                                    <td class="px-4 py-3 font-semibold text-slate-900 dark:text-slate-100">
+                                        {{ $row['nama'] }}
+                                        @if($row['is_mou'])
+                                            <span class="ml-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">MOU</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ $row['siswa'] }}</td>
+                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ $row['guru'] }}</td>
+                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ $row['konseling'] }}</td>
+                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-300">{{ $row['konsultasi_prodi'] }}</td>
+                                    <td class="px-4 py-3 text-right">
+                                        <a
+                                            href="{{ route('admin.consultations.index', ['sekolah_id' => $row['id']]) }}"
+                                            class="text-xs font-semibold text-blue-600 hover:underline dark:text-blue-300"
+                                        >
+                                            Lihat →
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    @endif
+
     @if(isset($postinganTerbaru) && $postinganTerbaru->isNotEmpty())
         <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
             <div class="flex items-end justify-between gap-4">
