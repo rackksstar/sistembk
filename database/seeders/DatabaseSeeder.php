@@ -4,8 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\CareerInfo;
 use App\Models\ConsultationRequest;
-use App\Models\GuruBk;
 use App\Models\GuidanceClass;
+use App\Models\GuruBk;
 use App\Models\InstrumentAnswer;
 use App\Models\InstrumentQuestion;
 use App\Models\InstrumentSubmission;
@@ -16,9 +16,9 @@ use App\Models\School;
 use App\Models\SchoolClass;
 use App\Models\Sekolah;
 use App\Models\ServiceFeedback;
+use App\Models\SiswaSmk;
 use App\Models\SociometryResponse;
 use App\Models\Student;
-use App\Models\SiswaSmk;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -320,8 +320,9 @@ class DatabaseSeeder extends Seeder
         $defaultOptions = [
             ['label' => 'Sangat Tidak Sesuai', 'score' => 1],
             ['label' => 'Tidak Sesuai', 'score' => 2],
-            ['label' => 'Sesuai', 'score' => 3],
-            ['label' => 'Sangat Sesuai', 'score' => 4],
+            ['label' => 'Cukup Sesuai', 'score' => 3],
+            ['label' => 'Sesuai', 'score' => 4],
+            ['label' => 'Sangat Sesuai', 'score' => 5],
         ];
 
         foreach ($instrumentQuestions as $category => $questions) {
@@ -510,6 +511,13 @@ class DatabaseSeeder extends Seeder
                 'category' => 'Kreatif',
             ]
         );
+
+        $this->call([
+            InterestCategorySeeder::class,
+            MinatQuestionSeeder::class,
+            ProgramStudiPcrSeeder::class,
+            CareerFieldSeeder::class,
+        ]);
 
         unset($admin);
     }

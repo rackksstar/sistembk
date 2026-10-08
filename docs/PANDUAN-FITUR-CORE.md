@@ -35,6 +35,7 @@ Laravel di repository `sistembk` — route, controller, form request, model, dan
 | 15 | [Activity Log](#15-activity-log) | P9 |
 | 16 | [Daftar Route Core](#16-daftar-route-core) | — |
 | 17 | [Known Issues Core](#17-known-issues-core) | — |
+| 18 | [Asesmen Minat Bakat (Tim asesmen)](#18-asesmen-minat-bakat-tim-asesmen) | luar core |
 
 ---
 
@@ -495,7 +496,8 @@ Modul berikut **aktif di sistem** tetapi bukan deliverable core. Tidak dibahas d
 |---|---|---|
 | Soal Instrumen Asesmen | `/guru/instrument-questions/*` | Tim asesmen |
 | Hasil Instrumen | `/guru/instrument-results` | Tim asesmen |
-| Instrumen (siswa) | `/siswa/instruments` | Tim asesmen |
+| Instrumen (siswa) | `/siswa/instruments`, `/siswa/instruments/hasil/*` | Tim asesmen |
+| Kategori Minat / Prodi PCR / Bidang Karier | `/admin/interest-categories`, `/admin/program-studi`, `/admin/bidang-karier` | Tim asesmen |
 | Peta Sosiometri | `/guru/sociometry`, `/siswa/sociometry` | Tim asesmen |
 | RPL + cetak PDF | `/guru/rpls/*` | Tim dokumentasi |
 | Jurnal Bulanan | `/guru/journals/*` | Tim dokumentasi |
@@ -509,6 +511,11 @@ Modul berikut **aktif di sistem** tetapi bukan deliverable core. Tidak dibahas d
 **Interaksi penting:** modul tim lain tetap memakai data master core —
 `master_questions` (kategori `angket`/`tryout`), `kelas`, `students`, `post_categories`.
 Jangan menduplikasi katalog soal; kelola lewat **Master Pertanyaan**.
+
+**Asesmen Minat Bakat (P0 Tim asesmen)** memperluas instrumen `minat_bakat` (bukan modul baru),
+memakai `kelas.jenjang` dari data master core, dan **tidak** menyentuh `master_questions` /
+`career_infos`. Ringkasan alur implementasi: [§18](#18-asesmen-minat-bakat-tim-asesmen).
+Detail operasional penuh: `docs/PANDUAN-PENGGUNAAN.md` §6.18–6.20, §7.10–7.11, §8.8.
 
 ### 1.3 Modul yang Sudah Digantikan Core
 
@@ -2322,8 +2329,8 @@ Middleware `role:siswa`; prefix `siswa`; name prefix `siswa.`
 | GET | `/siswa/feedback` | `siswa.feedback.create` (redirect, deprecated) |
 | POST | `/siswa/feedback` | `siswa.feedback.store` (redirect, deprecated) |
 
-Route di luar core: `instruments.*`, `sociometry.*`, `chatbot.*`, `classes.join`, `careers.index`
-— 8 route. Total seluruh route berawalan `siswa.` adalah **25**.
+Route di luar core: `instruments.*` (termasuk `hasil` / `hasil.pdf` untuk Minat Bakat),
+`sociometry.*`, `chatbot.*`, `classes.join`, `careers.index`.
 
 > **Route `/siswa/rapor` tidak pernah didefinisikan** — URL tersebut menghasilkan **404**.
 
@@ -2486,6 +2493,81 @@ Beberapa modul masih melakukan fallback ke tabel lama.
 
 ---
 
+## 18. Asesmen Minat Bakat (Tim asesmen)
+
+> **Bukan deliverable core.** Dicantumkan agar Tim core memahami dependensi data master
+> (`kelas.jenjang`, siswa) dan batas: jangan ubah `master_questions` / `career_infos`.
+> Spesifikasi lengkap: `docs/PROMPT-IMPLEMENTASI-ASESMEN-MINAT.md` +
+> `docs/PANDUAN-PENGGUNAAN.md` §6.18–6.20, §7.10–7.11, §8.8.
+
+### 18.1 Dependensi ke data core
+
+| Data core | Dipakai untuk |
+|---|---|
+| `students` + `kelas.jenjang` | Tentukan output SMA (prodi PCR) vs SMK (bidang karier); bila jenjang kosong siswa memilih di awal tes |
+| `users` (role siswa) | `instrument_submissions.student_id` = `users.id` |
+| Nav Admin grup Data Master | Menu Kategori Minat / Program Studi PCR / Bidang Karier |
+
+### 18.2 Alur end-to-end (implementasi P0)
+
+```
+Admin
+  ├─ Seed/CRUD Kategori Minat (RIASEC)
+  ├─ Seed/CRUD Program Studi PCR → set is_verified setelah cek pmb.pcr.ac.id
+  └─ Seed/CRUD Bidang Karier + Job Zone
+        │
+Guru BK
+  └─ Soal Instrumen (kategori minat_bakat)
+       • interest_category_id + jenjang_target + bobot
+       • opsi dinamis / template Likert 0–4
+       • Select2 pada filter & form
+        │
+Siswa
+  ├─ [1] Intro + jenjang (dari kelas atau pilih SMA/SMK)
+  ├─ [2] Wizard: satu soal per layar + progress
+  ├─ [3] Submit → InterestScoringService (Kode Minat 3 huruf)
+  └─ [4] Halaman hasil
+       • SMA → rekomendasi prodi PCR (verified+active)
+       • SMK → bidang karier + Job Zone
+       • Unduh PDF laporan
+```
+
+### 18.3 Artefak kode utama
+
+| Lapisan | Lokasi |
+|---|---|
+| Migration aditif | `database/migrations/2026_10_07_00000*_*.php` |
+| Model | `InterestCategory`, `ProgramStudi`, `CareerField`; perluasan `InstrumentQuestion` / `InstrumentSubmission` |
+| Service | `app/Services/Minat/InterestScoringService`, `RecommendationService`, `InterestResult` |
+| Admin | `admin.interest-categories.*`, `admin.program-studi.*`, `admin.bidang-karier.*` |
+| Guru | `guru.instrument-questions.*` (Form Request + soft delete) |
+| Siswa | `siswa.instruments.*` + `hasil` + `hasil.pdf` |
+| Seeder | `InterestCategorySeeder`, `MinatQuestionSeeder`, `ProgramStudiPcrSeeder`, `CareerFieldSeeder` |
+| UI | Select2 (`resources/js/select2.js` + `select2-theme.css`); Alpine `modalCrud`; wizard Minat di `siswa/instruments/index` |
+
+### 18.4 Yang sengaja ditunda (bukan P0)
+
+| Prioritas | Isi |
+|---|---|
+| P1 | Scoping hasil instrumen per cakupan Guru (`CounselorStudentService`), batas retake, radar, agregat kelas |
+| P2 | Multi-kampus, pelatihan, lowongan, program mitra |
+
+### 18.5 Deploy singkat
+
+```bash
+php artisan migrate
+php artisan db:seed --class=InterestCategorySeeder
+php artisan db:seed --class=MinatQuestionSeeder
+php artisan db:seed --class=ProgramStudiPcrSeeder
+php artisan db:seed --class=CareerFieldSeeder
+php artisan optimize:clear
+npm run build   # Select2 + Alpine modalCrud
+```
+
+Setelah seed prodi PCR: Admin **wajib** set `is_verified = true` agar rekomendasi SMA tampil.
+
+---
+
 ## Lampiran — Referensi Dokumen Core
 
 | Dokumen | Isi |
@@ -2494,4 +2576,5 @@ Beberapa modul masih melakukan fallback ke tabel lama.
 | `docs/PROGRESS.md` | Ringkasan status per phase |
 | `docs/phase-1-foundation.md` … `docs/phase-9-finalisasi.md` | Laporan tiap phase |
 | `docs/PANDUAN-PENGGUNAAN.md` | Panduan **seluruh** modul termasuk tim lain |
+| `docs/PROMPT-IMPLEMENTASI-ASESMEN-MINAT.md` | Paket implementasi Asesmen Minat Bakat (P0) |
 | `docs/FEATURE_BREAKDOWN.md` | Semua fitur blueprint + tim lain |
