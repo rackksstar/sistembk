@@ -49,12 +49,6 @@ class InstrumentSubmissionController extends Controller
             : InstrumentQuestion::CATEGORY_MINAT_KERJA;
         abort_unless(InstrumentQuestion::isYolaCategory($category), 404);
 
-        $questions = InstrumentQuestion::query()
-            ->where('category', $category)
-            ->where('is_active', true)
-            ->oldest()
-            ->get();
-
         $latestSubmissions = InstrumentSubmission::query()
             ->where('student_id', auth()->id())
             ->whereIn('category', array_keys(InstrumentQuestion::YOLA_CATEGORIES))
@@ -63,12 +57,68 @@ class InstrumentSubmissionController extends Controller
             ->unique('category')
             ->keyBy('category');
 
+        // Minat Bakat Kerja memakai bank soal RIASEC (Talents Mapping) yang sama
+        // dengan jalur kuliah, tetapi hasilnya diarahkan ke rekomendasi bidang karier.
+        if ($category === InstrumentQuestion::CATEGORY_MINAT_KERJA) {
+            return $this->minatKerjaIndex($request, $latestSubmissions);
+        }
+
+        $questions = InstrumentQuestion::query()
+            ->where('category', $category)
+            ->where('is_active', true)
+            ->oldest()
+            ->get();
+
         return view('siswa.instruments.index', [
             'module' => 'yola',
             'categories' => InstrumentQuestion::YOLA_CATEGORIES,
             'category' => $category,
             'questions' => $questions,
             'latestSubmissions' => $latestSubmissions,
+            'useRiasecWizard' => false,
+            'useTalentsLikert' => false,
+            'jenjang' => null,
+            'needsJenjangChooser' => false,
+            'jenjangBlocked' => false,
+            'oldAnswers' => collect(old('answers', [])),
+        ]);
+    }
+
+    /**
+     * Index Minat Bakat Kerja — selaras sistembk-main:
+     * 99 item Talents Mapping, form Likert satu halaman, hasil Holland + karier.
+     */
+    private function minatKerjaIndex(Request $request, Collection $latestSubmissions): View
+    {
+        $profileJenjang = $this->resolveProfileJenjang();
+        $jenjang = in_array((string) $profileJenjang, ['SMA', 'SMK'], true)
+            ? $profileJenjang
+            : null;
+
+        // Ref tidak memfilter jenjang; bank soal RIASEC (jenjang_target=semua).
+        $questions = InstrumentQuestion::query()
+            ->where('category', InstrumentQuestion::CATEGORY_MINAT_BAKAT)
+            ->active()
+            ->where(function ($query) {
+                $query->whereNotNull('talent_code')
+                    ->orWhereNotNull('interest_category_id');
+            })
+            ->with('interestCategory')
+            ->oldest()
+            ->get();
+
+        return view('siswa.instruments.index', [
+            'module' => 'yola',
+            'categories' => InstrumentQuestion::YOLA_CATEGORIES,
+            'category' => InstrumentQuestion::CATEGORY_MINAT_KERJA,
+            'questions' => $questions,
+            'latestSubmissions' => $latestSubmissions,
+            'useRiasecWizard' => false,
+            'useTalentsLikert' => true,
+            'jenjang' => $jenjang,
+            'needsJenjangChooser' => false,
+            'jenjangBlocked' => in_array($profileJenjang, ['SD', 'SMP'], true),
+            'oldAnswers' => collect(old('answers', [])),
         ]);
     }
 
@@ -142,6 +192,10 @@ class InstrumentSubmissionController extends Controller
 
         if ($validated['category'] === InstrumentQuestion::CATEGORY_MINAT_BAKAT) {
             return $this->storeMinatBakat($request, $validated);
+        }
+
+        if ($validated['category'] === InstrumentQuestion::CATEGORY_MINAT_KERJA) {
+            return $this->storeMinatKerja($request, $validated);
         }
 
         $questions = InstrumentQuestion::query()
@@ -259,14 +313,21 @@ class InstrumentSubmissionController extends Controller
     {
         $this->assertOwnsSubmission($submission);
 
-        if ($submission->category === InstrumentQuestion::CATEGORY_MINAT_BAKAT) {
+        if (in_array($submission->category, [
+            InstrumentQuestion::CATEGORY_MINAT_BAKAT,
+            InstrumentQuestion::CATEGORY_MINAT_KERJA,
+        ], true) && filled($submission->kode_minat)) {
             [$result, $recommendations] = $this->buildMinatResultPayload($submission);
+            $track = $submission->category === InstrumentQuestion::CATEGORY_MINAT_KERJA
+                ? 'kerja'
+                : 'kuliah';
 
             return view('siswa.instruments.hasil', [
                 'submission' => $submission,
                 'result' => $result,
                 'topCategories' => $result->topCategories(3),
                 'recommendations' => $recommendations,
+                'track' => $track,
             ]);
         }
 
@@ -321,42 +382,99 @@ class InstrumentSubmissionController extends Controller
      */
     private function storeMinatBakat(Request $request, array $validated): RedirectResponse
     {
+        return $this->storeRiasecAssessment(
+            $request,
+            $validated,
+            InstrumentQuestion::CATEGORY_MINAT_BAKAT,
+            'Asesmen minat bakat kuliah berhasil dikirim.',
+        );
+    }
+
+    /**
+     * @param  array{category: string, answers: array<int|string, int>, jenjang?: string|null}  $validated
+     */
+    private function storeMinatKerja(Request $request, array $validated): RedirectResponse
+    {
+        return $this->storeRiasecAssessment(
+            $request,
+            $validated,
+            InstrumentQuestion::CATEGORY_MINAT_KERJA,
+            'Asesmen minat bakat kerja berhasil dikirim.',
+        );
+    }
+
+    /**
+     * Simpan asesmen Talents Mapping (RIASEC) untuk jalur kerja atau kuliah.
+     * Soal selalu diambil dari bank kategori minat_bakat.
+     *
+     * @param  array{category: string, answers: array<int|string, int>, jenjang?: string|null}  $validated
+     */
+    private function storeRiasecAssessment(
+        Request $request,
+        array $validated,
+        string $submissionCategory,
+        string $successMessage,
+    ): RedirectResponse {
+        $isKerja = $submissionCategory === InstrumentQuestion::CATEGORY_MINAT_KERJA;
         $jenjang = $this->resolveProfileJenjang();
 
-        if (! $jenjang) {
-            $request->validate([
-                'jenjang' => ['required', Rule::in(['SMA', 'SMK'])],
-            ], [
-                'jenjang.required' => 'Pilih jenjang SMA atau SMK sebelum mengirim asesmen.',
-            ]);
-            $jenjang = strtoupper((string) $validated['jenjang']);
+        // Jalur kuliah (Key): jenjang wajib untuk rekomendasi PCR vs karier.
+        // Jalur kerja (Yola/ref): jenjang opsional — soal RIASEC tidak tergantung jenjang.
+        if (! $isKerja) {
+            if (! $jenjang) {
+                $request->validate([
+                    'jenjang' => ['required', Rule::in(['SMA', 'SMK'])],
+                ], [
+                    'jenjang.required' => 'Pilih jenjang SMA atau SMK sebelum mengirim asesmen.',
+                ]);
+                $jenjang = strtoupper((string) $validated['jenjang']);
+            }
+
+            if (in_array($jenjang, ['SD', 'SMP'], true)) {
+                return back()->withErrors([
+                    'jenjang' => 'Asesmen ini untuk siswa SMA/SMK.',
+                ])->withInput();
+            }
+
+            if (! in_array($jenjang, ['SMA', 'SMK'], true)) {
+                return back()->withErrors([
+                    'jenjang' => 'Jenjang tidak valid. Pilih SMA atau SMK.',
+                ])->withInput();
+            }
+        } else {
+            if ($jenjang && ! in_array($jenjang, ['SMA', 'SMK'], true)) {
+                $jenjang = in_array(strtoupper((string) ($validated['jenjang'] ?? '')), ['SMA', 'SMK'], true)
+                    ? strtoupper((string) $validated['jenjang'])
+                    : null;
+            } elseif (! $jenjang && in_array(strtoupper((string) ($validated['jenjang'] ?? '')), ['SMA', 'SMK'], true)) {
+                $jenjang = strtoupper((string) $validated['jenjang']);
+            }
+
+            if (in_array((string) $this->resolveProfileJenjang(), ['SD', 'SMP'], true)) {
+                return back()->withErrors([
+                    'jenjang' => 'Asesmen ini untuk siswa SMA/SMK.',
+                ])->withInput();
+            }
         }
 
-        if (in_array($jenjang, ['SD', 'SMP'], true)) {
-            return back()->withErrors([
-                'jenjang' => 'Asesmen ini untuk siswa SMA/SMK.',
-            ])->withInput();
-        }
-
-        if (! in_array($jenjang, ['SMA', 'SMK'], true)) {
-            return back()->withErrors([
-                'jenjang' => 'Jenjang tidak valid. Pilih SMA atau SMK.',
-            ])->withInput();
-        }
-
-        $questions = InstrumentQuestion::query()
+        $questionsQuery = InstrumentQuestion::query()
             ->where('category', InstrumentQuestion::CATEGORY_MINAT_BAKAT)
             ->active()
-            ->whereNotNull('interest_category_id')
-            ->whereHas('interestCategory', fn ($q) => $q->active())
-            ->forJenjang($jenjang)
-            ->with('interestCategory')
-            ->get()
-            ->keyBy('id');
+            ->where(function ($query) {
+                $query->whereNotNull('talent_code')
+                    ->orWhereNotNull('interest_category_id');
+            })
+            ->with('interestCategory');
+
+        if (! $isKerja && in_array((string) $jenjang, ['SMA', 'SMK'], true)) {
+            $questionsQuery->forJenjang($jenjang);
+        }
+
+        $questions = $questionsQuery->get()->keyBy('id');
 
         if ($questions->isEmpty()) {
             return back()->withErrors([
-                'answers' => 'Soal asesmen minat bakat belum tersedia untuk jenjang ini.',
+                'answers' => 'Soal asesmen minat bakat belum tersedia.',
             ])->withInput();
         }
 
@@ -371,8 +489,11 @@ class InstrumentSubmissionController extends Controller
         }
 
         $interestResult = $this->interestScoringService->score($questions, $validated['answers']);
+        $trackLabel = $submissionCategory === InstrumentQuestion::CATEGORY_MINAT_KERJA
+            ? 'jalur kerja'
+            : 'lanjut kuliah';
 
-        $submission = DB::transaction(function () use ($validated, $questions, $interestResult, $jenjang) {
+        $submission = DB::transaction(function () use ($questions, $validated, $interestResult, $jenjang, $submissionCategory, $trackLabel) {
             $answerRows = [];
 
             foreach ($validated['answers'] as $questionId => $optionIndex) {
@@ -393,7 +514,7 @@ class InstrumentSubmissionController extends Controller
 
             $submission = InstrumentSubmission::create([
                 'student_id' => auth()->id(),
-                'category' => InstrumentQuestion::CATEGORY_MINAT_BAKAT,
+                'category' => $submissionCategory,
                 'jenjang' => $jenjang,
                 'kode_minat' => $interestResult->kode_minat,
                 'category_scores' => $interestResult->toArray(),
@@ -402,7 +523,7 @@ class InstrumentSubmissionController extends Controller
                 'is_tied' => $interestResult->is_tied,
                 'total_score' => (int) round((float) $interestResult->total_score),
                 'result_label' => $interestResult->kode_minat,
-                'result_description' => "Kode dominan Talents Mapping (RIASEC): {$interestResult->kode_minat}. Lihat rincian lengkap di halaman hasil.",
+                'result_description' => "Kode Minat Talents Mapping ({$trackLabel}): {$interestResult->kode_minat}. Lihat rincian lengkap di halaman hasil.",
                 'submitted_at' => now(),
             ]);
 
@@ -413,13 +534,14 @@ class InstrumentSubmissionController extends Controller
 
         ActivityLogger::log('instrument.minat.submitted', $submission, [
             'submission_id' => $submission->id,
+            'category' => $submissionCategory,
             'kode_minat' => $submission->kode_minat,
             'jenjang' => $submission->jenjang,
         ]);
 
         return redirect()
             ->route('siswa.instruments.hasil', $submission)
-            ->with('success', 'Asesmen minat bakat berhasil dikirim.');
+            ->with('success', $successMessage);
     }
 
     /**
@@ -445,6 +567,11 @@ class InstrumentSubmissionController extends Controller
                 'items' => [],
                 'empty_message' => 'Hasil skor belum cukup untuk rekomendasi. Ulangi asesmen dengan jawaban yang lebih akurat.',
             ]];
+        }
+
+        // Jalur kerja selalu rekomendasi bidang karier; jalur kuliah mengikuti jenjang.
+        if ($submission->category === InstrumentQuestion::CATEGORY_MINAT_KERJA) {
+            return [$result, $this->recommendationService->forSmk($result)];
         }
 
         $jenjang = strtoupper((string) $submission->jenjang);

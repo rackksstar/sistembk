@@ -289,12 +289,19 @@ class DatabaseSeeder extends Seeder
             $studentUsers->push($studentUser);
         }
 
+        // Minat Bakat Kerja memakai bank soal RIASEC (kategori minat_bakat) — nonaktifkan
+        // soal klasik placeholder lama agar tidak bentrok dengan Talents Mapping.
+        $legacyMinatKerja = [
+            'Saya bersemangat saat mengerjakan aktivitas yang membutuhkan ide baru.',
+            'Saya mudah menikmati pelajaran atau kegiatan yang menantang kemampuan berpikir.',
+            'Saya memiliki aktivitas favorit yang ingin saya dalami sebagai rencana masa depan.',
+        ];
+        InstrumentQuestion::query()
+            ->where('category', InstrumentQuestion::CATEGORY_MINAT_KERJA)
+            ->whereIn('question', $legacyMinatKerja)
+            ->update(['is_active' => false]);
+
         $instrumentQuestions = [
-            InstrumentQuestion::CATEGORY_MINAT_KERJA => [
-                'Saya bersemangat saat mengerjakan aktivitas yang membutuhkan ide baru.',
-                'Saya mudah menikmati pelajaran atau kegiatan yang menantang kemampuan berpikir.',
-                'Saya memiliki aktivitas favorit yang ingin saya dalami sebagai rencana masa depan.',
-            ],
             InstrumentQuestion::CATEGORY_KEPRIBADIAN => [
                 'Saya mampu menenangkan diri ketika menghadapi situasi yang menekan.',
                 'Saya nyaman bekerja sama dengan teman yang berbeda pendapat.',

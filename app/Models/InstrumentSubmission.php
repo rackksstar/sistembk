@@ -142,7 +142,10 @@ class InstrumentSubmission extends Model
      */
     public function riasecScores(): array
     {
-        if ($this->category !== InstrumentQuestion::CATEGORY_MINAT_BAKAT) {
+        if (! in_array($this->category, [
+            InstrumentQuestion::CATEGORY_MINAT_BAKAT,
+            InstrumentQuestion::CATEGORY_MINAT_KERJA,
+        ], true)) {
             return [];
         }
 

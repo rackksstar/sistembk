@@ -90,6 +90,7 @@
                 'category' => $category,
                 'jenjang' => $jenjang,
                 'needsJenjangChooser' => $needsJenjangChooser ?? false,
+                'track' => 'kuliah',
             ])
         @endif
     </section>

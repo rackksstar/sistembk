@@ -49,14 +49,14 @@
         ],
         [
             'title' => 'Minat Bakat Kerja',
-            'description' => 'Asesmen Yola untuk eksplorasi minat dan kesiapan jalur kerja setelah lulus.',
+            'description' => 'Talents Mapping (RIASEC) → Kode Minat Holland + rekomendasi bidang karier untuk jalur kerja.',
             'href' => route('siswa.instruments.index', ['category' => 'minat_kerja']),
             'cta' => 'Isi Minat Kerja',
             'accent' => 'bg-emerald-600',
         ],
         [
             'title' => 'Minat Bakat Kuliah',
-            'description' => 'Asesmen Key RIASEC / Talents Mapping + rekomendasi prodi PCR untuk lanjut kuliah.',
+            'description' => 'Talents Mapping yang sama + rekomendasi prodi PCR (SMA) atau bidang karier (SMK).',
             'href' => route('siswa.minat-bakat.index'),
             'cta' => 'Isi Minat Kuliah',
             'accent' => 'bg-blue-600',

@@ -72,7 +72,12 @@ class InstrumentResultController extends Controller
             ->pluck('user_id');
 
         $submissions = InstrumentSubmission::query()
-            ->where('category', InstrumentQuestion::CATEGORY_MINAT_BAKAT)
+            ->whereIn('category', [
+                InstrumentQuestion::CATEGORY_MINAT_BAKAT,
+                InstrumentQuestion::CATEGORY_MINAT_KERJA,
+            ])
+            ->whereNotNull('kode_minat')
+            ->where('kode_minat', '!=', '')
             ->whereIn('student_id', $accessibleUserIds)
             ->with([
                 'student:id,name,email,school,school_id,class_id',

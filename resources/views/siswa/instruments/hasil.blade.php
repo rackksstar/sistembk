@@ -20,6 +20,8 @@
         'C' => ['ring' => 'bg-cyan-500', 'bar' => 'bg-cyan-500', 'chip' => 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950/50 dark:text-cyan-300'],
     ];
     $tiedNames = collect($result->rankedCategories)->take(2)->pluck('nama')->filter()->values();
+    $track = $track ?? ($submission->category === \App\Models\InstrumentQuestion::CATEGORY_MINAT_KERJA ? 'kerja' : 'kuliah');
+    $isKerja = $track === 'kerja';
 @endphp
 
 @section('content')
@@ -37,13 +39,18 @@
     @endif
 
     <section class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
-        <div class="bg-gradient-to-r from-indigo-500 to-blue-600 px-6 py-5 text-center">
-            <h2 class="text-lg font-bold text-white">Hasil Minat Bakat Kuliah — Talents Mapping</h2>
+        <div class="bg-gradient-to-r {{ $isKerja ? 'from-emerald-500 to-teal-600' : 'from-indigo-500 to-blue-600' }} px-6 py-5 text-center">
+            <h2 class="text-lg font-bold text-white">
+                {{ $isKerja ? 'Hasil Minat Bakat Kerja — Talents Mapping' : 'Hasil Minat Bakat Kuliah — Talents Mapping' }}
+            </h2>
         </div>
         <div class="bg-white dark:bg-slate-900 px-6 py-6">
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                    <a href="{{ route('siswa.minat-bakat.index') }}" class="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                    <a
+                        href="{{ $isKerja ? route('siswa.instruments.index', ['category' => 'minat_kerja']) : route('siswa.minat-bakat.index') }}"
+                        class="text-xs font-semibold {{ $isKerja ? 'text-emerald-700 dark:text-emerald-300' : 'text-blue-600 dark:text-blue-400' }} hover:underline"
+                    >
                         &larr; Kembali ke Asesmen Minat Bakat
                     </a>
                     <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -114,9 +121,11 @@
 
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         @php $hasilJenjang = strtoupper((string) $submission->jenjang); @endphp
-        @if($hasilJenjang === 'SMK')
+        @if($isKerja || $hasilJenjang === 'SMK')
             <h2 class="text-lg font-bold text-slate-950 dark:text-white">Rekomendasi Karier</h2>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Bidang karier yang cocok dengan kode minatmu.</p>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                {{ $isKerja ? 'Bidang karier yang cocok untuk jalur kerja berdasarkan kode minatmu.' : 'Bidang karier yang cocok dengan kode minatmu.' }}
+            </p>
 
             @if(($recommendations['items'] ?? []) === [])
                 <p class="mt-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4 text-sm text-slate-600 dark:text-slate-400">
@@ -206,12 +215,17 @@
     </section>
 
     <section class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        <a href="{{ route('siswa.minat-bakat.index') }}" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-700">
+        <a
+            href="{{ $isKerja ? route('siswa.instruments.index', ['category' => 'minat_kerja']) : route('siswa.minat-bakat.index') }}"
+            class="inline-flex items-center justify-center rounded-full {{ $isKerja ? 'bg-emerald-600 shadow-emerald-500/20 hover:bg-emerald-500' : 'bg-blue-600 shadow-blue-500/20 hover:bg-blue-700' }} px-6 py-3 text-sm font-semibold text-white shadow-lg transition"
+        >
             Ulangi asesmen
         </a>
-        <a href="{{ route('siswa.instruments.hasil.pdf', $submission) }}" class="inline-flex items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60">
-            Unduh laporan
-        </a>
+        @if(! $isKerja)
+            <a href="{{ route('siswa.instruments.hasil.pdf', $submission) }}" class="inline-flex items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-6 py-3 text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60">
+                Unduh laporan
+            </a>
+        @endif
         <a href="{{ route('siswa.dashboard') }}" class="inline-flex items-center justify-center rounded-full border border-slate-200 dark:border-slate-700 px-6 py-3 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60">
             Kembali ke dashboard
         </a>

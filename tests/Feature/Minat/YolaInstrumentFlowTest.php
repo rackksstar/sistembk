@@ -4,6 +4,7 @@ namespace Tests\Feature\Minat;
 
 use App\Models\InstrumentQuestion;
 use App\Models\InstrumentSubmission;
+use App\Models\InterestCategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
@@ -13,12 +14,17 @@ class YolaInstrumentFlowTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_submit_minat_kerja_mengarah_ke_halaman_hasil(): void
+    public function test_submit_minat_kerja_riasec_mengarah_ke_hasil_holland(): void
     {
         $siswa = $this->buatSiswa();
-        $questions = $this->buatSoalKlasik(InstrumentQuestion::CATEGORY_MINAT_KERJA, 3);
+        $categories = $this->buatKategoriRiasec();
+        $questions = $this->buatSoalRiasec($categories);
 
-        $answers = $questions->mapWithKeys(fn (InstrumentQuestion $q) => [$q->id => 4])->all();
+        $answers = $questions->mapWithKeys(function (InstrumentQuestion $question) use ($categories) {
+            $isDominant = $question->interest_category_id === $categories['R']->id;
+
+            return [$question->id => $isDominant ? 4 : 1];
+        })->all();
 
         $response = $this->actingAs($siswa)
             ->post(route('siswa.instruments.store'), [
@@ -33,12 +39,37 @@ class YolaInstrumentFlowTest extends TestCase
             ->latest('id')
             ->firstOrFail();
 
+        $this->assertNotEmpty($submission->kode_minat);
+        $this->assertStringStartsWith('R', $submission->kode_minat);
         $response->assertRedirect(route('siswa.instruments.hasil', $submission));
 
         $this->actingAs($siswa)
             ->get(route('siswa.instruments.hasil', $submission))
             ->assertOk()
-            ->assertSee($submission->result_label);
+            ->assertSee('Hasil Minat Bakat Kerja')
+            ->assertSee($submission->kode_minat)
+            ->assertSee('Rincian per Dimensi RIASEC')
+            ->assertSee('Rekomendasi Karier');
+    }
+
+    public function test_index_minat_kerja_menampilkan_form_likert_seperti_referensi(): void
+    {
+        $siswa = $this->buatSiswa();
+        $categories = $this->buatKategoriRiasec();
+        $questions = $this->buatSoalRiasec($categories);
+
+        $response = $this->actingAs($siswa)
+            ->get(route('siswa.instruments.index', ['category' => 'minat_kerja']))
+            ->assertOk()
+            ->assertSee('Minat Bakat Kerja')
+            ->assertSee('Talents Mapping (RIASEC)')
+            ->assertSee('Kirim dan Lihat Skor')
+            ->assertSee($questions->first()->question)
+            ->assertSee('Sangat Tidak Suka')
+            ->assertSee('Sangat Suka');
+
+        // Form Likert ref: semua soal di halaman yang sama (bukan wizard intro).
+        $response->assertDontSee('Mulai asesmen');
     }
 
     public function test_submit_strategi_belajar_dengan_section_menampilkan_hasil_per_bagian(): void
@@ -74,7 +105,8 @@ class YolaInstrumentFlowTest extends TestCase
     public function test_index_default_membuka_minat_kerja(): void
     {
         $siswa = $this->buatSiswa();
-        $this->buatSoalKlasik(InstrumentQuestion::CATEGORY_MINAT_KERJA, 1);
+        $categories = $this->buatKategoriRiasec();
+        $this->buatSoalRiasec($categories);
 
         $this->actingAs($siswa)
             ->get(route('siswa.instruments.index'))
@@ -98,6 +130,47 @@ class YolaInstrumentFlowTest extends TestCase
             'role' => User::ROLE_SISWA,
             'status' => User::STATUS_APPROVED,
         ]);
+    }
+
+    /**
+     * @return array<string, InterestCategory>
+     */
+    private function buatKategoriRiasec(): array
+    {
+        $out = [];
+        foreach (['R', 'I', 'A', 'S', 'E', 'C'] as $i => $kode) {
+            $out[$kode] = InterestCategory::query()->create([
+                'kode' => $kode,
+                'nama' => InstrumentQuestion::RIASEC_CODES[$kode] ?? $kode,
+                'deskripsi' => "Deskripsi {$kode}",
+                'urutan' => $i + 1,
+                'is_active' => true,
+            ]);
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<string, InterestCategory>  $categories
+     * @return Collection<int, InstrumentQuestion>
+     */
+    private function buatSoalRiasec(array $categories): Collection
+    {
+        $options = InstrumentQuestion::TALENTS_LIKERT_OPTIONS;
+
+        return collect($categories)->values()->map(function (InterestCategory $category, int $index) use ($options) {
+            return InstrumentQuestion::query()->create([
+                'category' => InstrumentQuestion::CATEGORY_MINAT_BAKAT,
+                'interest_category_id' => $category->id,
+                'talent_code' => $category->kode,
+                'question' => "Soal RIASEC {$category->kode}-{$index}-".uniqid(),
+                'options' => $options,
+                'is_active' => true,
+                'jenjang_target' => 'semua',
+                'bobot' => 1,
+            ]);
+        });
     }
 
     /**

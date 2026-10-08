@@ -4,9 +4,11 @@
 @php
     $hasStrategiSections = $category === \App\Models\InstrumentQuestion::CATEGORY_GAYA_BELAJAR
         && $questions->contains(fn ($q) => $q->section !== null);
+    $useRiasecWizard = ! empty($useRiasecWizard);
+    $useTalentsLikert = ! empty($useTalentsLikert);
     $activeLabel = $categories[$category] ?? 'Instrumen';
     $categoryHints = [
-        \App\Models\InstrumentQuestion::CATEGORY_MINAT_KERJA => 'Eksplorasi minat dan kesiapan menuju dunia kerja.',
+        \App\Models\InstrumentQuestion::CATEGORY_MINAT_KERJA => 'Talents Mapping seperti referensi Yola: 99 kegiatan, skala 1–5, lalu Kode Minat Holland + rekomendasi karier.',
         \App\Models\InstrumentQuestion::CATEGORY_GAYA_BELAJAR => 'Tiga bagian: Perencanaan, Eksekusi, dan Refleksi belajar.',
         \App\Models\InstrumentQuestion::CATEGORY_KEPRIBADIAN => 'Gambaran singkat pola diri dalam situasi sehari-hari.',
         \App\Models\InstrumentQuestion::CATEGORY_ANGKET_MASALAH => 'Pemetaan area yang mungkin perlu didukung Guru BK.',
@@ -31,10 +33,13 @@
 
         <div class="bg-white p-6 dark:bg-slate-900">
             <x-alert type="success" :message="session('success')" />
+            @error('jenjang')
+                <x-alert class="mt-3" type="error" :message="$message" />
+            @enderror
 
             <div class="mt-1 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 text-sm leading-6 text-slate-700 dark:border-blue-900/40 dark:bg-blue-950/20 dark:text-slate-300">
                 <p class="font-semibold text-slate-950 dark:text-white">Mau lanjut kuliah?</p>
-                <p class="mt-1">Pakai asesmen Key (Talents Mapping / RIASEC) untuk Kode Minat Holland dan rekomendasi prodi PCR.</p>
+                <p class="mt-1">Pakai asesmen Key untuk Kode Minat yang sama, lalu rekomendasi program studi PCR.</p>
                 <a href="{{ route('siswa.minat-bakat.index') }}" class="mt-2 inline-flex text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300">
                     Buka Minat Bakat Kuliah →
                 </a>
@@ -69,9 +74,13 @@
                         </div>
                         <p class="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
                             @if($submission)
-                                {{ $submission->result_label }}
-                                @if($submission->percentage !== null)
-                                    ({{ number_format((float) $submission->percentage, 2) }}%)
+                                @if($value === \App\Models\InstrumentQuestion::CATEGORY_MINAT_KERJA && $submission->kode_minat)
+                                    Kode Minat: {{ $submission->kode_minat }}
+                                @else
+                                    {{ $submission->result_label }}
+                                    @if($submission->percentage !== null)
+                                        ({{ number_format((float) $submission->percentage, 2) }}%)
+                                    @endif
                                 @endif
                                 · {{ $submission->submitted_at?->format('d M Y') }}
                             @else
@@ -104,13 +113,34 @@
                     {{ $categoryHints[$category] ?? 'Jawab setiap soal sesuai kondisimu saat ini.' }}
                 </p>
             </div>
-            <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                {{ $questions->count() }} soal
-            </span>
+            @if(! $useRiasecWizard || $questions->isNotEmpty())
+                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    {{ $questions->count() }} soal
+                </span>
+            @endif
         </div>
 
-        @if($questions->isEmpty())
+        @if(! empty($jenjangBlocked) && $useTalentsLikert)
+            <x-empty-state title="Asesmen tidak tersedia" description="Asesmen Minat Bakat Kerja untuk siswa SMA/SMK." />
+        @elseif($questions->isEmpty())
             <x-empty-state title="Soal belum tersedia" description="Guru BK belum mengaktifkan soal untuk kategori ini." />
+        @elseif($useTalentsLikert)
+            @include('siswa.instruments.partials.talents-mapping-form', [
+                'questions' => $questions,
+                'category' => $category,
+                'jenjang' => $jenjang,
+                'submitLabel' => 'Kirim dan Lihat Skor',
+                'accent' => 'emerald',
+            ])
+        @elseif($useRiasecWizard)
+            @include('siswa.instruments.partials.minat-wizard', [
+                'questions' => $questions,
+                'oldAnswers' => $oldAnswers ?? collect(),
+                'category' => $category,
+                'jenjang' => $jenjang,
+                'needsJenjangChooser' => $needsJenjangChooser ?? false,
+                'track' => 'kerja',
+            ])
         @elseif($hasStrategiSections)
             @include('siswa.instruments.partials.strategi-belajar-form', [
                 'questions' => $questions,

@@ -1,4 +1,11 @@
 @php
+    $track = $track ?? 'kuliah';
+    $isKerja = $track === 'kerja';
+    $accentBg = $isKerja ? 'bg-emerald-600' : 'bg-blue-600';
+    $accentText = $isKerja ? 'text-emerald-700 dark:text-emerald-300' : 'text-blue-700 dark:text-blue-300';
+    $accentRing = $isKerja
+        ? 'border-emerald-500 ring-2 ring-emerald-100 dark:ring-emerald-900/50 text-emerald-800 dark:text-emerald-200'
+        : 'border-blue-500 ring-2 ring-blue-100 dark:ring-blue-900/50 text-blue-800 dark:text-blue-200';
     $questionPayload = $questions->values()->map(function ($q, $i) use ($oldAnswers) {
         return [
             'id' => $q->id,
@@ -28,23 +35,27 @@
 >
     <div x-show="step === 'intro'" x-cloak class="space-y-5">
         <x-section-title
-            title="Asesmen Minat Bakat"
-            description="Jawab sejujurnya: seberapa tertarik kamu pada tiap kegiatan. Tidak ada jawaban benar/salah."
+            :title="$isKerja ? 'Asesmen Minat Bakat Kerja' : 'Asesmen Minat Bakat Kuliah'"
+            :description="$isKerja
+                ? 'Talents Mapping untuk jalur kerja: jawab sejujurnya seberapa tertarik kamu pada tiap kegiatan.'
+                : 'Jawab sejujurnya: seberapa tertarik kamu pada tiap kegiatan. Tidak ada jawaban benar/salah.'"
         />
 
         <ol class="space-y-3 text-sm text-slate-600 dark:text-slate-300">
             <li class="flex gap-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-4">
-                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">1</span>
+                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full {{ $accentBg }} text-xs font-bold text-white">1</span>
                 <span>Isi <strong class="text-slate-900 dark:text-white" x-text="total"></strong> soal, satu per satu (skala Sangat tidak tertarik → Sangat tertarik).</span>
             </li>
             <li class="flex gap-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-4">
-                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">2</span>
+                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full {{ $accentBg }} text-xs font-bold text-white">2</span>
                 <span>Sistem menghitung skor per kategori minat dan membuat <strong class="text-slate-900 dark:text-white">Kode Minat</strong> (3 huruf teratas).</span>
             </li>
             <li class="flex gap-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-4">
-                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">3</span>
+                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full {{ $accentBg }} text-xs font-bold text-white">3</span>
                 <span>
-                    @if($jenjang === 'SMK')
+                    @if($isKerja)
+                        Kamu mendapat rekomendasi <strong class="text-slate-900 dark:text-white">bidang karier</strong> yang cocok untuk jalur kerja.
+                    @elseif($jenjang === 'SMK')
                         Kamu mendapat rekomendasi <strong class="text-slate-900 dark:text-white">bidang karier</strong> sesuai minat.
                     @else
                         Kamu mendapat rekomendasi <strong class="text-slate-900 dark:text-white">program studi PCR</strong> sesuai minat.
@@ -75,7 +86,7 @@
 
         <button
             type="button"
-            class="w-full rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+            class="w-full rounded-full {{ $accentBg }} px-6 py-3 text-sm font-semibold text-white shadow-lg {{ $isKerja ? 'shadow-emerald-500/20 hover:bg-emerald-500' : 'shadow-blue-500/20 hover:bg-blue-500' }} transition disabled:cursor-not-allowed disabled:opacity-50"
             x-on:click="start()"
             x-bind:disabled="requireJenjang && !jenjang"
         >
@@ -109,15 +120,17 @@
                 <p class="text-sm font-semibold text-slate-800 dark:text-slate-200">
                     Soal <span x-text="index + 1"></span> dari <span x-text="total"></span>
                 </p>
-                <p class="text-sm font-bold text-blue-700 dark:text-blue-300" x-text="answeredCount + '/' + total + ' terjawab'"></p>
+                <p class="text-sm font-bold {{ $accentText }}" x-text="answeredCount + '/' + total + ' terjawab'"></p>
             </div>
             <div class="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                <div class="h-full rounded-full bg-blue-600 transition-all duration-300" x-bind:style="'width:' + progress + '%'"></div>
+                <div class="h-full rounded-full {{ $accentBg }} transition-all duration-300" x-bind:style="'width:' + progress + '%'"></div>
             </div>
         </div>
 
         <div class="rounded-3xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-5 sm:p-6" x-show="current">
-            <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Minat Bakat</p>
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+                {{ $isKerja ? 'Minat Bakat Kerja' : 'Minat Bakat Kuliah' }}
+            </p>
             <p class="mt-2 text-lg font-semibold leading-8 text-slate-950 dark:text-white" x-text="currentText"></p>
 
             <div class="mt-5 grid gap-3">
@@ -126,13 +139,13 @@
                         type="button"
                         class="flex w-full items-center gap-3 rounded-2xl border bg-white p-4 text-left text-sm font-medium shadow-sm transition dark:bg-slate-900"
                         x-bind:class="isSelected(opt.index)
-                            ? 'border-blue-500 ring-2 ring-blue-100 dark:ring-blue-900/50 text-blue-800 dark:text-blue-200'
-                            : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-200 dark:hover:border-blue-800'"
+                            ? @js($accentRing)
+                            : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-emerald-200 dark:hover:border-emerald-800'"
                         x-on:click="select(opt.index)"
                     >
                         <span
                             class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold"
-                            x-bind:class="isSelected(opt.index) ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'"
+                            x-bind:class="isSelected(opt.index) ? @js($accentBg.' text-white') : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'"
                             x-text="opt.index + 1"
                         ></span>
                         <span x-text="opt.label"></span>
@@ -165,7 +178,7 @@
 
                 <button
                     type="submit"
-                    class="rounded-full bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    class="rounded-full {{ $accentBg }} px-6 py-2.5 text-sm font-semibold text-white shadow-lg {{ $isKerja ? 'shadow-emerald-500/20 hover:bg-emerald-500' : 'shadow-blue-500/20 hover:bg-blue-500' }} transition disabled:cursor-not-allowed disabled:opacity-50"
                     x-show="index === total - 1"
                     x-bind:disabled="!allAnswered"
                 >
