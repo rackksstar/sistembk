@@ -76,11 +76,10 @@ class ConsultationController extends Controller
             'upcomingWeek' => $upcomingWeek,
             'search' => $search,
             'kategori' => $kategori,
-            // Pilihan RPL individu untuk dikaitkan dengan laporan konseling.
-            'individualRpls' => Rpl::query()
-                ->with('classRoom:id,name')
+            // Pilihan RPL individu + kelompok untuk dikaitkan dengan laporan konseling.
+            'linkableRpls' => Rpl::query()
+                ->with(['classRoom:id,name', 'groupStudents:id,name'])
                 ->where('teacher_id', auth()->id())
-                ->where('type', Rpl::TYPE_INDIVIDU)
                 ->orderByDesc('id')
                 ->get(),
         ]);

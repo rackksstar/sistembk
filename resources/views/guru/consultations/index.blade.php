@@ -231,9 +231,20 @@
                     <input type="hidden" name="modal_consultation_id" value="{{ $consultation->id }}">
                     <select name="rpl_id" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm">
                         <option value="">Tidak dikaitkan dengan RPL</option>
-                        @foreach($individualRpls->where('student_id', $consultation->student_id) as $rpl)
+                        @php
+                            $linkableRpls = $linkableRpls->filter(function ($rpl) use ($consultation) {
+                                if ($rpl->type === \App\Models\Rpl::TYPE_INDIVIDU) {
+                                    return (int) $rpl->student_id === (int) $consultation->student_id;
+                                }
+                                // Kelompok: cocok lewat kelas siswa atau keanggotaan kelompok.
+                                $studentClassId = (int) ($consultation->student?->class_id ?? 0);
+                                return ($studentClassId > 0 && (int) $rpl->class_id === $studentClassId)
+                                    || $rpl->groupStudents->contains('id', $consultation->student_id);
+                            });
+                        @endphp
+                        @foreach($linkableRpls as $rpl)
                             <option value="{{ $rpl->id }}" @selected((string) old('rpl_id', $consultation->rpl_id) === (string) $rpl->id)>
-                                {{ $rpl->title }} - {{ $rpl->classRoom?->name ?? 'Tanpa kelas' }}
+                                [{{ $rpl->typeLabel() }}] {{ $rpl->title }} - {{ $rpl->classRoom?->name ?? 'Tanpa kelas' }}
                             </option>
                         @endforeach
                     </select>

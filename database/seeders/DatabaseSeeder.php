@@ -47,6 +47,7 @@ class DatabaseSeeder extends Seeder
             ['level' => 'XI']
         );
 
+        // --- SMA ---
         $sekolah = Sekolah::query()->updateOrCreate(
             ['nama' => 'SMA Negeri 1 Contoh'],
             [
@@ -59,10 +60,52 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $kelasXii = Kelas::query()->updateOrCreate(
+        $kelasXiiIpa = Kelas::query()->updateOrCreate(
             ['sekolah_id' => $sekolah->id, 'nama' => 'XII IPA 1'],
             [
                 'jenjang' => 'SMA',
+                'tingkatan' => 'XII',
+            ]
+        );
+
+        $kelasXiIps = Kelas::query()->updateOrCreate(
+            ['sekolah_id' => $sekolah->id, 'nama' => 'XI IPS 2'],
+            [
+                'jenjang' => 'SMA',
+                'tingkatan' => 'XI',
+            ]
+        );
+
+        // --- SMK ---
+        $schoolSmk = School::query()->updateOrCreate(
+            ['npsn' => '20260002'],
+            [
+                'name' => 'SMK Negeri 1 Contoh',
+                'address' => 'Jl. Pendidikan No. 10',
+            ]
+        );
+
+        $classSmkRpl = SchoolClass::query()->updateOrCreate(
+            ['school_id' => $schoolSmk->id, 'name' => 'XII RPL 1'],
+            ['level' => 'XII']
+        );
+
+        $sekolahSmk = Sekolah::query()->updateOrCreate(
+            ['nama' => 'SMK Negeri 1 Contoh'],
+            [
+                'npsn' => '20260002',
+                'alamat' => 'Jl. Pendidikan No. 10',
+                'is_mou' => true,
+                'paket_aktif' => 'Basic',
+                'tanggal_aktivasi' => now()->toDateString(),
+                'is_active' => true,
+            ]
+        );
+
+        $kelasXiiRpl = Kelas::query()->updateOrCreate(
+            ['sekolah_id' => $sekolahSmk->id, 'nama' => 'XII RPL 1'],
+            [
+                'jenjang' => 'SMK',
                 'tingkatan' => 'XII',
             ]
         );
@@ -80,13 +123,14 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Admin SMK — pemisahan akun per jenjang (SMA vs SMK).
         User::query()->updateOrCreate(
             ['email' => 'admin.demo@bk.test'],
             [
                 'name' => 'Admin Demo',
                 'password' => Hash::make('password'),
-                'school' => $school->name,
-                'school_id' => $school->id,
+                'school' => $schoolSmk->name,
+                'school_id' => $schoolSmk->id,
                 'role' => User::ROLE_ADMIN,
                 'status' => User::STATUS_APPROVED,
                 'email_verified_at' => now(),
@@ -138,8 +182,8 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Pak Dimas Guru Pending',
                 'email' => null,
                 'password' => Hash::make('password'),
-                'school' => $school->name,
-                'school_id' => $school->id,
+                'school' => $schoolSmk->name,
+                'school_id' => $schoolSmk->id,
                 'role' => User::ROLE_GURU,
                 'status' => User::STATUS_PENDING,
                 'email_verified_at' => null,
@@ -149,11 +193,39 @@ class DatabaseSeeder extends Seeder
         GuruBk::query()->updateOrCreate(
             ['user_id' => $pendingGuru->id],
             [
-                'sekolah_id' => $sekolah->id,
+                'sekolah_id' => $sekolahSmk->id,
                 'no_hp' => '081234567891',
                 'nip' => '1987654321002',
                 'jabatan' => 'Guru BK',
                 'bidang_studi' => 'Bimbingan Konseling',
+            ]
+        );
+
+        // Siswa SMK (XII RPL 1)
+        $siswaSmkUser = User::query()->updateOrCreate(
+            ['email' => 'siswa.smk@bk.test'],
+            [
+                'name' => 'Rina SMK',
+                'password' => Hash::make('password'),
+                'school' => $schoolSmk->name,
+                'school_id' => $schoolSmk->id,
+                'class_id' => $classSmkRpl->id,
+                'role' => User::ROLE_SISWA,
+                'status' => User::STATUS_APPROVED,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $studentProfileSmk = Student::query()->updateOrCreate(
+            ['nisn' => '0061234601'],
+            [
+                'user_id' => $siswaSmkUser->id,
+                'kelas_id' => $kelasXiiRpl->id,
+                'name' => $siswaSmkUser->name,
+                'birth_date' => '2008-04-12',
+                'school' => $sekolahSmk->nama,
+                'jenis_kelamin' => 'P',
+                'status_biodata' => 'lengkap',
             ]
         );
 
@@ -210,34 +282,38 @@ class DatabaseSeeder extends Seeder
             ['nisn' => '0061234567'],
             [
                 'user_id' => $siswa->id,
-                'kelas_id' => $kelasXii->id,
+                'kelas_id' => $kelasXiiIpa->id,
                 'name' => $siswa->name,
                 'birth_date' => '2008-05-14',
-                'school' => $school->name,
+                'school' => $sekolah->nama,
                 'jenis_kelamin' => 'L',
                 'status_biodata' => 'lengkap',
             ]
         );
 
         SiswaSmk::query()->updateOrCreate(
-            ['student_id' => $studentProfile->id],
+            ['student_id' => $studentProfileSmk->id],
             [
-                'user_id' => $siswa->id,
-                'name' => $studentProfile->name,
-                'nisn' => $studentProfile->nisn,
-                'sekolah' => 'SMK Negeri 1 Contoh',
+                'user_id' => $siswaSmkUser->id,
+                'name' => $studentProfileSmk->name,
+                'nisn' => $studentProfileSmk->nisn,
+                'sekolah' => $sekolahSmk->nama,
                 'jurusan' => 'Rekayasa Perangkat Lunak',
-                'kelas' => 'XII RPL 1',
+                'kelas' => $kelasXiiRpl->nama,
                 'tahun_lulus' => now()->year,
                 'nomor_hp' => '081234567899',
-                'email' => $siswa->email,
+                'email' => $siswaSmkUser->email,
                 'alamat' => 'Jl. Pendidikan No. 10',
                 'keahlian' => ['HTML', 'CSS', 'Laravel', 'UI dasar'],
-                'pengalaman' => 'Pernah membuat aplikasi pencatatan sederhana untuk tugas akhir sekolah.',
+                'pengalaman' => 'Pernah membuat aplikasi pencatatan sederhana.',
                 'status_kerja' => 'mencari_kerja',
                 'siap_dihubungi' => true,
             ]
         );
+
+        // Pemisahan SMA/SMK: profil pencari kerja SMK (SiswaSmk) hanya untuk
+        // siswa SMK. Hapus bila sebelumnya sempat dibuat untuk siswa SMA.
+        SiswaSmk::query()->where('student_id', $studentProfile->id)->delete();
 
         $guidanceClass = GuidanceClass::query()->updateOrCreate(
             ['name' => 'Kelas Bimbingan Karier XII'],
@@ -277,7 +353,7 @@ class DatabaseSeeder extends Seeder
                 ['nisn' => $item['nisn']],
                 [
                     'user_id' => $studentUser->id,
-                    'kelas_id' => $kelasXii->id,
+                    'kelas_id' => ($index < 2 ? $kelasXiiIpa : $kelasXiIps)->id,
                     'name' => $studentUser->name,
                     'birth_date' => $item['birth_date'],
                     'school' => $school->name,
@@ -585,10 +661,12 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        Rpl::query()->updateOrCreate(
+        $rplIndividu = Rpl::query()->updateOrCreate(
             ['teacher_id' => $guru->id, 'title' => 'RPL Individu Manajemen Waktu Belajar'],
             [
                 'type' => Rpl::TYPE_INDIVIDU,
+                'class_id' => $classXiiIpa->id,
+                'student_id' => $siswa->id,
                 'service_date' => now()->addWeek()->toDateString(),
                 'target' => 'Andi Siswa',
                 'tujuan' => 'Siswa mampu mengenali hambatan manajemen waktu dan menyusun jadwal belajar realistis.',
@@ -624,10 +702,11 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        Rpl::query()->updateOrCreate(
+        $rplKelompok = Rpl::query()->updateOrCreate(
             ['teacher_id' => $guru->id, 'title' => 'RPL Kelompok Komunikasi Asertif'],
             [
                 'type' => Rpl::TYPE_KELOMPOK,
+                'class_id' => $classXiiIpa->id,
                 'service_date' => now()->addWeeks(2)->toDateString(),
                 'target' => 'Kelompok siswa kelas bimbingan karier',
                 'tujuan' => 'Siswa mampu menyampaikan pendapat secara jelas, sopan, dan menghargai orang lain.',
@@ -637,12 +716,23 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Anggota kelompok demo: Alya + Bima (kelas XII IPA 1).
+        $rplKelompok->groupStudents()->sync(
+            $studentUsers->slice(1, 2)->pluck('id')->all()
+        );
+
+        unset($rplIndividu);
+
+        // Akun demo tambahan bergantian SMA/SMK agar terpisah per jenjang.
         User::factory()
             ->count(6)
             ->sequence(
-                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED],
-                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED],
-                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED],
+                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED, 'school' => $school->name, 'school_id' => $school->id, 'class_id' => $classXiiIpa->id],
+                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED, 'school' => $schoolSmk->name, 'school_id' => $schoolSmk->id, 'class_id' => $classSmkRpl->id],
+                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED, 'school' => $school->name, 'school_id' => $school->id, 'class_id' => $classXiIps->id],
+                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED, 'school' => $schoolSmk->name, 'school_id' => $schoolSmk->id, 'class_id' => $classSmkRpl->id],
+                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED, 'school' => $school->name, 'school_id' => $school->id, 'class_id' => $classXiIps->id],
+                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED, 'school' => $schoolSmk->name, 'school_id' => $schoolSmk->id, 'class_id' => $classSmkRpl->id],
             )
             ->create();
 

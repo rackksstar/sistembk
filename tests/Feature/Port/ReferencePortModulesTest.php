@@ -227,25 +227,43 @@ class ReferencePortModulesTest extends TestCase
             ]);
     }
 
-    public function test_halaman_laporan_konseling_memuat_pilihan_rpl_individu(): void
+    public function test_halaman_laporan_konseling_memuat_pilihan_rpl_individu_dan_kelompok(): void
     {
         [$guru, $student, $kelas] = $this->buatGuruDanSiswaTerhubung();
+        $siswaUser = $student->user;
+        $siswaUser->forceFill(['class_id' => $this->buatSchoolClass()->id])->save();
+        $siswaUser->refresh();
 
         $this->buatConsultationRequest($guru, $student, ConsultationRequest::STATUS_PENDING);
 
         Rpl::query()->create($this->payloadRpl([
             'type' => Rpl::TYPE_INDIVIDU,
-            'class_id' => SchoolClass::query()->first()?->id ?? $this->buatSchoolClass()->id,
-            'student_id' => $student->id,
+            'title' => 'RPL Individu Demo',
+            'class_id' => $siswaUser->class_id,
+            'student_id' => $siswaUser->id,
             'meeting_number' => 1,
             'duration_minutes' => 45,
             'location' => 'Ruang BK',
         ]) + ['teacher_id' => $guru->id]);
 
-        $this->actingAs($guru)
-            ->get(route('guru.consultations.index'))
-            ->assertOk()
-            ->assertViewHas('individualRpls');
+        $rplKelompok = Rpl::query()->create($this->payloadRpl([
+            'type' => Rpl::TYPE_KELOMPOK,
+            'title' => 'RPL Kelompok Demo',
+            'class_id' => $siswaUser->class_id,
+            'student_id' => null,
+            'meeting_number' => 1,
+            'duration_minutes' => 90,
+            'location' => 'Ruang BK',
+        ]) + ['teacher_id' => $guru->id]);
+        $rplKelompok->groupStudents()->sync([$siswaUser->id]);
+
+        $response = $this->actingAs($guru)->get(route('guru.consultations.index'));
+
+        $response->assertOk()->assertViewHas('linkableRpls');
+        $this->assertTrue($response->viewData('linkableRpls')->pluck('id')->contains($rplKelompok->id));
+        // RPL kelompok yang cocok dengan kelas siswa ikut dirender sebagai opsi.
+        $response->assertSee('RPL Kelompok Demo', false);
+        $response->assertSee('RPL Individu Demo', false);
     }
 
     // ------------------------------------------------------------------
