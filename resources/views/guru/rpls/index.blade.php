@@ -60,7 +60,20 @@
                         </p>
                         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
                             {{ $rpl->service_date?->format('d M Y') ?: 'Tanggal fleksibel' }}
+                            @if ($rpl->meeting_number)
+                                · Pertemuan ke-{{ $rpl->meeting_number }}
+                            @endif
+                            @if ($rpl->duration_minutes)
+                                · {{ $rpl->duration_minutes }} menit
+                            @endif
                         </p>
+                        @if ($rpl->location || $rpl->topik_permasalahan)
+                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                                {{ $rpl->location ? 'Tempat: '.$rpl->location : '' }}
+                                {{ $rpl->location && $rpl->topik_permasalahan ? ' · ' : '' }}
+                                {{ $rpl->topik_permasalahan ? 'Topik: '.$rpl->topik_permasalahan : '' }}
+                            </p>
+                        @endif
                     </div>
                     <div class="flex gap-2">
                         <a href="{{ route('guru.rpls.print', $rpl) }}" target="_blank" class="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white">Cetak PDF</a>

@@ -4,7 +4,7 @@
 <div class="space-y-6" x-data="{ createOpen: {{ $errors->any() ? 'true' : 'false' }}, editOpen: null }">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <x-section-title title="Jurnal Bulanan BK" description="Catat rekap layanan bulanan dan export ke PDF." />
+            <x-section-title title="Jurnal Bulanan BK" description="Catat entri layanan BK per hari, rekap per bulan, dan export ke PDF." />
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <form method="GET" class="flex flex-col gap-3 sm:flex-row sm:items-center">
                     <label for="year" class="sr-only">Filter Tahun</label>
@@ -37,7 +37,9 @@
                             <div>
                                 <p class="text-xs font-bold uppercase tracking-[0.18em] text-blue-600 dark:text-blue-300">{{ $journal->periodLabel() }}</p>
                                 <h3 class="mt-2 text-lg font-bold text-slate-950 dark:text-white">{{ $journal->title }}</h3>
-                                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">Individu {{ $journal->individual_services }} | Kelompok {{ $journal->group_services }} | Klasikal {{ $journal->classical_services }}</p>
+                                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ $journal->entryDate()?->translatedFormat('l, d M Y') ?? '-' }} · {{ $journal->serviceTypeLabel() }} · {{ $journal->caseCategoryLabel() }}</p>
+                                <p class="mt-1 text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-300">Sasaran: {{ $journal->targetTypeLabel() }} - {{ $journal->target_name ?: '-' }}</p>
+                                <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Individu {{ $journal->individual_services }} | Kelompok {{ $journal->group_services }} | Klasikal {{ $journal->classical_services }}</p>
                             </div>
                             <div class="flex gap-2">
                                 <a href="{{ route('guru.journals.print', $journal) }}" target="_blank" class="rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white dark:bg-slate-100 dark:text-slate-900">PDF</a>
@@ -63,7 +65,7 @@
 
     <div x-show="createOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
         <div x-on:click.outside="createOpen = false" class="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
-            <x-section-title title="Tambah Jurnal" description="Rekap layanan dalam satu bulan." />
+            <x-section-title title="Tambah Entri Jurnal" description="Catat satu kegiatan layanan BK pada tanggal tertentu." />
             <form method="POST" action="{{ route('guru.journals.store') }}" class="mt-6">
                 @csrf
                 @include('guru.journals.partials.form', ['journal' => null, 'submit' => 'Simpan Jurnal'])

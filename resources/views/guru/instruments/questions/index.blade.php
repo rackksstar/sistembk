@@ -74,7 +74,19 @@
                     @forelse($questions as $question)
                         <tr>
                             <td class="px-5 py-4 font-semibold text-slate-900 dark:text-slate-100">{{ $question->categoryLabel() }}</td>
-                            <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $question->question }}</td>
+                            <td class="px-5 py-4 text-slate-600 dark:text-slate-400">
+                                {{ $question->question }}
+                                @if($question->category === \App\Models\InstrumentQuestion::CATEGORY_KEPRIBADIAN
+                                    && count($question->options ?? []) === 2
+                                    && \App\Support\Mbti::optionHasPole($question->options[0]))
+                                    @php($mbtiPoles = array_column($question->options, 'pole'))
+                                    <span class="mt-1 block text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-300">
+                                        Dimensi {{ \App\Support\Mbti::axisForPole($mbtiPoles[0]) }} · {{ $question->options[0]['label'] }} vs {{ $question->options[1]['label'] ?? '' }}
+                                    </span>
+                                @elseif(($question->options ?? []) === [])
+                                    <span class="text-slate-400">—</span>
+                                @endif
+                            </td>
                             <td class="px-5 py-4 text-slate-600 dark:text-slate-400">
                                 @if($question->category === \App\Models\InstrumentQuestion::CATEGORY_MINAT_BAKAT)
                                     @if($question->interestCategory)

@@ -11,6 +11,7 @@ use App\Services\Minat\InterestResult;
 use App\Services\Minat\InterestScoringService;
 use App\Services\Minat\RecommendationService;
 use App\Support\ActivityLogger;
+use App\Support\Mbti;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -216,16 +217,30 @@ class InstrumentSubmissionController extends Controller
         }
 
         $submission = DB::transaction(function () use ($validated, $questions) {
+            $isKepribadian = $validated['category'] === InstrumentQuestion::CATEGORY_KEPRIBADIAN;
             $totalScore = 0;
             $answerRows = [];
+            $poles = [];
 
             foreach ($validated['answers'] as $questionId => $optionIndex) {
                 $question = $questions[(int) $questionId];
                 $options = array_values($question->options ?? []);
                 $option = $options[(int) $optionIndex] ?? null;
 
-                if (! $option) {
+                // Tes MBTI: setiap opsi wajib membawa huruf kutub (E/I/S/N/T/F/J/P).
+                if (! $option || ($isKepribadian && empty($option['pole']))) {
                     abort(422, 'Pilihan jawaban tidak valid.');
+                }
+
+                if ($isKepribadian) {
+                    $poles[] = $option['pole'];
+                    $answerRows[] = new InstrumentAnswer([
+                        'instrument_question_id' => $question->id,
+                        'answer_label' => $option['label'] ?? '',
+                        'score' => 0,
+                    ]);
+
+                    continue;
                 }
 
                 $score = (int) $option['score'];
@@ -235,6 +250,29 @@ class InstrumentSubmissionController extends Controller
                     'answer_label' => $option['label'] ?? '',
                     'score' => $score,
                 ]);
+            }
+
+            if ($isKepribadian) {
+                $mbti = Mbti::score($poles);
+
+                $submission = InstrumentSubmission::create([
+                    'student_id' => auth()->id(),
+                    'category' => $validated['category'],
+                    'total_score' => count($poles),
+                    'percentage' => $mbti['confidence'],
+                    'category_scores' => [
+                        'code' => $mbti['code'],
+                        'type' => $mbti['type'],
+                        'tally' => $mbti['tally'],
+                    ],
+                    'result_label' => $mbti['code'].' — '.$mbti['type']['name'],
+                    'result_description' => $mbti['type']['description'],
+                    'submitted_at' => now(),
+                ]);
+
+                $submission->answers()->saveMany($answerRows);
+
+                return $submission;
             }
 
             $maxPerQuestion = $questions->max(function (InstrumentQuestion $question) {

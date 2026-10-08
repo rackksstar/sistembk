@@ -60,6 +60,18 @@ class User extends Authenticatable
         return $this->status === self::STATUS_APPROVED;
     }
 
+    /**
+     * Nama disamarkan jadi inisial ("Budi Santoso" → "B.S.") untuk dokumen
+     * cetak yang memuat identitas siswa (RPL, laporan konseling).
+     */
+    public function maskedName(): string
+    {
+        return collect(preg_split('/\s+/', trim((string) $this->name)))
+            ->filter()
+            ->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)).'.')
+            ->implode('');
+    }
+
     public function studentProfile(): HasOne
     {
         return $this->hasOne(Student::class);

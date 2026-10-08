@@ -7,6 +7,23 @@
         ['label' => 'Sesuai', 'score' => 4],
         ['label' => 'Sangat Sesuai', 'score' => 5],
     ];
+    $mbtiAxes = $mbtiAxes ?? \App\Support\Mbti::AXES;
+    $isKepribadianForm = old('category', $question?->category) === \App\Models\InstrumentQuestion::CATEGORY_KEPRIBADIAN;
+
+    // Kutub yang sudah dipakai soal ini (format MBTI), untuk memilih ulang dimensi.
+    $existingPoles = $question?->category === \App\Models\InstrumentQuestion::CATEGORY_KEPRIBADIAN
+        ? array_column($question->options ?? [], 'pole')
+        : [];
+    $existingAxis = null;
+    foreach ($mbtiAxes as $axisKey => $letters) {
+        if (array_intersect(array_keys($letters), $existingPoles)) {
+            $existingAxis = $axisKey;
+            break;
+        }
+    }
+    $selectedAxis = old('mbti_axis', $existingAxis ?? array_key_first($mbtiAxes));
+    $mbtiLabels = old('mbti_options', $existingPoles !== [] ? array_column($question->options, 'label') : ['', '']);
+
     $defaultOptions = (($module ?? 'yola') === 'key')
         ? \App\Models\InstrumentQuestion::TALENTS_LIKERT_OPTIONS
         : $yolaLikert;
@@ -32,12 +49,22 @@
         jenjangTarget: @js(old('jenjang_target', $question?->jenjang_target ?? 'semua')),
         bobot: @js((int) old('bobot', $question?->bobot ?? 1)),
         options: @js($initialOptions),
+        axis: @js($selectedAxis),
+        axes: @js($mbtiAxes),
         likertTemplate: @js($defaultOptions),
         get isMinatBakat() {
             return this.category === 'minat_bakat';
         },
+        get isKepribadian() {
+            return this.category === 'kepribadian';
+        },
         get isStrategiBelajar() {
             return this.category === 'gaya_belajar';
+        },
+        poleLabel(index) {
+            const letters = Object.keys(this.axes[this.axis] || {});
+            const names = Object.values(this.axes[this.axis] || {});
+            return letters[index] ? (names[index] + ' (' + letters[index] + ')') : '';
         },
         get interestCategoryId() {
             const match = this.interestCategories.find((item) => item.kode === this.talentCode);
@@ -72,6 +99,7 @@
             });
             this.$watch('isMinatBakat', refresh);
             this.$watch('isStrategiBelajar', refresh);
+            this.$watch('isKepribadian', refresh);
             refresh();
         },
     }"
@@ -84,6 +112,7 @@
                 <option value="{{ $value }}">{{ $label }}</option>
             @endforeach
         </x-form-select>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Kategori "Kepribadian" memakai format tes MBTI (pilihan paksa dua kutub), kategori lain memakai skor Likert seperti biasa.</p>
     </div>
 
     <div class="space-y-2">
@@ -155,7 +184,36 @@
         </div>
     </div>
 
-    <div class="space-y-3">
+    <div x-show="isKepribadian" x-cloak class="space-y-3 rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50/60 dark:bg-blue-950/30 p-4">
+        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Format Tes MBTI</p>
+        <p class="text-xs text-slate-600 dark:text-slate-400">Pilih dimensi kepribadian, lalu tulis satu pernyataan untuk tiap kutubnya. Siswa memilih salah satu pernyataan yang paling sesuai dengan dirinya, dan sistem menyusun kode 4 huruf (mis. INFP).</p>
+
+        <div class="space-y-2">
+            <x-input-label value="Dimensi kepribadian" />
+            <x-form-select name="mbti_axis" x-model="axis" x-bind:required="isKepribadian">
+                @foreach($mbtiAxes as $axisKey => $letters)
+                    <option value="{{ $axisKey }}" @selected($selectedAxis === $axisKey)>
+                        {{ implode(' vs ', array_map(fn ($name, $letter) => "{$name} ({$letter})", $letters, array_keys($letters))) }}
+                    </option>
+                @endforeach
+            </x-form-select>
+            <x-input-error :messages="$errors->get('mbti_axis')" />
+        </div>
+
+        <div class="space-y-2">
+            <x-input-label x-text="'Pernyataan untuk kutub ' + poleLabel(0)" />
+            <x-text-input name="mbti_options[0]" value="{{ $mbtiLabels[0] ?? '' }}" x-bind:required="isKepribadian" placeholder="Contoh: Saya senang berbicara di depan banyak orang" />
+            <x-input-error :messages="$errors->get('mbti_options.0')" />
+        </div>
+
+        <div class="space-y-2">
+            <x-input-label x-text="'Pernyataan untuk kutub ' + poleLabel(1)" />
+            <x-text-input name="mbti_options[1]" value="{{ $mbtiLabels[1] ?? '' }}" x-bind:required="isKepribadian" placeholder="Contoh: Saya lebih suka menulis daripada berbicara" />
+            <x-input-error :messages="$errors->get('mbti_options.1')" />
+        </div>
+    </div>
+
+    <div x-show="!isKepribadian" x-cloak class="space-y-3">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Pilihan Jawaban dan Skor</p>
             <div class="flex flex-wrap gap-2">
@@ -183,7 +241,7 @@
                     type="text"
                     x-bind:name="`options[${index}][label]`"
                     x-model="option.label"
-                    required
+                    x-bind:required="!isKepribadian"
                     placeholder="Label jawaban"
                     class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 shadow-xs focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50"
                 >
@@ -193,7 +251,7 @@
                     max="100"
                     x-bind:name="`options[${index}][score]`"
                     x-model.number="option.score"
-                    required
+                    x-bind:required="!isKepribadian"
                     placeholder="Skor"
                     class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 shadow-xs focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50"
                 >

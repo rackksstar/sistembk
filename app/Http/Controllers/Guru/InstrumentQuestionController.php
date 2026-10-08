@@ -8,6 +8,7 @@ use App\Http\Requests\Guru\UpdateInstrumentQuestionRequest;
 use App\Models\InstrumentQuestion;
 use App\Models\InterestCategory;
 use App\Support\ActivityLogger;
+use App\Support\Mbti;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -75,6 +76,7 @@ class InstrumentQuestionController extends Controller
             'interest_category_id' => $interestCategoryId,
             'jenjang_target' => $jenjangTarget,
             'jenjangTargets' => InstrumentQuestion::JENJANG_TARGETS,
+            'mbtiAxes' => Mbti::AXES,
         ]);
     }
 

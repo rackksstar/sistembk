@@ -7,6 +7,8 @@ use App\Models\MonthlyJournal;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class MonthlyJournalController extends Controller
@@ -25,8 +27,8 @@ class MonthlyJournalController extends Controller
         $journals = MonthlyJournal::query()
             ->where('teacher_id', auth()->id())
             ->when($year, fn ($query) => $query->where('year', $year))
-            ->latest('year')
-            ->latest('month')
+            ->orderByDesc('entry_date')
+            ->orderByDesc('id')
             ->paginate(10)
             ->appends($request->only('year'));
 
@@ -37,20 +39,17 @@ class MonthlyJournalController extends Controller
         return view('guru.journals.index', compact('journals', 'years', 'year', 'groupedJournals'));
     }
 
+    /**
+     * Satu entri layanan = satu baris baru. month/year ikut dihitung dari
+     * entry_date sehingga satu bulan boleh memuat banyak entri.
+     */
     public function store(Request $request): RedirectResponse
     {
         $data = $this->validatedData($request);
 
-        MonthlyJournal::updateOrCreate(
-            [
-                'teacher_id' => auth()->id(),
-                'month' => $data['month'],
-                'year' => $data['year'],
-            ],
-            $data + ['teacher_id' => auth()->id()]
-        );
+        MonthlyJournal::create($data + ['teacher_id' => auth()->id()]);
 
-        return back()->with('success', 'Jurnal bulanan BK berhasil disimpan.');
+        return back()->with('success', 'Entri jurnal BK berhasil disimpan.');
     }
 
     public function update(Request $request, MonthlyJournal $journal): RedirectResponse
@@ -59,7 +58,7 @@ class MonthlyJournalController extends Controller
 
         $journal->update($this->validatedData($request));
 
-        return back()->with('success', 'Jurnal bulanan BK berhasil diperbarui.');
+        return back()->with('success', 'Entri jurnal BK berhasil diperbarui.');
     }
 
     public function destroy(MonthlyJournal $journal): RedirectResponse
@@ -68,7 +67,7 @@ class MonthlyJournalController extends Controller
 
         $journal->delete();
 
-        return back()->with('success', 'Jurnal bulanan BK berhasil dihapus.');
+        return back()->with('success', 'Entri jurnal BK berhasil dihapus.');
     }
 
     public function print(MonthlyJournal $journal)
@@ -84,16 +83,26 @@ class MonthlyJournalController extends Controller
 
     private function validatedData(Request $request): array
     {
-        return $request->validate([
-            'month' => ['required', 'integer', 'between:1,12'],
-            'year' => ['required', 'integer', 'between:2020,2100'],
+        $validated = $request->validate([
+            'entry_date' => ['required', 'date'],
             'title' => ['required', 'string', 'max:255'],
+            'service_type' => ['required', Rule::in(array_keys(MonthlyJournal::SERVICE_TYPES))],
+            'case_category' => ['required', Rule::in(array_keys(\App\Models\ConsultationRequest::CASE_CATEGORIES))],
+            'target_type' => ['required', Rule::in(array_keys(MonthlyJournal::TARGET_TYPES))],
+            'target_name' => ['required', 'string', 'max:255'],
             'individual_services' => ['required', 'integer', 'min:0'],
             'group_services' => ['required', 'integer', 'min:0'],
             'classical_services' => ['required', 'integer', 'min:0'],
             'summary' => ['required', 'string', 'max:5000'],
+            'outcome' => ['nullable', 'string', 'max:5000'],
             'evaluation' => ['nullable', 'string', 'max:5000'],
             'follow_up' => ['nullable', 'string', 'max:5000'],
         ]);
+
+        $entryDate = Carbon::parse($validated['entry_date']);
+        $validated['month'] = $entryDate->month;
+        $validated['year'] = $entryDate->year;
+
+        return $validated;
     }
 }

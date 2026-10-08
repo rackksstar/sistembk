@@ -4,6 +4,7 @@ namespace App\Http\Requests\Guru\Concerns;
 
 use App\Models\InstrumentQuestion;
 use App\Models\InterestCategory;
+use App\Support\Mbti;
 use Illuminate\Validation\Rule;
 
 trait ValidatesInstrumentQuestion
@@ -56,8 +57,9 @@ trait ValidatesInstrumentQuestion
     public function rules(): array
     {
         $strategiSections = array_keys(InstrumentQuestion::SECTIONS[InstrumentQuestion::CATEGORY_GAYA_BELAJAR] ?? []);
+        $isKepribadian = $this->input('category') === InstrumentQuestion::CATEGORY_KEPRIBADIAN;
 
-        return [
+        $rules = [
             'category' => ['required', Rule::in(array_keys(InstrumentQuestion::CATEGORIES))],
             'question' => ['required', 'string', 'max:1000'],
             'is_active' => ['nullable', 'boolean'],
@@ -86,10 +88,22 @@ trait ValidatesInstrumentQuestion
             ],
             'jenjang_target' => ['nullable', Rule::in(InstrumentQuestion::JENJANG_TARGETS)],
             'bobot' => ['nullable', 'integer', 'min:1', 'max:5'],
-            'options' => ['required', 'array', 'min:2', 'max:6'],
-            'options.*.label' => ['required', 'string', 'max:255'],
-            'options.*.score' => ['required', 'integer', 'min:0', 'max:100'],
         ];
+
+        if ($isKepribadian) {
+            // Tes MBTI: dua kutub berlawanan, tanpa skor.
+            $rules['mbti_axis'] = ['required', Rule::in(array_keys(Mbti::AXES))];
+            $rules['mbti_options'] = ['required', 'array', 'size:2'];
+            $rules['mbti_options.*'] = ['required', 'string', 'max:255'];
+
+            return $rules;
+        }
+
+        $rules['options'] = ['required', 'array', 'min:2', 'max:6'];
+        $rules['options.*.label'] = ['required', 'string', 'max:255'];
+        $rules['options.*.score'] = ['required', 'integer', 'min:0', 'max:100'];
+
+        return $rules;
     }
 
     public function messages(): array
@@ -106,6 +120,12 @@ trait ValidatesInstrumentQuestion
             'interest_category_id.required_if' => 'Kategori minat wajib dipilih untuk soal Minat Bakat Kuliah.',
             'interest_category_id.exists' => 'Kategori minat tidak ditemukan atau tidak aktif.',
             'jenjang_target.in' => 'Target jenjang harus semua, SMA, atau SMK.',
+            'mbti_axis.required' => 'Dimensi kepribadian MBTI wajib dipilih.',
+            'mbti_axis.in' => 'Dimensi kepribadian MBTI tidak valid.',
+            'mbti_options.required' => 'Pernyataan untuk kedua kutub wajib diisi.',
+            'mbti_options.size' => 'Tes MBTI harus berisi tepat 2 pernyataan (satu untuk tiap kutub).',
+            'mbti_options.*.required' => 'Pernyataan kutub wajib diisi.',
+            'mbti_options.*.max' => 'Pernyataan kutub maksimal 255 karakter.',
             'bobot.integer' => 'Bobot harus berupa angka.',
             'bobot.min' => 'Bobot minimal 1.',
             'bobot.max' => 'Bobot maksimal 5.',
@@ -139,7 +159,23 @@ trait ValidatesInstrumentQuestion
             $validated['section'] = null;
         }
 
-        $validated['options'] = collect($validated['options'])
+        if (($validated['category'] ?? null) === InstrumentQuestion::CATEGORY_KEPRIBADIAN) {
+            $poles = array_keys(Mbti::AXES[$validated['mbti_axis']]);
+
+            // Disimpan tanpa 'score': penskoran MBTI memakai huruf kutub.
+            $validated['options'] = [
+                ['label' => $validated['mbti_options'][0], 'pole' => $poles[0]],
+                ['label' => $validated['mbti_options'][1], 'pole' => $poles[1]],
+            ];
+
+            unset($validated['mbti_axis'], $validated['mbti_options']);
+
+            return $validated;
+        }
+
+        unset($validated['mbti_axis'], $validated['mbti_options']);
+
+        $validated['options'] = collect($validated['options'] ?? [])
             ->map(fn (array $option) => [
                 'label' => $option['label'],
                 'score' => (int) $option['score'],

@@ -37,6 +37,11 @@ class Rpl extends Model
         'semester',
         'year',
         'service_date',
+        'meeting_number',
+        'duration_minutes',
+        'topik_permasalahan',
+        'location',
+        'media',
         'target',
         'tujuan',
         'materi',
@@ -50,6 +55,8 @@ class Rpl extends Model
             'service_date' => 'date',
             'semester' => 'integer',
             'year' => 'integer',
+            'meeting_number' => 'integer',
+            'duration_minutes' => 'integer',
         ];
     }
 
@@ -103,5 +110,32 @@ class Rpl extends Model
         return $this->teacher?->schoolModel?->name
             ?? $this->teacher?->school
             ?? 'Sekolah Tidak Diketahui';
+    }
+
+    public function dayDateLabel(): string
+    {
+        return $this->service_date?->translatedFormat('l, d M Y') ?? '-';
+    }
+
+    /**
+     * Nama anggota kelompok disamarkan (inisial) untuk dokumen cetak
+     * agar privasi siswa tetap terjaga.
+     */
+    public function maskedGroupNames(): \Illuminate\Support\Collection
+    {
+        return $this->groupStudents->map(fn (User $student) => $student->maskedName());
+    }
+
+    /**
+     * Nama konseli untuk cetak: anggota kelompok (disamarkan) untuk RPL
+     * kelompok, atau satu siswa (juga disamarkan) untuk RPL individu.
+     */
+    public function printableClientNames(): string
+    {
+        if ($this->type === self::TYPE_INDIVIDU) {
+            return $this->student?->maskedName() ?: ($this->target ?: '-');
+        }
+
+        return $this->maskedGroupNames()->join(', ') ?: ($this->target ?: '-');
     }
 }

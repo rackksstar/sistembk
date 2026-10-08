@@ -3,6 +3,7 @@
     $categoryLabel = \App\Models\InstrumentQuestion::YOLA_CATEGORIES[$category]
         ?? \App\Models\InstrumentQuestion::CATEGORIES[$category]
         ?? 'Instrumen';
+    $isMbtiForm = $category === \App\Models\InstrumentQuestion::CATEGORY_KEPRIBADIAN;
 @endphp
 
 <form method="POST" action="{{ route('siswa.instruments.store') }}" class="space-y-6">
@@ -12,7 +13,11 @@
     <div class="rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3 text-sm leading-6 text-slate-700 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-slate-300">
         <p class="font-semibold text-slate-950 dark:text-white">{{ $categoryLabel }}</p>
         <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-            Jawab sejujurnya pada skala 1–5. Tidak ada jawaban benar atau salah.
+            @if($isMbtiForm)
+                Pilih satu pernyataan yang paling sesuai dengan dirimu. Tidak ada jawaban benar atau salah — jawabanmu disusun jadi kode tipe kepribadian 4 huruf.
+            @else
+                Jawab sejujurnya pada skala 1–5. Tidak ada jawaban benar atau salah.
+            @endif
         </p>
     </div>
 
@@ -98,7 +103,7 @@
     @enderror
 
     <div class="flex flex-wrap items-center gap-3 pt-1">
-        <x-primary-button class="rounded-full px-6 py-3">Kirim dan Lihat Skor</x-primary-button>
+        <x-primary-button class="rounded-full px-6 py-3">{{ $isMbtiForm ? 'Kirim dan Lihat Tipe Kepribadian' : 'Kirim dan Lihat Skor' }}</x-primary-button>
         <p class="text-xs text-slate-400">Pastikan semua soal sudah dijawab sebelum mengirim.</p>
     </div>
 </form>

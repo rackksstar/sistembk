@@ -100,35 +100,39 @@ class InstrumentRegressionTest extends TestCase
         ]);
     }
 
-    public function test_submit_kepribadian_masih_memakai_label_skoring_lama(): void
+    public function test_submit_kepribadian_dihitung_sebagai_kode_mbti(): void
     {
         $siswa = User::factory()->create([
             'role' => User::ROLE_SISWA,
             'status' => User::STATUS_APPROVED,
         ]);
 
-        $questions = collect([
-            'Saya mampu menenangkan diri saat situasi menekan.',
-            'Saya nyaman bekerja sama dengan teman berbeda pendapat.',
-        ])->map(fn (string $text) => InstrumentQuestion::query()->create([
+        $ei = InstrumentQuestion::query()->create([
             'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
-            'question' => $text,
+            'question' => 'Ketika berada di tempat ramai, saya...',
             'options' => [
-                ['label' => 'Sangat Tidak Sesuai', 'score' => 1],
-                ['label' => 'Tidak Sesuai', 'score' => 2],
-                ['label' => 'Sesuai', 'score' => 3],
-                ['label' => 'Sangat Sesuai', 'score' => 4],
+                ['label' => 'merasa berenergi dan senang mengobrol', 'pole' => 'E'],
+                ['label' => 'lebih suka menyendiri', 'pole' => 'I'],
             ],
             'is_active' => true,
-        ]));
+        ]);
 
-        // skor 2+2 = 4; max = 8 → 50% → Cukup Berkembang
-        $answers = $questions->mapWithKeys(fn (InstrumentQuestion $q) => [$q->id => 1])->all();
+        $sn = InstrumentQuestion::query()->create([
+            'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
+            'question' => 'Saat belajar hal baru, saya lebih suka...',
+            'options' => [
+                ['label' => 'contoh nyata dan langkah yang jelas', 'pole' => 'S'],
+                ['label' => 'memahami konsep besar dan kemungkinan', 'pole' => 'N'],
+            ],
+            'is_active' => true,
+        ]);
 
+        // E (1) + N (1) → dimensi kosong lainnya jatuh ke kutub pertama (T, J)
+        // → kode "ENTJ" — Sang Komandan. Keyakinan 100% pada 2 dimensi terisi.
         $response = $this->actingAs($siswa)
             ->post(route('siswa.instruments.store'), [
                 'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
-                'answers' => $answers,
+                'answers' => [$ei->id => 0, $sn->id => 1],
             ]);
 
         $submission = InstrumentSubmission::query()
@@ -138,11 +142,41 @@ class InstrumentRegressionTest extends TestCase
 
         $response->assertRedirect(route('siswa.instruments.hasil', $submission));
 
-        $this->assertSame(4, $submission->total_score);
-        $this->assertSame('Cukup Berkembang', $submission->result_label);
-        $this->assertSame(
-            'Potensi siswa sudah terlihat dan dapat diperkuat melalui bimbingan.',
-            $submission->result_description
-        );
+        $this->assertSame(2, $submission->total_score);
+        $this->assertSame('ENTJ — Sang Komandan', $submission->result_label);
+        $this->assertSame(100.0, (float) $submission->percentage);
+        $this->assertSame('ENTJ', $submission->category_scores['code']);
+        $this->assertSame(['E' => 1, 'N' => 1], $submission->category_scores['tally']);
+        $this->assertNotEmpty($submission->result_description);
+    }
+
+    public function test_soal_kepribadian_lama_tanpa_kutub_ditolak(): void
+    {
+        $siswa = User::factory()->create([
+            'role' => User::ROLE_SISWA,
+            'status' => User::STATUS_APPROVED,
+        ]);
+
+        $legacy = InstrumentQuestion::query()->create([
+            'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
+            'question' => 'Soal format lama tanpa huruf kutub.',
+            'options' => [
+                ['label' => 'Sangat Tidak Sesuai', 'score' => 1],
+                ['label' => 'Sangat Sesuai', 'score' => 4],
+            ],
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($siswa)
+            ->post(route('siswa.instruments.store'), [
+                'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
+                'answers' => [$legacy->id => 0],
+            ])
+            ->assertStatus(422);
+
+        $this->assertDatabaseMissing('instrument_submissions', [
+            'student_id' => $siswa->id,
+            'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
+        ]);
     }
 }

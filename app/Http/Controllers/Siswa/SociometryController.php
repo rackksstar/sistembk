@@ -4,16 +4,29 @@ namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
 use App\Models\SociometryResponse;
+use App\Models\SosiometryInstrument;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
+/**
+ * Modul Sosiometri (sisi siswa): siswa memilih 1 teman dekat dan 1 teman
+ * belajar beserta alasannya. Mengisi ulang akan MENGGANTI pilihan sebelumnya
+ * (lihat store(): baris lama dihapus dulu sebelum baris baru dibuat).
+ *
+ * Guru bisa menonaktifkan instrumen per kelas lewat menu "Kelola Sosiometri"
+ * (SosiometryInstrumentController). Saat kelas siswa dinonaktifkan, form
+ * disembunyikan dan penyimpanan ditolak.
+ */
 class SociometryController extends Controller
 {
+    // Form isi sosiometri + riwayat pilihan siswa yang sedang login.
     public function index(): View
     {
+        $this->assertInstrumentActive();
+
         $students = User::query()
             ->where('role', User::ROLE_SISWA)
             ->where('id', '!=', auth()->id())
@@ -30,8 +43,11 @@ class SociometryController extends Controller
         return view('siswa.sociometry.index', compact('students', 'responses'));
     }
 
+    // Menyimpan pilihan sosiometri siswa (1 teman dekat + 1 teman belajar).
     public function store(Request $request): RedirectResponse
     {
+        $this->assertInstrumentActive();
+
         $validated = $request->validate([
             'close_friend_id' => ['required', 'integer', 'exists:users,id', 'different:study_friend_id'],
             'study_friend_id' => ['required', 'integer', 'exists:users,id'],
@@ -65,5 +81,24 @@ class SociometryController extends Controller
         });
 
         return back()->with('success', 'Pilihan sosiometri berhasil disimpan.');
+    }
+
+    /**
+     * Tolak aksi bila instrumen sosiometri kelas siswa dinonaktifkan guru.
+     * Kelas tanpa baris pengaturan dianggap aktif (default).
+     */
+    private function assertInstrumentActive(): void
+    {
+        $kelasId = auth()->user()?->studentProfile?->kelas_id;
+
+        if (! $kelasId) {
+            return;
+        }
+
+        $instrument = SosiometryInstrument::query()->where('kelas_id', $kelasId)->first();
+
+        if ($instrument && ! $instrument->is_active) {
+            abort(403, 'Instrumen sosiometri untuk kelas Anda sedang dinonaktifkan. Silakan hubungi guru BK.');
+        }
     }
 }

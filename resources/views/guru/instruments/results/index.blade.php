@@ -96,6 +96,35 @@
                         <p class="mt-2 font-semibold text-slate-900 dark:text-slate-100">{{ $submission->result_label }}</p>
                         <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">{{ $submission->result_description }}</p>
                     </div>
+                @elseif($submission->category === \App\Models\InstrumentQuestion::CATEGORY_KEPRIBADIAN)
+                    @php
+                        $mbtiTally = (array) ($submission->category_scores['tally'] ?? []);
+                        $mbtiBreakdown = \App\Support\Mbti::axisBreakdown($mbtiTally);
+                    @endphp
+                    <div class="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
+                        <p class="text-xs font-bold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-300">Tipe Kepribadian MBTI</p>
+                        <p class="mt-1 text-lg font-bold text-slate-950 dark:text-white">{{ $submission->result_label }}</p>
+                        <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">{{ $submission->result_description }}</p>
+                        @if($submission->percentage !== null)
+                            <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Keyakinan skoring: {{ number_format((float) $submission->percentage, 1) }}%</p>
+                        @endif
+
+                        @if($mbtiBreakdown !== [])
+                            <div class="mt-3 space-y-2">
+                                @foreach($mbtiBreakdown as $axis)
+                                    <div>
+                                        <div class="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                            <span>{{ $axis['chosen_label'] }} ({{ $axis['code'] }}) <span class="font-normal text-slate-400">vs {{ $axis['other_label'] }} ({{ $axis['other'] }})</span></span>
+                                            <span>{{ $axis['count'] }}/{{ $axis['total'] }} · {{ $axis['percentage'] }}%</span>
+                                        </div>
+                                        <div class="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+                                            <div class="h-full rounded-full bg-blue-600 dark:bg-blue-400" style="width: {{ $axis['percentage'] }}%"></div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
                 @else
                     <div class="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
                         <p class="font-semibold text-slate-900 dark:text-slate-100">{{ $submission->result_label }}</p>

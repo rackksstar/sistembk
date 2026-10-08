@@ -97,13 +97,29 @@ class RplController extends Controller
     {
         abort_unless($rpl->teacher_id === auth()->id(), 403);
 
-        $rpl->load(['teacher.schoolModel', 'classRoom', 'student', 'groupStudents', 'consultationReports']);
+        $rpl->load(['teacher.schoolModel', 'classRoom', 'student', 'groupStudents']);
+        $school = $rpl->teacher?->schoolModel;
+        $logoPath = public_path('img/logo_sekolah.png');
 
-        return Pdf::loadView('guru.rpls.print', compact('rpl'))
+        return Pdf::loadView('guru.rpls.print', [
+                'rpl' => $rpl,
+                'schoolName' => trim((string) ($school?->name ?? $rpl->teacher?->school ?? '')) ?: 'Nama Sekolah',
+                'schoolAddress' => trim((string) ($school?->address ?? '')) ?: '-',
+                // Logo dikirim sebagai data URI base64 karena dompdf tidak selalu
+                // bisa memuat file lewat URL biasa.
+                'logoDataUri' => is_file($logoPath)
+                    ? 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoPath))
+                    : null,
+            ])
             ->setPaper('a4')
             ->stream('rpl-'.$rpl->id.'.pdf');
     }
 
+    /**
+     * Validasi form RPL. Aturannya bergantung tipe RPL: individu wajib punya
+     * student_id, kelompok wajib punya group_student_ids (min. 2 siswa), dan
+     * field pelaksanaan (pertemuan, durasi, topik, tempat) wajib untuk kelompok.
+     */
     private function validatedData(Request $request): array
     {
         $validated = $request->validate([
@@ -131,6 +147,11 @@ class RplController extends Controller
             'semester' => ['required', 'integer', 'in:1,2'],
             'year' => ['required', 'integer', 'min:2020', 'max:2100'],
             'service_date' => ['nullable', 'date'],
+            'meeting_number' => ['nullable', 'required_if:type,'.Rpl::TYPE_KELOMPOK, 'integer', 'min:1', 'max:100'],
+            'duration_minutes' => ['nullable', 'required_if:type,'.Rpl::TYPE_KELOMPOK, 'integer', 'min:1', 'max:600'],
+            'topik_permasalahan' => ['nullable', 'required_if:type,'.Rpl::TYPE_KELOMPOK, 'string', 'max:255'],
+            'location' => ['nullable', 'required_if:type,'.Rpl::TYPE_KELOMPOK, 'string', 'max:255'],
+            'media' => ['nullable', 'string', 'max:1000'],
             'target' => ['nullable', 'string', 'max:255'],
             'tujuan' => ['required', 'string', 'max:3000'],
             'materi' => ['required', 'string', 'max:3000'],
@@ -142,15 +163,22 @@ class RplController extends Controller
             'group_student_ids.min' => 'Kelompok harus terdiri dari minimal 2 siswa.',
             'group_student_ids.*.exists' => 'Setiap siswa harus berasal dari kelas yang sama dengan RPL.',
             'student_id.exists' => 'Siswa harus berasal dari kelas yang sama dengan RPL.',
+            'meeting_number.required_if' => 'Nomor pertemuan wajib diisi untuk RPL kelompok.',
+            'duration_minutes.required_if' => 'Durasi layanan wajib diisi untuk RPL kelompok.',
+            'topik_permasalahan.required_if' => 'Topik permasalahan wajib diisi untuk RPL kelompok.',
+            'location.required_if' => 'Tempat pelaksanaan wajib diisi untuk RPL kelompok.',
         ]);
 
+        // Field khusus kelompok dibersihkan untuk RPL individu supaya
+        // data keduanya tidak tercampur di database.
         if ($validated['type'] === Rpl::TYPE_INDIVIDU) {
             $validated['group_student_ids'] = [];
+            $validated['topik_permasalahan'] = null;
         } else {
             $validated['student_id'] = null;
         }
 
-        if (blank($validated['target'])) {
+        if (blank($validated['target'] ?? '')) {
             $validated['target'] = $this->defaultTarget($validated);
         }
 

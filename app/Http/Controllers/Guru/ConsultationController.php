@@ -7,6 +7,7 @@ use App\Http\Requests\Guru\RejectConsultationRequest;
 use App\Http\Requests\Guru\ScheduleConsultationRequest;
 use App\Http\Requests\Guru\StoreConsultationReportRequest;
 use App\Models\ConsultationRequest;
+use App\Models\Rpl;
 use App\Models\User;
 use App\Support\ActivityLogger;
 use App\Services\ConsultationScheduleService;
@@ -29,10 +30,11 @@ class ConsultationController extends Controller
         $kategori = $request->string('kategori')->toString();
 
         $studentWithKelas = [
-            'student:id,name',
+            'student:id,name,school',
             'student.studentProfile:id,user_id,kelas_id',
             'student.studentProfile.kelas:id,nama',
             'counselor:id,name',
+            'rpl:id,title,class_id,type',
         ];
 
         $consultations = ConsultationRequest::with($studentWithKelas)
@@ -74,6 +76,13 @@ class ConsultationController extends Controller
             'upcomingWeek' => $upcomingWeek,
             'search' => $search,
             'kategori' => $kategori,
+            // Pilihan RPL individu untuk dikaitkan dengan laporan konseling.
+            'individualRpls' => Rpl::query()
+                ->with('classRoom:id,name')
+                ->where('teacher_id', auth()->id())
+                ->where('type', Rpl::TYPE_INDIVIDU)
+                ->orderByDesc('id')
+                ->get(),
         ]);
     }
 
@@ -166,14 +175,30 @@ class ConsultationController extends Controller
         abort_unless($consultation->counselor_id === auth()->id() || auth()->user()->role === User::ROLE_ADMIN, 403);
 
         $consultation->load([
-            'student:id,name,school',
+            'student:id,name,school,class_id',
             'student.studentProfile:id,user_id,kelas_id',
             'student.studentProfile.kelas:id,nama,sekolah_id',
             'student.studentProfile.kelas.sekolah:id,nama',
             'counselor:id,name',
+            'rpl:id,title',
         ]);
 
-        return Pdf::loadView('guru.consultations.print', compact('consultation'))
+        $school = $consultation->counselor?->schoolModel
+            ?? auth()->user()->schoolModel
+            ?? $consultation->student?->studentProfile?->kelas?->sekolah;
+
+        $logoPath = public_path('img/logo_sekolah.png');
+
+        return Pdf::loadView('guru.consultations.print', [
+                'consultation' => $consultation,
+                'schoolName' => trim((string) ($school?->nama ?? $school?->name ?? $consultation->student?->school ?? '')) ?: 'Nama Sekolah',
+                'schoolAddress' => trim((string) ($school?->address ?? '')) ?: '-',
+                // Logo dikirim sebagai data URI base64 karena dompdf tidak selalu
+                // bisa memuat file lewat URL biasa.
+                'logoDataUri' => is_file($logoPath)
+                    ? 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoPath))
+                    : null,
+            ])
             ->setPaper('a4')
             ->stream('laporan-konseling-'.$consultation->id.'.pdf');
     }

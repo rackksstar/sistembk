@@ -20,6 +20,7 @@ use App\Models\SiswaSmk;
 use App\Models\SociometryResponse;
 use App\Models\Student;
 use App\Models\User;
+use App\Support\Mbti;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -302,11 +303,6 @@ class DatabaseSeeder extends Seeder
             ->update(['is_active' => false]);
 
         $instrumentQuestions = [
-            InstrumentQuestion::CATEGORY_KEPRIBADIAN => [
-                'Saya mampu menenangkan diri ketika menghadapi situasi yang menekan.',
-                'Saya nyaman bekerja sama dengan teman yang berbeda pendapat.',
-                'Saya berani menyampaikan kebutuhan saya dengan cara yang sopan.',
-            ],
             InstrumentQuestion::CATEGORY_SOSIOMETRI => [
                 'Saya mudah memilih teman untuk bekerja sama dalam kelompok belajar.',
                 'Saya merasa diterima dalam pergaulan kelas.',
@@ -334,6 +330,86 @@ class DatabaseSeeder extends Seeder
                     [
                         'section' => null,
                         'options' => $defaultOptions,
+                        'is_active' => true,
+                        'created_by' => $guru->id,
+                    ]
+                );
+            }
+        }
+
+        // Tes Kepribadian (MBTI): setiap soal berupa pilihan paksa antara dua
+        // kutub berlawanan — bukan skor Likert seperti kategori lainnya.
+        $mbtiQuestions = [
+            'EI' => [
+                'Ketika berada di tempat ramai, saya...',
+                'Setelah hari yang panjang, saya paling suka...',
+                'Saat mengerjakan tugas kelompok, saya cenderung...',
+            ],
+            'SN' => [
+                'Saat belajar hal baru, saya lebih suka...',
+                'Saya lebih percaya pada...',
+                'Ketika memecahkan masalah, saya...',
+            ],
+            'TF' => [
+                'Saat mengambil keputusan penting, saya lebih mengutamakan...',
+                'Ketika teman melakukan kesalahan, saya...',
+                'Saya lebih sering dianggap orang yang...',
+            ],
+            'JP' => [
+                'Dalam mengerjakan tugas, saya lebih suka...',
+                'Kamar atau meja belajar saya biasanya...',
+                'Saya lebih nyaman ketika...',
+            ],
+        ];
+
+        $mbtiOptionLabels = [
+            'EI' => [
+                ['merasa berenergi dan senang mengobrol dengan banyak orang', 'lebih suka menyendiri atau berbicara dengan satu-dua orang saja'],
+                ['berkumpul dengan teman-teman untuk melepas penat', 'menyendiri di kamar untuk mengisi ulang energi'],
+                ['aktif berbicara dan mengarahkan diskusi', 'mendengarkan dulu sebelum menyampaikan pendapat'],
+            ],
+            'SN' => [
+                ['contoh nyata dan langkah-langkah yang jelas', 'memahami konsep besar dan kemungkinan di baliknya'],
+                ['fakta dan pengalaman yang sudah terbukti', 'intuisi dan gambaran masa depan'],
+                ['fokus pada detail dan data yang ada', 'mencari pola dan kemungkinan baru'],
+            ],
+            'TF' => [
+                ['logika dan analisis yang objektif', 'perasaan saya dan orang lain yang terlibat'],
+                ['menjelaskan letak kesalahannya secara langsung', 'memikirkan perasaannya sebelum menegur'],
+                ['kritis dan rasional', 'empatik dan peka'],
+            ],
+            'JP' => [
+                ['membuat rencana dan menyelesaikannya lebih awal', 'mengerjakannya secara fleksibel mendekati tenggat waktu'],
+                ['rapi dan tertata sesuai rencana', 'santai dan bisa berubah sewaktu-waktu'],
+                ['semua sudah terjadwal dan pasti', 'masih ada ruang untuk berubah dan spontan'],
+            ],
+        ];
+
+        // Soal kepribadian format lama (Likert) dimatikan supaya tidak ikut
+        // terhitung dalam skoring MBTI; riwayat jawaban lama tetap dipertahankan.
+        InstrumentQuestion::query()
+            ->where('category', InstrumentQuestion::CATEGORY_KEPRIBADIAN)
+            ->where('is_active', true)
+            ->get(['id', 'options'])
+            ->filter(fn ($question) => collect($question->options ?? [])->contains(
+                fn ($option) => ! is_array($option) || ! array_key_exists('pole', $option)
+            ))
+            ->each(fn ($question) => $question->update(['is_active' => false]));
+
+        foreach ($mbtiQuestions as $axis => $questionTexts) {
+            [$poleA, $poleB] = array_keys(Mbti::AXES[$axis]);
+
+            foreach ($questionTexts as $index => $questionText) {
+                [$labelA, $labelB] = $mbtiOptionLabels[$axis][$index];
+
+                InstrumentQuestion::query()->updateOrCreate(
+                    ['category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN, 'question' => $questionText],
+                    [
+                        'section' => null,
+                        'options' => [
+                            ['label' => $labelA, 'pole' => $poleA],
+                            ['label' => $labelB, 'pole' => $poleB],
+                        ],
                         'is_active' => true,
                         'created_by' => $guru->id,
                     ]
@@ -438,16 +514,31 @@ class DatabaseSeeder extends Seeder
 
         $personalityQuestions = InstrumentQuestion::query()
             ->where('category', InstrumentQuestion::CATEGORY_KEPRIBADIAN)
-            ->get();
+            ->where('is_active', true)
+            ->get()
+            ->filter(fn ($question) => collect($question->options ?? [])->every(fn ($option) => ! empty($option['pole'])))
+            ->values();
 
         if ($personalityQuestions->isNotEmpty()) {
             foreach ($studentUsers->take(3) as $studentUser) {
+                // Jawaban demo yang deterministik per siswa supaya kode MBTI
+                // tiap akun berbeda-beda tapi tetap konsisten saat di-seed ulang.
+                $chosenOptions = $personalityQuestions->mapWithKeys(function ($question, $idx) use ($studentUser) {
+                    $optionIndex = ($studentUser->id + $idx) % 2;
+
+                    return [$question->id => $question->options[$optionIndex]];
+                });
+
+                $mbti = Mbti::score($chosenOptions->pluck('pole')->all());
+
                 $submission = InstrumentSubmission::query()->updateOrCreate(
                     ['student_id' => $studentUser->id, 'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN],
                     [
-                        'total_score' => 9,
-                        'result_label' => 'Cukup Berkembang',
-                        'result_description' => 'Kecenderungan personal siswa sudah terlihat dan dapat diperkuat melalui bimbingan.',
+                        'total_score' => $chosenOptions->count(),
+                        'category_scores' => ['tally' => $mbti['tally']],
+                        'percentage' => $mbti['confidence'],
+                        'result_label' => $mbti['code'].' — '.$mbti['type']['name'],
+                        'result_description' => $mbti['type']['description'],
                         'submitted_at' => now()->subDays(rand(1, 8)),
                     ]
                 );
@@ -459,8 +550,8 @@ class DatabaseSeeder extends Seeder
                             'instrument_question_id' => $question->id,
                         ],
                         [
-                            'answer_label' => 'Sesuai',
-                            'score' => 3,
+                            'answer_label' => $chosenOptions[$question->id]['label'] ?? '',
+                            'score' => 0,
                         ]
                     );
                 }

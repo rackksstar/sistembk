@@ -67,6 +67,29 @@
             <x-input-label for="target_{{ $formId }}" value="Sasaran" />
             <x-text-input id="target_{{ $formId }}" name="target" value="{{ old('target', $rpl?->target) }}" placeholder="Boleh dikosongkan, sistem isi otomatis" />
         </div>
+        <div class="space-y-2">
+            <x-input-label for="meeting_number_{{ $formId }}" value="Pertemuan ke-" />
+            <x-text-input id="meeting_number_{{ $formId }}" name="meeting_number" type="number" min="1" max="100" value="{{ old('meeting_number', $rpl?->meeting_number) }}" placeholder="mis. 1" />
+        </div>
+        <div class="space-y-2">
+            <x-input-label for="duration_minutes_{{ $formId }}" value="Durasi (menit)" />
+            <x-text-input id="duration_minutes_{{ $formId }}" name="duration_minutes" type="number" min="1" max="600" value="{{ old('duration_minutes', $rpl?->duration_minutes) }}" placeholder="mis. 45" />
+        </div>
+        <div class="space-y-2">
+            <x-input-label for="location_{{ $formId }}" value="Tempat Pelaksanaan" />
+            <x-text-input id="location_{{ $formId }}" name="location" value="{{ old('location', $rpl?->location) }}" placeholder="mis. Ruang BK" />
+        </div>
+    </div>
+
+    <div class="space-y-2">
+        <x-input-label for="topik_permasalahan_{{ $formId }}" value="Topik Permasalahan" />
+        <x-text-input id="topik_permasalahan_{{ $formId }}" name="topik_permasalahan" value="{{ old('topik_permasalahan', $rpl?->topik_permasalahan) }}" placeholder="Wajib diisi untuk RPL kelompok" />
+        <p class="text-xs text-slate-500 dark:text-slate-400">Pertemuan ke-, durasi, tempat, dan topik wajib diisi khusus untuk RPL kelompok.</p>
+    </div>
+
+    <div class="space-y-2">
+        <x-input-label for="media_{{ $formId }}" value="Media yang Diperlukan" />
+        <textarea id="media_{{ $formId }}" name="media" rows="3" class="mt-1 w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-500/40" placeholder="mis. LCD, lembar kerja siswa, papan tulis">{{ old('media', $rpl?->media) }}</textarea>
     </div>
 
     <div x-show="jenis === 'individu'" class="rounded-2xl border border-slate-200 dark:border-slate-700 p-4">

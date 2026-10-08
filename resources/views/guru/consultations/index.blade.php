@@ -72,6 +72,7 @@
                             <th class="px-5 py-4">Kelas</th>
                             <th class="px-5 py-4">Topik</th>
                             <th class="px-5 py-4">Kategori</th>
+                            <th class="px-5 py-4">RPL Terkait</th>
                             <th class="px-5 py-4">Jadwal</th>
                             <th class="px-5 py-4">Status</th>
                             <th class="px-5 py-4 text-right">Aksi</th>
@@ -96,6 +97,13 @@
                                     @endif
                                 </td>
                                 <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $consultation->caseCategoryLabel() }}</td>
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">
+                                    @if($consultation->rpl)
+                                        <span class="line-clamp-2">{{ $consultation->rpl->title }}</span>
+                                    @else
+                                        <span class="text-slate-400 dark:text-slate-500">-</span>
+                                    @endif
+                                </td>
                                 @if($consultation->consultation_date)
                                     <td class="px-5 py-4">
                                         <span class="font-medium text-slate-900 dark:text-slate-100">{{ $consultation->consultation_date->format('d M Y') }}</span>
@@ -136,7 +144,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="px-5 py-6"><x-empty-state title="Belum ada pengajuan" description="Pengajuan konseling siswa akan muncul di tabel ini." /></td></tr>
+                            <tr><td colspan="8" class="px-5 py-6"><x-empty-state title="Belum ada pengajuan" description="Pengajuan konseling siswa akan muncul di tabel ini." /></td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -154,6 +162,11 @@
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Kelas</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->student?->studentProfile?->kelas?->nama ?? '—' }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Status</dt><dd class="mt-1"><x-status-badge :status="$consultation->status" /></dd></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Kategori</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->caseCategoryLabel() }}</dd></div>
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">RPL Terkait</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->rpl?->title ?? '-' }}</dd></div>
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Semester / Tahun</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">Semester {{ $consultation->semester ?? '-' }} / {{ $consultation->academicYearLabel() }}</dd></div>
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Pertemuan ke-</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->meeting_number ?? '-' }}</dd></div>
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Durasi</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->duration_minutes ? $consultation->duration_minutes.' menit' : '-' }}</dd></div>
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Tempat</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->location ?? '-' }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Guru BK</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->counselor?->name ?? 'Belum ditugaskan' }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Preferensi siswa</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->preferred_time ?? '-' }}{{ $consultation->preferred_date ? ' · '.$consultation->preferred_date->format('d M Y') : '' }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Jadwal sesi</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->consultation_date?->format('d M Y') ?? 'Belum dijadwalkan' }}{{ $consultation->consultation_time ? ' · '.substr($consultation->consultation_time, 0, 5) : '' }}</dd></div>
@@ -165,6 +178,7 @@
                     @if($consultation->rejection_reason)
                         <div class="rounded-2xl bg-red-50 dark:bg-red-950/40 p-4 sm:col-span-2"><dt class="font-semibold text-red-800">Alasan ditolak</dt><dd class="mt-1 text-red-700 dark:text-red-300">{{ $consultation->rejection_reason }}</dd></div>
                     @endif
+                    <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4 sm:col-span-2"><dt class="font-semibold">Pendekatan dan teknik konseling</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->approach_technique ?? '-' }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4 sm:col-span-2"><dt class="font-semibold">Hasil</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->result ?? '-' }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4 sm:col-span-2"><dt class="font-semibold">Evaluasi</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->evaluation ?? '-' }}</dd></div>
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4 sm:col-span-2"><dt class="font-semibold">Tindak lanjut</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->follow_up ?? '-' }}</dd></div>
@@ -209,12 +223,20 @@
         </div>
 
         <div x-show="reportOpen === {{ $consultation->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="reportOpen = null" class="w-full max-w-xl rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
-                <x-section-title title="Laporan Konseling" description="Isi hasil konseling dan evaluasi sesi." />
+            <div x-on:click.outside="reportOpen = null" class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+                <x-section-title title="Laporan Konseling" description="Isi detail pelaksanaan, hasil, dan evaluasi sesi." />
                 <form method="POST" action="{{ route('guru.consultations.report', $consultation) }}" class="mt-6 space-y-4">
                     @csrf @method('PATCH')
                     <input type="hidden" name="modal_action" value="report">
                     <input type="hidden" name="modal_consultation_id" value="{{ $consultation->id }}">
+                    <select name="rpl_id" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm">
+                        <option value="">Tidak dikaitkan dengan RPL</option>
+                        @foreach($individualRpls->where('student_id', $consultation->student_id) as $rpl)
+                            <option value="{{ $rpl->id }}" @selected((string) old('rpl_id', $consultation->rpl_id) === (string) $rpl->id)>
+                                {{ $rpl->title }} - {{ $rpl->classRoom?->name ?? 'Tanpa kelas' }}
+                            </option>
+                        @endforeach
+                    </select>
                     <select name="case_category" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm">
                         <option value="">Pilih kategori kasus</option>
                         @foreach($caseCategories as $value => $label)
@@ -222,6 +244,38 @@
                         @endforeach
                     </select>
                     <x-input-error :messages="$errors->get('case_category')" />
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div>
+                            <x-input-label for="meeting_number_{{ $consultation->id }}" value="Pertemuan ke-" />
+                            <x-text-input id="meeting_number_{{ $consultation->id }}" name="meeting_number" type="number" min="1" max="100" value="{{ old('meeting_number', $consultation->meeting_number) }}" class="mt-1 w-full" placeholder="mis. 1" />
+                            <x-input-error :messages="$errors->get('meeting_number')" />
+                        </div>
+                        <div>
+                            <x-input-label for="duration_minutes_{{ $consultation->id }}" value="Waktu (durasi menit)" />
+                            <x-text-input id="duration_minutes_{{ $consultation->id }}" name="duration_minutes" type="number" min="1" max="600" value="{{ old('duration_minutes', $consultation->duration_minutes) }}" class="mt-1 w-full" placeholder="mis. 45" />
+                            <x-input-error :messages="$errors->get('duration_minutes')" />
+                        </div>
+                        <div>
+                            <x-input-label for="location_{{ $consultation->id }}" value="Tempat" />
+                            <x-text-input id="location_{{ $consultation->id }}" name="location" value="{{ old('location', $consultation->location) }}" class="mt-1 w-full" placeholder="mis. Ruang BK" />
+                            <x-input-error :messages="$errors->get('location')" />
+                        </div>
+                        <div>
+                            <x-input-label for="semester_{{ $consultation->id }}" value="Semester" />
+                            <select id="semester_{{ $consultation->id }}" name="semester" class="mt-1 w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm">
+                                <option value="1" @selected((string) old('semester', $consultation->semester ?? 1) === '1')>Semester 1</option>
+                                <option value="2" @selected((string) old('semester', $consultation->semester ?? 1) === '2')>Semester 2</option>
+                            </select>
+                            <x-input-error :messages="$errors->get('semester')" />
+                        </div>
+                        <div class="md:col-span-2">
+                            <x-input-label for="year_{{ $consultation->id }}" value="Tahun Pelajaran" />
+                            <x-text-input id="year_{{ $consultation->id }}" name="year" type="number" min="2020" max="2100" value="{{ old('year', $consultation->year ?? now()->year) }}" class="mt-1 w-full" />
+                            <x-input-error :messages="$errors->get('year')" />
+                        </div>
+                    </div>
+                    <textarea name="approach_technique" rows="3" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm" placeholder="Pendekatan dan teknik konseling yang digunakan">{{ old('approach_technique', $consultation->approach_technique) }}</textarea>
+                    <x-input-error :messages="$errors->get('approach_technique')" />
                     <textarea name="result" rows="4" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm" placeholder="Hasil konseling">{{ old('result', $consultation->result) }}</textarea>
                     <x-input-error :messages="$errors->get('result')" />
                     <textarea name="evaluation" rows="4" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm" placeholder="Evaluasi">{{ old('evaluation', $consultation->evaluation) }}</textarea>

@@ -4,6 +4,9 @@
     $category = $submission->category;
     $categoryLabel = $submission->categoryLabel();
     $percentage = $submission->percentage !== null ? (float) $submission->percentage : null;
+    $isMbti = $category === \App\Models\InstrumentQuestion::CATEGORY_KEPRIBADIAN;
+    $mbtiTally = $isMbti ? (array) ($submission->category_scores['tally'] ?? []) : [];
+    $mbtiBreakdown = $isMbti ? \App\Support\Mbti::axisBreakdown($mbtiTally) : [];
     $scoreTone = match (true) {
         $percentage === null => [
             'ring' => 'from-slate-400 to-slate-500',
@@ -93,6 +96,30 @@
             @endif
         </div>
     </section>
+
+    @if($isMbti)
+        <section class="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-700 dark:bg-slate-900">
+            <x-section-title title="Rincian 4 Dimensi Kepribadian" description="Persentase pilihan tiap dimensi MBTI berdasarkan jawabanmu." />
+
+            @if($mbtiBreakdown !== [])
+                <div class="mt-5 space-y-4">
+                    @foreach($mbtiBreakdown as $axis)
+                        <div>
+                            <div class="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                <span>{{ $axis['chosen_label'] }} ({{ $axis['code'] }}) <span class="font-normal text-slate-400">vs {{ $axis['other_label'] }} ({{ $axis['other'] }})</span></span>
+                                <span>{{ $axis['count'] }}/{{ $axis['total'] }} · {{ $axis['percentage'] }}%</span>
+                            </div>
+                            <div class="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                                <div class="h-full rounded-full bg-blue-600" style="width: {{ $axis['percentage'] }}%"></div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <p class="mt-4 text-sm text-slate-500 dark:text-slate-400">Rincian per dimensi belum tersedia untuk jawaban ini.</p>
+            @endif
+        </section>
+    @endif
 
     <section class="rounded-3xl border border-amber-200 bg-amber-50/80 p-5 text-sm leading-6 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-200">
         Hasil ini gambaran kecenderungan dari jawabanmu, bukan keputusan akhir. Diskusikan dengan Guru BK bila ingin pendalaman.

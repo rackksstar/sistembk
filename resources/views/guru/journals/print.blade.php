@@ -19,6 +19,10 @@
     <table>
         <tr><td>Periode</td><td>{{ $journal->periodLabel() }}</td></tr>
         <tr><td>Judul</td><td>{{ $journal->title }}</td></tr>
+        <tr><td>Tanggal</td><td>{{ $journal->entryDate()?->translatedFormat('d M Y') ?? '-' }}</td></tr>
+        <tr><td>Jenis Kegiatan</td><td>{{ $journal->serviceTypeLabel() }}</td></tr>
+        <tr><td>Kategori Masalah</td><td>{{ $journal->caseCategoryLabel() }}</td></tr>
+        <tr><td>Sasaran Kegiatan</td><td>{{ $journal->targetTypeLabel() }} - {{ $journal->target_name ?: '-' }}</td></tr>
         <tr><td>Guru BK</td><td>{{ $journal->teacher?->name }}</td></tr>
         <tr><td>Sekolah</td><td>{{ $journal->teacher?->schoolModel?->name ?? $journal->teacher?->school ?? '-' }}</td></tr>
     </table>
@@ -33,6 +37,7 @@
     </table>
 
     <section><h2>Ringkasan Kegiatan</h2><p>{{ $journal->summary }}</p></section>
+    <section><h2>Hasil Akhir</h2><p>{{ $journal->outcome ?: '-' }}</p></section>
     <section><h2>Evaluasi</h2><p>{{ $journal->evaluation ?: '-' }}</p></section>
     <section><h2>Tindak Lanjut</h2><p>{{ $journal->follow_up ?: '-' }}</p></section>
 </body>

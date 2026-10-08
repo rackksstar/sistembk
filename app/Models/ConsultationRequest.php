@@ -66,6 +66,12 @@ class ConsultationRequest extends Model
         'rejection_reason',
         'scheduled_at',
         'notes',
+        'meeting_number',
+        'duration_minutes',
+        'location',
+        'approach_technique',
+        'semester',
+        'year',
         'result',
         'evaluation',
         'follow_up',
@@ -77,6 +83,10 @@ class ConsultationRequest extends Model
             'consultation_date' => 'date',
             'preferred_date' => 'date',
             'scheduled_at' => 'datetime',
+            'meeting_number' => 'integer',
+            'duration_minutes' => 'integer',
+            'semester' => 'integer',
+            'year' => 'integer',
         ];
     }
 
@@ -98,6 +108,25 @@ class ConsultationRequest extends Model
     public function caseCategoryLabel(): string
     {
         return self::CASE_CATEGORIES[$this->case_category] ?? ($this->case_category ?: '-');
+    }
+
+    public function dayDateLabel(): string
+    {
+        return $this->consultation_date?->translatedFormat('l, d M Y') ?? '-';
+    }
+
+    public function semesterLabel(): string
+    {
+        return match ($this->semester) {
+            1 => 'Ganjil',
+            2 => 'Genap',
+            default => '-',
+        };
+    }
+
+    public function academicYearLabel(): string
+    {
+        return $this->year ? $this->year.'/'.($this->year + 1) : '-';
     }
 
     public function statusLabel(): string
