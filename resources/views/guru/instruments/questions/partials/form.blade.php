@@ -1,12 +1,15 @@
 @php
     $formKey = $question?->id ?? 'new';
-    $defaultOptions = [
+    $yolaLikert = [
         ['label' => 'Sangat Tidak Sesuai', 'score' => 1],
         ['label' => 'Tidak Sesuai', 'score' => 2],
         ['label' => 'Cukup Sesuai', 'score' => 3],
         ['label' => 'Sesuai', 'score' => 4],
         ['label' => 'Sangat Sesuai', 'score' => 5],
     ];
+    $defaultOptions = (($module ?? 'yola') === 'key')
+        ? \App\Models\InstrumentQuestion::TALENTS_LIKERT_OPTIONS
+        : $yolaLikert;
     $initialOptions = collect(old('options', $question?->options ?? $defaultOptions))
         ->map(fn ($option) => [
             'label' => $option['label'] ?? '',
@@ -14,25 +17,31 @@
         ])
         ->values()
         ->all();
+    $initialTalent = old('talent_code', $question?->talent_code
+        ?? $interestCategories->firstWhere('id', old('interest_category_id', $question?->interest_category_id))?->kode);
+    $strategiSections = \App\Models\InstrumentQuestion::SECTIONS[\App\Models\InstrumentQuestion::CATEGORY_GAYA_BELAJAR] ?? [];
 @endphp
 
 <div
     class="space-y-4"
     x-data="{
-        category: @js(old('category', $question?->category ?? (($module ?? 'yola') === 'key' ? 'minat_bakat' : ''))),
-        interestCategoryId: @js(old('interest_category_id', $question?->interest_category_id)),
+        category: @js(old('category', $question?->category ?? (($module ?? 'yola') === 'key' ? 'minat_bakat' : 'minat_kerja'))),
+        talentCode: @js($initialTalent),
+        section: @js(old('section', $question?->section)),
+        interestCategories: @js($interestCategories->map(fn ($c) => ['id' => $c->id, 'kode' => $c->kode, 'nama' => $c->nama])->values()),
         jenjangTarget: @js(old('jenjang_target', $question?->jenjang_target ?? 'semua')),
         bobot: @js((int) old('bobot', $question?->bobot ?? 1)),
         options: @js($initialOptions),
-        likertTemplate: [
-            { label: 'Sangat tidak tertarik', score: 0 },
-            { label: 'Tidak tertarik', score: 1 },
-            { label: 'Netral', score: 2 },
-            { label: 'Tertarik', score: 3 },
-            { label: 'Sangat tertarik', score: 4 },
-        ],
+        likertTemplate: @js($defaultOptions),
         get isMinatBakat() {
             return this.category === 'minat_bakat';
+        },
+        get isStrategiBelajar() {
+            return this.category === 'gaya_belajar';
+        },
+        get interestCategoryId() {
+            const match = this.interestCategories.find((item) => item.kode === this.talentCode);
+            return match ? match.id : '';
         },
         addOption() {
             if (this.options.length < 6) {
@@ -55,8 +64,14 @@
                     }
                 });
             };
-            this.$watch('category', refresh);
+            this.$watch('category', (value) => {
+                if (value !== 'gaya_belajar') {
+                    this.section = null;
+                }
+                refresh();
+            });
             this.$watch('isMinatBakat', refresh);
+            this.$watch('isStrategiBelajar', refresh);
             refresh();
         },
     }"
@@ -76,20 +91,38 @@
         <textarea id="question_{{ $formKey }}" name="question" rows="4" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">{{ old('question', $question?->question) }}</textarea>
     </div>
 
+    <div x-show="isStrategiBelajar" x-cloak class="space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+        <x-input-label for="section_{{ $formKey }}" value="Bagian Strategi Belajar" />
+        <x-form-select
+            id="section_{{ $formKey }}"
+            name="section"
+            x-model="section"
+            x-bind:required="isStrategiBelajar"
+            x-bind:disabled="!isStrategiBelajar"
+        >
+            <option value="">Pilih bagian</option>
+            @foreach($strategiSections as $num => $label)
+                <option value="{{ $num }}">Bagian {{ $num }}: {{ $label }}</option>
+            @endforeach
+        </x-form-select>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Wajib diisi agar wizard siswa (3 bagian) dan hasil per-bagian tampil benar.</p>
+    </div>
+
     <div x-show="isMinatBakat" x-cloak class="space-y-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-4">
         <div class="space-y-2">
-            <x-input-label for="interest_category_id_{{ $formKey }}" value="Kategori Minat" />
+            <x-input-label for="talent_code_{{ $formKey }}" value="Kode RIASEC (Talents Mapping)" />
             <x-form-select
-                id="interest_category_id_{{ $formKey }}"
-                name="interest_category_id"
-                x-model="interestCategoryId"
+                id="talent_code_{{ $formKey }}"
+                name="talent_code"
+                x-model="talentCode"
                 x-bind:required="isMinatBakat"
             >
-                <option value="">Pilih kategori minat</option>
-                @foreach($interestCategories as $interestCategory)
-                    <option value="{{ $interestCategory->id }}">{{ $interestCategory->kode }} — {{ $interestCategory->nama }}</option>
+                <option value="">Pilih kode RIASEC</option>
+                @foreach(\App\Models\InstrumentQuestion::RIASEC_CODES as $code => $label)
+                    <option value="{{ $code }}">{{ $code }} — {{ $label }}</option>
                 @endforeach
             </x-form-select>
+            <input type="hidden" name="interest_category_id" :value="interestCategoryId">
         </div>
 
         <div class="grid gap-3 sm:grid-cols-2">
@@ -131,7 +164,7 @@
                     x-on:click="applyLikert()"
                     class="rounded-xl border border-slate-200 dark:border-slate-700 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60"
                 >
-                    Pakai template Likert 0–4
+                    Pakai template Likert 1–5
                 </button>
                 <button
                     type="button"
@@ -174,7 +207,7 @@
                 </button>
             </div>
         </template>
-        <p class="text-xs text-slate-500 dark:text-slate-400">Minimal 2 dan maksimal 6 pilihan jawaban.</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Minimal 2 dan maksimal 6 pilihan jawaban. Default Talents Mapping: Sangat Tidak Suka (1) – Sangat Suka (5).</p>
     </div>
 
     <label class="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300">

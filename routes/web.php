@@ -122,6 +122,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->parameters(['instrument-questions' => 'question'])
             ->except(['create', 'show', 'edit']);
         Route::get('/instrument-results', [InstrumentResultController::class, 'index'])->name('instrument-results.index');
+        Route::get('/instrument-results/matriks-bakat', [InstrumentResultController::class, 'talentMatrix'])->name('instrument-results.talent-matrix');
 
         // Modul Yola — sosiometri, RPL, laporan individu/kelompok, jurnal
         Route::get('/sociometry', [SociometryMapController::class, 'index'])->name('sociometry.index');
@@ -172,6 +173,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Modul Yola — instrumen klasik
         Route::get('/instruments', [InstrumentSubmissionController::class, 'index'])->name('instruments.index');
         Route::post('/instruments', [InstrumentSubmissionController::class, 'store'])->name('instruments.store');
+        Route::get('/instruments/strategi-belajar/hasil', [InstrumentSubmissionController::class, 'strategiBelajarResult'])->name('instruments.strategi-belajar-result');
         // Modul Key — Minat Bakat RIASEC
         Route::get('/minat-bakat', [InstrumentSubmissionController::class, 'minatBakatIndex'])->name('minat-bakat.index');
         Route::get('/instruments/hasil/{submission}', [InstrumentSubmissionController::class, 'hasil'])->name('instruments.hasil');

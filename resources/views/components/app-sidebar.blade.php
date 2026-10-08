@@ -31,7 +31,15 @@
 
             if ($actual === null || $actual === '') {
                 if ($key === 'category' && request()->routeIs('siswa.instruments.*')) {
-                    $actual = 'gaya_belajar';
+                    // Infer kategori dari halaman hasil / default index (minat_kerja).
+                    if (request()->routeIs('siswa.instruments.strategi-belajar-result')) {
+                        $actual = 'gaya_belajar';
+                    } elseif (request()->routeIs(['siswa.instruments.hasil', 'siswa.instruments.hasil.pdf'])) {
+                        $submission = request()->route('submission');
+                        $actual = is_object($submission) ? (string) ($submission->category ?? '') : '';
+                    } else {
+                        $actual = 'minat_kerja';
+                    }
                 } elseif ($key === 'module' && request()->routeIs(['guru.instrument-questions.*', 'guru.instrument-results.*'])) {
                     $actual = 'yola';
                 } else {
@@ -39,7 +47,19 @@
                 }
             }
 
-            if ((string) $actual !== (string) $value) {
+            if ($actual === '' || (string) $actual !== (string) $value) {
+                return false;
+            }
+        }
+
+        // Item Key yang memantau hasil RIASEC: jangan aktif di hasil instrumen Yola.
+        if (
+            request()->routeIs(['siswa.instruments.hasil', 'siswa.instruments.hasil.pdf'])
+            && collect($patterns)->contains(fn ($pattern) => str_contains((string) $pattern, 'instruments.hasil'))
+        ) {
+            $submission = request()->route('submission');
+            $category = is_object($submission) ? (string) ($submission->category ?? '') : '';
+            if ($category !== '' && $category !== 'minat_bakat') {
                 return false;
             }
         }

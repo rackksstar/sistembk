@@ -1,17 +1,25 @@
 @extends('layouts.app')
 
+@php
+    $levelBadgeClasses = [
+        'kurang' => 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300',
+        'cukup' => 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300',
+        'baik' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300',
+    ];
+@endphp
+
 @section('content')
 <div class="space-y-6">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
         <div class="flex flex-wrap items-start justify-between gap-3">
             <x-section-title
-                :title="$module === 'key' ? 'Hasil Minat Bakat RIASEC (Key)' : 'Hasil Instrumen (Yola)'"
+                :title="$module === 'key' ? 'Hasil Minat Bakat Kuliah (Key)' : 'Hasil Instrumen Siap Kerja (Yola)'"
                 :description="$module === 'key'
-                    ? 'Pantau Kode Minat dan skor RIASEC siswa untuk rekomendasi kuliah/karier.'
-                    : 'Pantau hasil skor instrumen klasik siswa (Strategi Belajar, Kepribadian, Masalah).'"
+                    ? 'Pantau Kode Minat Holland dan skor RIASEC untuk rekomendasi lanjut kuliah.'
+                    : 'Pantau hasil Minat Bakat Kerja, strategi belajar, kepribadian, dan masalah.'"
             />
             <span class="rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] {{ $module === 'key' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' }}">
-                Modul {{ strtoupper($module) }}
+                {{ $module === 'key' ? 'Key · Kuliah' : 'Yola · Kerja' }}
             </span>
         </div>
         <form method="GET" action="{{ route('guru.instrument-results.index') }}" class="mt-6 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
@@ -24,6 +32,13 @@
             </x-form-select>
             <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700">Filter</button>
         </form>
+        @if($module === 'key')
+            <div class="mt-4">
+                <a href="{{ route('guru.instrument-results.talent-matrix') }}" class="inline-flex text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300">
+                    Lihat Matriks Talents Mapping →
+                </a>
+            </div>
+        @endif
     </section>
 
     <section class="grid gap-4 xl:grid-cols-2">
@@ -44,8 +59,24 @@
                         <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ $submission->total_score }}</p>
                     </div>
                 </div>
-                <div class="mt-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 p-4">
-                    @if($submission->category === \App\Models\InstrumentQuestion::CATEGORY_MINAT_BAKAT && $submission->kode_minat)
+                @php
+                    $strategiResults = $submission->category === \App\Models\InstrumentQuestion::CATEGORY_GAYA_BELAJAR
+                        ? $submission->strategiBelajarSectionResults()
+                        : [];
+                @endphp
+                @if($strategiResults !== [])
+                    <div class="mt-4 space-y-2">
+                        @foreach($strategiResults as $result)
+                            <div class="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-800/60">
+                                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ $result['label'] }}</span>
+                                <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold {{ $levelBadgeClasses[$result['level']] ?? 'bg-slate-100 text-slate-700' }}">
+                                    {{ $result['level_label'] }}
+                                </span>
+                            </div>
+                        @endforeach
+                    </div>
+                @elseif($submission->category === \App\Models\InstrumentQuestion::CATEGORY_MINAT_BAKAT && $submission->kode_minat)
+                    <div class="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
                         <p class="text-xs font-bold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-300">
                             Kode Minat: {{ $submission->kode_minat }}
                             @if($submission->jenjang)
@@ -62,10 +93,18 @@
                                 @endforeach
                             </p>
                         @endif
-                    @endif
-                    <p class="mt-1 font-semibold text-slate-900 dark:text-slate-100">{{ $submission->result_label }}</p>
-                    <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">{{ $submission->result_description }}</p>
-                </div>
+                        <p class="mt-2 font-semibold text-slate-900 dark:text-slate-100">{{ $submission->result_label }}</p>
+                        <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">{{ $submission->result_description }}</p>
+                    </div>
+                @else
+                    <div class="mt-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/60">
+                        <p class="font-semibold text-slate-900 dark:text-slate-100">{{ $submission->result_label }}</p>
+                        <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">{{ $submission->result_description }}</p>
+                        @if($submission->percentage !== null)
+                            <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{{ number_format((float) $submission->percentage, 2) }}%</p>
+                        @endif
+                    </div>
+                @endif
             </article>
         @empty
             <div class="xl:col-span-2">

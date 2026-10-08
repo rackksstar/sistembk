@@ -48,11 +48,18 @@
             'accent' => 'bg-emerald-600',
         ],
         [
-            'title' => 'Instrumen Asesmen',
-            'description' => 'Isi instrumen minat bakat, gaya belajar, dan masalah sesuai kebutuhan pendampingan.',
-            'href' => route('siswa.instruments.index'),
-            'cta' => 'Isi Instrumen',
-            'accent' => 'bg-slate-600',
+            'title' => 'Minat Bakat Kerja',
+            'description' => 'Asesmen Yola untuk eksplorasi minat dan kesiapan jalur kerja setelah lulus.',
+            'href' => route('siswa.instruments.index', ['category' => 'minat_kerja']),
+            'cta' => 'Isi Minat Kerja',
+            'accent' => 'bg-emerald-600',
+        ],
+        [
+            'title' => 'Minat Bakat Kuliah',
+            'description' => 'Asesmen Key RIASEC / Talents Mapping + rekomendasi prodi PCR untuk lanjut kuliah.',
+            'href' => route('siswa.minat-bakat.index'),
+            'cta' => 'Isi Minat Kuliah',
+            'accent' => 'bg-blue-600',
         ],
         [
             'title' => 'Profil Siswa SMK',

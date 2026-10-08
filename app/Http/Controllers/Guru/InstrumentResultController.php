@@ -44,7 +44,7 @@ class InstrumentResultController extends Controller
                 'student:id,name,email,school,school_id,class_id',
                 'student.schoolModel:id,name',
                 'student.classModel:id,name',
-                'answers.question:id,question',
+                'answers.question:id,question,section,talent_code',
             ])
             ->whereIn('student_id', $accessibleUserIds)
             ->whereIn('category', array_keys($categories))
@@ -58,6 +58,36 @@ class InstrumentResultController extends Controller
             'submissions' => $submissions,
             'categories' => $categories,
             'category' => $category,
+        ]);
+    }
+
+    /**
+     * Matriks Talents Mapping: baris siswa × kolom dimensi RIASEC,
+     * dari submission Minat Bakat terakhir tiap siswa (scoped ke siswa BK).
+     */
+    public function talentMatrix(Request $request): View
+    {
+        $accessibleUserIds = $this->counselorStudentService
+            ->queryForCounselor($request->user())
+            ->pluck('user_id');
+
+        $submissions = InstrumentSubmission::query()
+            ->where('category', InstrumentQuestion::CATEGORY_MINAT_BAKAT)
+            ->whereIn('student_id', $accessibleUserIds)
+            ->with([
+                'student:id,name,email,school,school_id,class_id',
+                'student.schoolModel:id,name',
+                'student.classModel:id,name',
+                'answers.question:id,talent_code,interest_category_id',
+            ])
+            ->latest('submitted_at')
+            ->get()
+            ->unique('student_id')
+            ->values();
+
+        return view('guru.instruments.results.matrix', [
+            'submissions' => $submissions,
+            'riasecCodes' => InstrumentQuestion::RIASEC_CODES,
         ]);
     }
 }

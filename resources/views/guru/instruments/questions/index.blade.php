@@ -9,13 +9,13 @@
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
                 <x-section-title
-                    :title="$module === 'key' ? 'Soal Minat Bakat RIASEC (Key)' : 'Soal Instrumen (Yola)'"
+                    :title="$module === 'key' ? 'Soal Minat Bakat Kuliah (Key)' : 'Soal Instrumen Siap Kerja (Yola)'"
                     :description="$module === 'key'
-                        ? 'Kelola soal asesmen minat RIASEC untuk rekomendasi kuliah/PCR atau bidang karier.'
-                        : 'Kelola soal Strategi Belajar, Kepribadian, dan Masalah.'"
+                        ? 'Kelola soal RIASEC / Talents Mapping untuk lanjut kuliah (rekomendasi PCR).'
+                        : 'Kelola soal Minat Bakat Kerja, Strategi Belajar, Kepribadian, dan Masalah.'"
                 />
                 <span class="mt-2 inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] {{ $module === 'key' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' }}">
-                    Modul {{ strtoupper($module) }}
+                    {{ $module === 'key' ? 'Key · Kuliah' : 'Yola · Kerja' }}
                 </span>
             </div>
             <button type="button" x-on:click="openCreate()" class="w-fit rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">Tambah soal</button>

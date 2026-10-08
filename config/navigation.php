@@ -8,8 +8,8 @@
  *
  * section:
  * - main / core / platform → selalu terbuka
- * - yola → modul asesmen & RPL (kerja langsung)
- * - key → modul karier lanjut kuliah (PCR / RIASEC)
+ * - yola → modul siap kerja & asesmen diri (Minat Bakat Kerja, RPL, sosiometri)
+ * - key → modul lanjut kuliah (Minat Bakat Kuliah / RIASEC → PCR)
  */
 return [
     'admin' => [
@@ -105,12 +105,12 @@ return [
             ],
         ],
         [
-            'group' => 'Asesmen & RPL (Yola)',
+            'group' => 'Siap Kerja & Asesmen (Yola)',
             'section' => 'yola',
             'icon' => 'beaker',
             'items' => [
                 [
-                    'label' => 'Soal Instrumen',
+                    'label' => 'Soal Instrumen Kerja',
                     'route' => 'guru.instrument-questions.index',
                     'params' => ['module' => 'yola'],
                     'active' => 'guru.instrument-questions.*',
@@ -118,7 +118,7 @@ return [
                     'icon' => 'beaker',
                 ],
                 [
-                    'label' => 'Hasil Instrumen',
+                    'label' => 'Hasil Instrumen Kerja',
                     'route' => 'guru.instrument-results.index',
                     'params' => ['module' => 'yola'],
                     'active' => 'guru.instrument-results.*',
@@ -135,12 +135,12 @@ return [
             ],
         ],
         [
-            'group' => 'Karier Lanjut Kuliah (Key)',
+            'group' => 'Lanjut Kuliah (Key)',
             'section' => 'key',
             'icon' => 'academic',
             'items' => [
                 [
-                    'label' => 'Soal Minat Bakat RIASEC',
+                    'label' => 'Soal Minat Bakat Kuliah',
                     'route' => 'guru.instrument-questions.index',
                     'params' => ['module' => 'key'],
                     'active' => 'guru.instrument-questions.*',
@@ -148,7 +148,7 @@ return [
                     'icon' => 'beaker',
                 ],
                 [
-                    'label' => 'Hasil Minat Bakat RIASEC',
+                    'label' => 'Hasil Minat Bakat Kuliah',
                     'route' => 'guru.instrument-results.index',
                     'params' => ['module' => 'key'],
                     'active' => 'guru.instrument-results.*',
@@ -181,10 +181,19 @@ return [
             ],
         ],
         [
-            'group' => 'Modul Tim Lain',
+            'group' => 'Siap Kerja (Yola)',
             'section' => 'yola',
             'icon' => 'beaker',
             'items' => [
+                [
+                    'label' => 'Minat Bakat Kerja',
+                    'title' => 'Asesmen minat untuk jalur kerja',
+                    'route' => 'siswa.instruments.index',
+                    'params' => ['category' => 'minat_kerja'],
+                    'active' => 'siswa.instruments.*',
+                    'match' => ['category' => 'minat_kerja'],
+                    'icon' => 'briefcase',
+                ],
                 [
                     'label' => 'Strategi Belajar',
                     'title' => 'Instrumen Asesmen',
@@ -213,18 +222,19 @@ return [
                     'icon' => 'clipboard',
                 ],
                 ['label' => 'Sosiometri', 'route' => 'siswa.sociometry.index', 'active' => 'siswa.sociometry.*', 'icon' => 'chart'],
-                ['label' => 'Karier', 'title' => 'Informasi Karier', 'route' => 'siswa.careers.index', 'active' => 'siswa.careers.*', 'icon' => 'briefcase'],
+                ['label' => 'Info Karier', 'title' => 'Informasi Karier', 'route' => 'siswa.careers.index', 'active' => 'siswa.careers.*', 'icon' => 'briefcase'],
             ],
         ],
         [
-            'group' => 'Karier Lanjut Kuliah (Key)',
+            'group' => 'Lanjut Kuliah (Key)',
             'section' => 'key',
             'icon' => 'academic',
             'items' => [
                 [
-                    'label' => 'Minat Bakat RIASEC',
-                    'title' => 'Asesmen minat + rekomendasi prodi PCR / bidang karier',
+                    'label' => 'Minat Bakat Kuliah',
+                    'title' => 'RIASEC / Talents Mapping + rekomendasi prodi PCR',
                     'route' => 'siswa.minat-bakat.index',
+                    // hasil RIASEC juga di instruments.hasil — difilter di sidebar agar tidak bentrok dengan hasil Yola.
                     'active' => ['siswa.minat-bakat.*', 'siswa.instruments.hasil', 'siswa.instruments.hasil.pdf'],
                     'icon' => 'academic',
                 ],

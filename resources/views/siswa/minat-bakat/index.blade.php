@@ -2,42 +2,58 @@
 
 @section('content')
 <div class="space-y-6">
-    <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
-        <div class="flex flex-wrap items-start justify-between gap-3">
-            <x-section-title
-                title="Minat Bakat RIASEC (Key)"
-                description="Asesmen minat untuk siswa SMA/SMK yang merencanakan lanjut kuliah (rekomendasi prodi PCR) atau pemetaan bidang karier."
-            />
-            <span class="rounded-full bg-blue-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
-                Modul Key
-            </span>
+    <section class="overflow-hidden rounded-3xl border border-slate-200 shadow-sm dark:border-slate-700">
+        <div class="bg-gradient-to-r from-indigo-500 to-blue-600 px-6 py-5 text-center sm:text-left">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100">Modul Key · Lanjut Kuliah</p>
+                    <h1 class="mt-1 text-lg font-bold text-white sm:text-xl">Minat Bakat Kuliah — Talents Mapping</h1>
+                    <p class="mt-1 text-sm text-indigo-50/90">
+                        Asesmen RIASEC (99 item) → Kode Minat Holland + rekomendasi prodi PCR (SMA) atau bidang karier (SMK).
+                    </p>
+                </div>
+                <span class="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-sm">
+                    Key
+                </span>
+            </div>
         </div>
-        <x-alert class="mt-5" type="success" :message="session('success')" />
-        @error('jenjang')
-            <x-alert class="mt-5" type="error" :message="$message" />
-        @enderror
 
-        @if($latestSubmission)
-            <div class="mt-5 rounded-2xl border border-blue-100 dark:border-blue-900/40 bg-blue-50/70 dark:bg-blue-950/20 p-4">
-                <p class="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-300">Hasil terakhir</p>
-                <p class="mt-2 text-lg font-bold text-slate-950 dark:text-white">
-                    Kode Minat: {{ $latestSubmission->kode_minat ?: '-' }}
-                </p>
-                <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                    {{ $latestSubmission->result_label }}
-                    @if($latestSubmission->jenjang) · {{ $latestSubmission->jenjang }} @endif
-                    · {{ $latestSubmission->submitted_at?->format('d M Y H:i') }}
-                </p>
-                <a href="{{ route('siswa.instruments.hasil', $latestSubmission) }}" class="mt-3 inline-flex text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300">
-                    Lihat hasil lengkap
+        <div class="bg-white p-6 dark:bg-slate-900">
+            <x-alert type="success" :message="session('success')" />
+            @error('jenjang')
+                <x-alert class="mt-3" type="error" :message="$message" />
+            @enderror
+
+            <div class="mt-1 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm leading-6 text-slate-700 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-slate-300">
+                <p class="font-semibold text-slate-950 dark:text-white">Mau fokus jalur kerja dulu?</p>
+                <p class="mt-1">Pakai asesmen Yola (Minat Bakat Kerja) untuk eksplorasi minat dan kesiapan diri menuju dunia kerja.</p>
+                <a href="{{ route('siswa.instruments.index', ['category' => 'minat_kerja']) }}" class="mt-2 inline-flex text-sm font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-300">
+                    Buka Minat Bakat Kerja →
                 </a>
             </div>
-        @endif
 
-        <p class="mt-5 text-xs leading-5 text-slate-500 dark:text-slate-400">
-            Untuk strategi belajar / kepribadian (Modul Yola),
-            <a href="{{ route('siswa.instruments.index') }}" class="font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-300">buka Asesmen Diri</a>.
-        </p>
+            @if($latestSubmission)
+                <div class="mt-5 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 dark:border-blue-900/40 dark:bg-blue-950/20">
+                    <p class="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 dark:text-blue-300">Hasil terakhir</p>
+                    <p class="mt-2 text-lg font-bold text-slate-950 dark:text-white">
+                        Kode Minat: {{ $latestSubmission->kode_minat ?: '-' }}
+                    </p>
+                    <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                        {{ $latestSubmission->result_label }}
+                        @if($latestSubmission->jenjang) · {{ $latestSubmission->jenjang }} @endif
+                        · {{ $latestSubmission->submitted_at?->format('d M Y H:i') }}
+                    </p>
+                    <a href="{{ route('siswa.instruments.hasil', $latestSubmission) }}" class="mt-3 inline-flex text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300">
+                        Lihat hasil lengkap →
+                    </a>
+                </div>
+            @endif
+
+            <p class="mt-5 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                Modul Yola lain (strategi belajar, kepribadian, masalah):
+                <a href="{{ route('siswa.instruments.index', ['category' => 'gaya_belajar']) }}" class="font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-300">buka Instrumen Asesmen</a>.
+            </p>
+        </div>
     </section>
 
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">

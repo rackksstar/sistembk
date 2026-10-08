@@ -12,9 +12,16 @@ class InstrumentQuestion extends Model
 {
     use SoftDeletes;
 
+    /** Key — RIASEC / Talents Mapping untuk lanjut kuliah (rekomendasi PCR). */
     public const CATEGORY_MINAT_BAKAT = 'minat_bakat';
 
+    /** Yola — asesmen klasik kesiapan minat untuk jalur kerja. */
+    public const CATEGORY_MINAT_KERJA = 'minat_kerja';
+
     public const CATEGORY_GAYA_BELAJAR = 'gaya_belajar';
+
+    /** Alias slug lama dari referensi Key/Yola (strategi_belajar). */
+    public const CATEGORY_STRATEGI_BELAJAR = 'gaya_belajar';
 
     public const CATEGORY_KEPRIBADIAN = 'kepribadian';
 
@@ -23,15 +30,17 @@ class InstrumentQuestion extends Model
     public const CATEGORY_ANGKET_MASALAH = 'angket_masalah';
 
     public const CATEGORIES = [
-        self::CATEGORY_MINAT_BAKAT => 'Minat Bakat',
+        self::CATEGORY_MINAT_BAKAT => 'Minat Bakat Kuliah',
+        self::CATEGORY_MINAT_KERJA => 'Minat Bakat Kerja',
         self::CATEGORY_GAYA_BELAJAR => 'Strategi Belajar',
         self::CATEGORY_KEPRIBADIAN => 'Kepribadian',
         self::CATEGORY_SOSIOMETRI => 'Sosiometri',
         self::CATEGORY_ANGKET_MASALAH => 'Masalah',
     ];
 
-    /** Kategori instrumen klasik modul Yola (kerja/diri). */
+    /** Kategori instrumen klasik modul Yola (siap kerja / asesmen diri). */
     public const YOLA_CATEGORIES = [
+        self::CATEGORY_MINAT_KERJA => 'Minat Bakat Kerja',
         self::CATEGORY_GAYA_BELAJAR => 'Strategi Belajar',
         self::CATEGORY_KEPRIBADIAN => 'Kepribadian',
         self::CATEGORY_ANGKET_MASALAH => 'Masalah',
@@ -39,10 +48,42 @@ class InstrumentQuestion extends Model
 
     /** Kategori asesmen RIASEC modul Key (lanjut kuliah / PCR). */
     public const KEY_CATEGORIES = [
-        self::CATEGORY_MINAT_BAKAT => 'Minat Bakat RIASEC',
+        self::CATEGORY_MINAT_BAKAT => 'Minat Bakat Kuliah',
     ];
 
     public const JENJANG_TARGETS = ['semua', 'SMA', 'SMK'];
+
+    /**
+     * Bagian numbered (ala ruangguru) untuk Strategi Belajar.
+     */
+    public const SECTIONS = [
+        self::CATEGORY_GAYA_BELAJAR => [
+            1 => 'Perencanaan Belajar',
+            2 => 'Eksekusi Belajar',
+            3 => 'Refleksi Belajar',
+        ],
+    ];
+
+    /**
+     * Enam dimensi RIASEC (kerangka Talents Mapping) untuk soal Minat Bakat.
+     */
+    public const RIASEC_CODES = [
+        'R' => 'Realistic',
+        'I' => 'Investigative',
+        'A' => 'Artistic',
+        'S' => 'Social',
+        'E' => 'Enterprising',
+        'C' => 'Conventional',
+    ];
+
+    /** Opsi Likert baku Talents Mapping (referensi Key). */
+    public const TALENTS_LIKERT_OPTIONS = [
+        ['label' => 'Sangat Tidak Suka', 'score' => 1],
+        ['label' => 'Tidak Suka', 'score' => 2],
+        ['label' => 'Netral', 'score' => 3],
+        ['label' => 'Suka', 'score' => 4],
+        ['label' => 'Sangat Suka', 'score' => 5],
+    ];
 
     public static function isYolaCategory(string $category): bool
     {
@@ -56,7 +97,9 @@ class InstrumentQuestion extends Model
 
     protected $fillable = [
         'category',
+        'section',
         'interest_category_id',
+        'talent_code',
         'jenjang_target',
         'bobot',
         'question',
@@ -71,7 +114,23 @@ class InstrumentQuestion extends Model
             'options' => 'array',
             'is_active' => 'boolean',
             'bobot' => 'integer',
+            'section' => 'integer',
         ];
+    }
+
+    public function talentCodeLabel(): ?string
+    {
+        return self::RIASEC_CODES[$this->talent_code] ?? null;
+    }
+
+    public function sectionLabel(): ?string
+    {
+        return self::SECTIONS[$this->category][$this->section] ?? null;
+    }
+
+    public function usesNumberedSections(): bool
+    {
+        return array_key_exists($this->category, self::SECTIONS) && $this->section !== null;
     }
 
     public function creator(): BelongsTo

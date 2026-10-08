@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\InstrumentQuestion;
 use App\Models\InterestCategory;
 use Illuminate\Database\Seeder;
 
@@ -9,55 +10,27 @@ class InterestCategorySeeder extends Seeder
 {
     public function run(): void
     {
-        $categories = [
-            [
-                'kode' => 'R',
-                'nama' => 'Teknik',
-                'deskripsi' => 'Suka aktivitas praktis: alat, mesin, listrik, perbaikan, dan kerja lapangan.',
-                'warna' => '#f59e0b',
-                'urutan' => 1,
-            ],
-            [
-                'kode' => 'I',
-                'nama' => 'Teknologi & Sains',
-                'deskripsi' => 'Suka menganalisis, memecahkan masalah, memprogram, dan memahami cara kerja sesuatu.',
-                'warna' => '#3b82f6',
-                'urutan' => 2,
-            ],
-            [
-                'kode' => 'A',
-                'nama' => 'Kreatif',
-                'deskripsi' => 'Suka berkarya, mendesain, menulis, dan mengungkapkan ide orisinal.',
-                'warna' => '#8b5cf6',
-                'urutan' => 3,
-            ],
-            [
-                'kode' => 'S',
-                'nama' => 'Sosial',
-                'deskripsi' => 'Suka membantu, mengajar, mendampingi, dan berinteraksi dengan orang lain.',
-                'warna' => '#ec4899',
-                'urutan' => 4,
-            ],
-            [
-                'kode' => 'E',
-                'nama' => 'Bisnis',
-                'deskripsi' => 'Suka memimpin, meyakinkan orang, berjualan, dan mengambil peluang.',
-                'warna' => '#ef4444',
-                'urutan' => 5,
-            ],
-            [
-                'kode' => 'C',
-                'nama' => 'Administrasi & Data',
-                'deskripsi' => 'Suka keteraturan, data, administrasi, dan detail yang konsisten.',
-                'warna' => '#10b981',
-                'urutan' => 6,
-            ],
+        $descriptions = config('riasec_results.descriptions', []);
+        $warna = [
+            'R' => '#f59e0b',
+            'I' => '#3b82f6',
+            'A' => '#8b5cf6',
+            'S' => '#10b981',
+            'E' => '#ef4444',
+            'C' => '#06b6d4',
         ];
+        $urutan = 1;
 
-        foreach ($categories as $category) {
+        foreach (InstrumentQuestion::RIASEC_CODES as $kode => $nama) {
             InterestCategory::query()->updateOrCreate(
-                ['kode' => $category['kode']],
-                $category + ['is_active' => true]
+                ['kode' => $kode],
+                [
+                    'nama' => $nama,
+                    'deskripsi' => $descriptions[$kode] ?? $nama,
+                    'warna' => $warna[$kode] ?? '#64748b',
+                    'urutan' => $urutan++,
+                    'is_active' => true,
+                ]
             );
         }
     }

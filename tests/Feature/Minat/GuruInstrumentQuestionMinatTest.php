@@ -27,18 +27,12 @@ class GuruInstrumentQuestionMinatTest extends TestCase
         $this->actingAs($guru)
             ->post(route('guru.instrument-questions.store'), [
                 'category' => InstrumentQuestion::CATEGORY_MINAT_BAKAT,
-                'interest_category_id' => $category->id,
+                'talent_code' => 'R',
                 'jenjang_target' => 'semua',
                 'bobot' => 2,
-                'question' => 'Seberapa tertarik kamu memperbaiki mesin?',
+                'question' => 'Memperbaiki mesin',
                 'is_active' => 1,
-                'options' => [
-                    ['label' => 'Sangat tidak tertarik', 'score' => 0],
-                    ['label' => 'Tidak tertarik', 'score' => 1],
-                    ['label' => 'Netral', 'score' => 2],
-                    ['label' => 'Tertarik', 'score' => 3],
-                    ['label' => 'Sangat tertarik', 'score' => 4],
-                ],
+                'options' => InstrumentQuestion::TALENTS_LIKERT_OPTIONS,
             ])
             ->assertRedirect()
             ->assertSessionHas('success');
@@ -46,14 +40,15 @@ class GuruInstrumentQuestionMinatTest extends TestCase
         $this->assertDatabaseHas('instrument_questions', [
             'category' => InstrumentQuestion::CATEGORY_MINAT_BAKAT,
             'interest_category_id' => $category->id,
+            'talent_code' => 'R',
             'bobot' => 2,
             'jenjang_target' => 'semua',
-            'question' => 'Seberapa tertarik kamu memperbaiki mesin?',
+            'question' => 'Memperbaiki mesin',
             'created_by' => $guru->id,
         ]);
     }
 
-    public function test_soal_minat_wajib_punya_interest_category(): void
+    public function test_soal_minat_wajib_punya_talent_code(): void
     {
         $guru = $this->buatGuru();
 
@@ -62,14 +57,14 @@ class GuruInstrumentQuestionMinatTest extends TestCase
                 'category' => InstrumentQuestion::CATEGORY_MINAT_BAKAT,
                 'jenjang_target' => 'SMA',
                 'bobot' => 1,
-                'question' => 'Soal tanpa kategori minat',
+                'question' => 'Soal tanpa kode RIASEC',
                 'is_active' => 1,
                 'options' => [
                     ['label' => 'Ya', 'score' => 1],
                     ['label' => 'Tidak', 'score' => 0],
                 ],
             ])
-            ->assertSessionHasErrors('interest_category_id');
+            ->assertSessionHasErrors(['talent_code', 'interest_category_id']);
     }
 
     public function test_hapus_soal_yang_punya_jawaban_memakai_soft_delete(): void

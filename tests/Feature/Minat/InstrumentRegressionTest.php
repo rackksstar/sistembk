@@ -38,19 +38,24 @@ class InstrumentRegressionTest extends TestCase
         // 4+4+4 = 12; max = 3*4 = 12 → 100% → Sangat Menonjol
         $answers = $questions->mapWithKeys(fn (InstrumentQuestion $q) => [$q->id => 3])->all();
 
-        $this->actingAs($siswa)
+        $response = $this->actingAs($siswa)
             ->post(route('siswa.instruments.store'), [
                 'category' => InstrumentQuestion::CATEGORY_GAYA_BELAJAR,
                 'answers' => $answers,
             ])
-            ->assertRedirect(route('siswa.instruments.index', [
-                'category' => InstrumentQuestion::CATEGORY_GAYA_BELAJAR,
-            ]))
             ->assertSessionHas('success');
 
+        // Tanpa section → halaman hasil sederhana; dengan section → strategi-belajar-result.
+        $submission = InstrumentSubmission::query()
+            ->where('student_id', $siswa->id)
+            ->where('category', InstrumentQuestion::CATEGORY_GAYA_BELAJAR)
+            ->latest('id')
+            ->firstOrFail();
+
+        $response->assertRedirect(route('siswa.instruments.strategi-belajar-result'));
+
         $this->assertDatabaseHas('instrument_submissions', [
-            'student_id' => $siswa->id,
-            'category' => InstrumentQuestion::CATEGORY_GAYA_BELAJAR,
+            'id' => $submission->id,
             'total_score' => 12,
             'result_label' => 'Sangat Menonjol',
             'result_description' => 'Potensi atau kecenderungan siswa terlihat kuat pada instrumen ini.',
@@ -120,17 +125,18 @@ class InstrumentRegressionTest extends TestCase
         // skor 2+2 = 4; max = 8 → 50% → Cukup Berkembang
         $answers = $questions->mapWithKeys(fn (InstrumentQuestion $q) => [$q->id => 1])->all();
 
-        $this->actingAs($siswa)
+        $response = $this->actingAs($siswa)
             ->post(route('siswa.instruments.store'), [
                 'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
                 'answers' => $answers,
-            ])
-            ->assertRedirect();
+            ]);
 
         $submission = InstrumentSubmission::query()
             ->where('student_id', $siswa->id)
             ->where('category', InstrumentQuestion::CATEGORY_KEPRIBADIAN)
             ->firstOrFail();
+
+        $response->assertRedirect(route('siswa.instruments.hasil', $submission));
 
         $this->assertSame(4, $submission->total_score);
         $this->assertSame('Cukup Berkembang', $submission->result_label);

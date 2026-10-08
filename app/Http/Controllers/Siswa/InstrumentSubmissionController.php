@@ -14,6 +14,7 @@ use App\Support\ActivityLogger;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -27,7 +28,7 @@ class InstrumentSubmissionController extends Controller
     ) {}
 
     /**
-     * Index modul Yola: instrumen klasik (Strategi Belajar, Kepribadian, Masalah).
+     * Index modul Yola: Minat Bakat Kerja + asesmen diri klasik.
      */
     public function index(Request $request): View|RedirectResponse
     {
@@ -38,14 +39,14 @@ class InstrumentSubmissionController extends Controller
             return redirect()->route('siswa.instruments.index', ['category' => InstrumentQuestion::CATEGORY_GAYA_BELAJAR]);
         }
 
-        // Link lama minat_bakat diarahkan ke index Key.
+        // Link lama minat_bakat (sebelum dipisah) → Minat Bakat Kuliah (Key).
         if ($rawCategory === InstrumentQuestion::CATEGORY_MINAT_BAKAT) {
-            return redirect()->route('siswa.minat-bakat.index', $request->query());
+            return redirect()->route('siswa.minat-bakat.index');
         }
 
         $category = $rawCategory !== ''
             ? $rawCategory
-            : InstrumentQuestion::CATEGORY_GAYA_BELAJAR;
+            : InstrumentQuestion::CATEGORY_MINAT_KERJA;
         abort_unless(InstrumentQuestion::isYolaCategory($category), 404);
 
         $questions = InstrumentQuestion::query()
@@ -62,25 +63,17 @@ class InstrumentSubmissionController extends Controller
             ->unique('category')
             ->keyBy('category');
 
-        $latestMinatSubmission = InstrumentSubmission::query()
-            ->where('student_id', auth()->id())
-            ->where('category', InstrumentQuestion::CATEGORY_MINAT_BAKAT)
-            ->latest('submitted_at')
-            ->first();
-
         return view('siswa.instruments.index', [
             'module' => 'yola',
             'categories' => InstrumentQuestion::YOLA_CATEGORIES,
             'category' => $category,
             'questions' => $questions,
-            'sections' => $this->groupClassicSections($questions, $category),
             'latestSubmissions' => $latestSubmissions,
-            'latestMinatSubmission' => $latestMinatSubmission,
         ]);
     }
 
     /**
-     * Index modul Key: Asesmen Minat Bakat RIASEC + rekomendasi kuliah/PCR atau karier.
+     * Index modul Key: Minat Bakat Kuliah (RIASEC) + rekomendasi prodi PCR / bidang karier.
      */
     public function minatBakatIndex(Request $request): View
     {
@@ -168,7 +161,7 @@ class InstrumentSubmissionController extends Controller
             return back()->withErrors(['answers' => 'Jawaban tidak sesuai dengan daftar soal aktif.'])->withInput();
         }
 
-        DB::transaction(function () use ($validated, $questions) {
+        $submission = DB::transaction(function () use ($validated, $questions) {
             $totalScore = 0;
             $answerRows = [];
 
@@ -211,36 +204,84 @@ class InstrumentSubmissionController extends Controller
             ]);
 
             $submission->answers()->saveMany($answerRows);
+
+            return $submission;
         });
 
-        $redirectRoute = InstrumentQuestion::isKeyCategory($validated['category'])
-            ? 'siswa.minat-bakat.index'
-            : 'siswa.instruments.index';
+        // Strategi Belajar (ref): ke halaman hasil per-bagian.
+        if ($validated['category'] === InstrumentQuestion::CATEGORY_GAYA_BELAJAR) {
+            return redirect()
+                ->route('siswa.instruments.strategi-belajar-result')
+                ->with('success', 'Jawaban instrumen berhasil dikirim dan diskor otomatis.');
+        }
+
+        // Instrumen Yola lain: langsung ke halaman hasil (bukan kembali ke form).
+        if (InstrumentQuestion::isYolaCategory($validated['category'])) {
+            return redirect()
+                ->route('siswa.instruments.hasil', $submission)
+                ->with('success', 'Jawaban instrumen berhasil dikirim dan diskor otomatis.');
+        }
 
         return redirect()
-            ->route($redirectRoute, InstrumentQuestion::isKeyCategory($validated['category'])
-                ? []
-                : ['category' => $validated['category']])
+            ->route('siswa.instruments.index', ['category' => $validated['category']])
             ->with('success', 'Jawaban instrumen berhasil dikirim dan diskor otomatis.');
+    }
+
+    /**
+     * Hasil Strategi Belajar per bagian (Perencanaan / Eksekusi / Refleksi).
+     */
+    public function strategiBelajarResult(): View
+    {
+        $submission = InstrumentSubmission::query()
+            ->where('student_id', auth()->id())
+            ->where('category', InstrumentQuestion::CATEGORY_GAYA_BELAJAR)
+            ->with('answers.question:id,section')
+            ->latest('submitted_at')
+            ->first();
+
+        abort_unless($submission, 404);
+
+        $sectionResults = $submission->strategiBelajarSectionResults();
+
+        if ($sectionResults === []) {
+            return view('siswa.instruments.hasil-simple', [
+                'submission' => $submission,
+            ]);
+        }
+
+        return view('siswa.instruments.strategi-belajar-result', [
+            'submission' => $submission,
+            'results' => $sectionResults,
+        ]);
     }
 
     public function hasil(InstrumentSubmission $submission): View
     {
         $this->assertOwnsSubmission($submission);
 
-        if ($submission->category !== InstrumentQuestion::CATEGORY_MINAT_BAKAT) {
-            return view('siswa.instruments.hasil-simple', [
+        if ($submission->category === InstrumentQuestion::CATEGORY_MINAT_BAKAT) {
+            [$result, $recommendations] = $this->buildMinatResultPayload($submission);
+
+            return view('siswa.instruments.hasil', [
                 'submission' => $submission,
+                'result' => $result,
+                'topCategories' => $result->topCategories(3),
+                'recommendations' => $recommendations,
             ]);
         }
 
-        [$result, $recommendations] = $this->buildMinatResultPayload($submission);
+        if ($submission->category === InstrumentQuestion::CATEGORY_GAYA_BELAJAR) {
+            $sectionResults = $submission->strategiBelajarSectionResults();
+            if ($sectionResults !== []) {
+                return view('siswa.instruments.strategi-belajar-result', [
+                    'submission' => $submission,
+                    'results' => $sectionResults,
+                ]);
+            }
+        }
 
-        return view('siswa.instruments.hasil', [
+        return view('siswa.instruments.hasil-simple', [
             'submission' => $submission,
-            'result' => $result,
-            'topCategories' => $result->topCategories(3),
-            'recommendations' => $recommendations,
         ]);
     }
 
@@ -360,8 +401,8 @@ class InstrumentSubmissionController extends Controller
                 'secondary_interest_id' => $interestResult->secondary_interest_id,
                 'is_tied' => $interestResult->is_tied,
                 'total_score' => (int) round((float) $interestResult->total_score),
-                'result_label' => $interestResult->result_label,
-                'result_description' => $interestResult->result_description,
+                'result_label' => $interestResult->kode_minat,
+                'result_description' => "Kode dominan Talents Mapping (RIASEC): {$interestResult->kode_minat}. Lihat rincian lengkap di halaman hasil.",
                 'submitted_at' => now(),
             ]);
 
@@ -468,8 +509,8 @@ class InstrumentSubmissionController extends Controller
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, InstrumentQuestion>  $questions
-     * @return \Illuminate\Support\Collection<int, array{title: ?string, questions: \Illuminate\Support\Collection}>
+     * @param  Collection<int, InstrumentQuestion>  $questions
+     * @return Collection<int, array{title: ?string, questions: Collection}>
      */
     private function groupClassicSections($questions, string $category)
     {
@@ -506,11 +547,11 @@ class InstrumentSubmissionController extends Controller
                 $percentage >= 40 => ['label' => 'Perlu Dipantau', 'description' => 'Ada beberapa area masalah yang perlu didalami melalui percakapan lanjutan.'],
                 default => ['label' => 'Ringan', 'description' => 'Belum tampak indikasi masalah berat dari jawaban instrumen.'],
             }
-            : match (true) {
-                $percentage >= 70 => ['label' => 'Sangat Menonjol', 'description' => 'Potensi atau kecenderungan siswa terlihat kuat pada instrumen ini.'],
-                $percentage >= 40 => ['label' => 'Cukup Berkembang', 'description' => 'Potensi siswa sudah terlihat dan dapat diperkuat melalui bimbingan.'],
-                default => ['label' => 'Perlu Eksplorasi', 'description' => 'Siswa masih perlu mengeksplorasi diri pada area ini.'],
-            };
+        : match (true) {
+            $percentage >= 70 => ['label' => 'Sangat Menonjol', 'description' => 'Potensi atau kecenderungan siswa terlihat kuat pada instrumen ini.'],
+            $percentage >= 40 => ['label' => 'Cukup Berkembang', 'description' => 'Potensi siswa sudah terlihat dan dapat diperkuat melalui bimbingan.'],
+            default => ['label' => 'Perlu Eksplorasi', 'description' => 'Siswa masih perlu mengeksplorasi diri pada area ini.'],
+        };
 
         return $result + ['percentage' => $percentage];
     }
