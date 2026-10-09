@@ -419,44 +419,59 @@ class DatabaseSeeder extends Seeder
         // didukung jawaban "Setuju".
         $mbtiStatements = [
             'EI' => [
-                ['Saya bersemangat ketika bisa mengobrol dan bekerja sama dengan banyak teman.', 'E'],
-                ['Saya mudah memulai percakapan dengan orang yang baru dikenal.', 'E'],
-                ['Saya lebih suka belajar kelompok daripada belajar sendirian.', 'E'],
-                ['Saya merasa berenergi setelah menghabiskan waktu bersama teman-teman.', 'E'],
-                ['Saya membutuhkan waktu menyendiri untuk mengembalikan energi setelah seharian beraktivitas dengan orang lain.', 'I'],
-                ['Saya lebih nyaman menyampaikan pendapat secara tertulis daripada berbicara di depan banyak orang.', 'I'],
-                ['Saya berpikir matang-matang dulu sebelum berbicara dalam diskusi.', 'I'],
-                ['Saya lebih suka menghabiskan waktu luang sendirian atau hanya dengan satu-dua teman dekat.', 'I'],
+                ['Saya rutin mendapatkan teman baru.', 'E'],
+                ['Saya menikmati berpartisipasi dalam kegiatan berbasis tim.', 'E'],
+                ['Saya jarang khawatir akan membuat kesan yang baik saat bertemu orang lain.', 'E'],
+                ['Saya merasa nyaman untuk mendekati seseorang yang menurut saya menarik dan memulai percakapan.', 'E'],
+                ['Saya biasanya lebih suka berada di sekitar orang lain daripada sendirian.', 'E'],
+                ['Teman-teman saya menggambarkan diri saya sebagai orang yang energik dan ramah.', 'E'],
+                ['Saya mudah berinteraksi dengan orang yang baru dikenal.', 'E'],
+                ['Saya lebih tertarik pada suasana ramai dan sibuk daripada tempat tenang dan akrab.', 'E'],
+                ['Saya jarang merasa tidak percaya diri.', 'E'],
+                ['Saya yakin bahwa segalanya akan berjalan dengan baik.', 'E'],
+                ['Saya menghindari melakukan panggilan telepon.', 'I'],
+                ['Saat ada acara sosial, saya biasanya menunggu orang lain untuk memperkenalkan diri terlebih dahulu.', 'I'],
+                ['Saya merasa konsep berjejaring atau memperkenalkan diri saya kepada orang asing sangat menakutkan.', 'I'],
+                ['Saya akan menyukai pekerjaan yang mengharuskan untuk lebih banyak bekerja sendiri.', 'I'],
             ],
             'SN' => [
-                ['Saya lebih percaya pada pengalaman nyata daripada firasat atau dugaan.', 'S'],
-                ['Saya memperhatikan detail-detail kecil saat mengerjakan tugas.', 'S'],
-                ['Saya lebih suka mengikuti cara yang sudah terbukti berhasil.', 'S'],
-                ['Saya fokus pada kejadian saat ini daripada memikirkan kemungkinan jauh ke depan.', 'S'],
-                ['Saya senang membayangkan berbagai kemungkinan tentang masa depan.', 'N'],
-                ['Saya tertarik mencari makna tersembunyi di balik suatu kejadian.', 'N'],
-                ['Saya suka mencari pola dan hubungan antar hal yang terlihat tidak berkaitan.', 'N'],
-                ['Saya sering mendapat ide baru ketika sedang melamun.', 'N'],
+                ['Saya merasa bosan atau kehilangan minat saat diskusi menjadi terlalu teoretis.', 'S'],
+                ['Saya tidak terlalu tertarik dalam diskusi tentang berbagai interpretasi karya kreatif.', 'S'],
+                ['Saya tidak terlalu tertarik untuk membahas teori tentang masa depan dunia.', 'S'],
+                ['Saya percaya bahwa merenungkan pertanyaan filosofis abstrak hanya membuang-buang waktu.', 'S'],
+                ['Saya senang menggali ide dan sudut pandang yang kurang dikenal.', 'N'],
+                ['Saya menikmati bereksperimen dengan pendekatan baru dan belum teruji.', 'N'],
+                ['Saya tertarik pada berbagai bentuk ekspresi kreatif, seperti menulis.', 'N'],
+                ['Ide-ide kompleks dan baru lebih membuat saya bersemangat daripada yang sederhana dan terang-terangan.', 'N'],
+                ['Saya lebih menyukai tugas yang memerlukan solusi kreatif daripada mengikuti prosedur yang sudah ditentukan.', 'N'],
+                ['Jika saya merasa itulah keputusan yang terbaik, saya sering bertindak berdasarkan pertimbangan tersebut tanpa memerlukan bukti lebih lanjut.', 'N'],
             ],
             'TF' => [
-                ['Dalam mengambil keputusan, saya lebih mengutamakan logika daripada perasaan.', 'T'],
-                ['Saya berani menyampaikan kritik yang jujur meskipun mungkin menyinggung perasaan orang lain.', 'T'],
-                ['Saya menilai sesuatu berdasarkan adil atau tidaknya, bukan berdasarkan rasa kasihan.', 'T'],
-                ['Saya tetap tenang dan objektif saat menghadapi konflik.', 'T'],
-                ['Perasaan orang lain sangat memengaruhi keputusan saya.', 'F'],
-                ['Saya sulit berkata tidak ketika teman meminta bantuan.', 'F'],
-                ['Keharmonisan hubungan lebih penting bagi saya daripada memenangkan perdebatan.', 'F'],
-                ['Saya mudah ikut merasakan kesedihan atau kegembiraan orang lain.', 'F'],
+                ['Saya tidak mudah terpengaruh oleh argumen yang berlandaskan emosi.', 'T'],
+                ['Saya senang berdebat tentang dilema etika.', 'T'],
+                ['Saya mengutamakan fakta daripada perasaan orang ketika menentukan langkah tindakan.', 'T'],
+                ['Saat terjadi perselisihan, saya lebih mengutamakan membuktikan pendapat saya daripada menjaga perasaan orang lain.', 'T'],
+                ['Saya biasanya membuat pilihan berdasarkan fakta objektif daripada kesan emosional.', 'T'],
+                ['Saya lebih mengutamakan untuk bersikap peka daripada sepenuhnya jujur.', 'F'],
+                ['Kisah dan penghayatan emosi seseorang mempunyai dampak lebih signifikan bagi saya daripada angka atau data.', 'F'],
+                ['Saya biasanya merasa lebih terpengaruh oleh apa yang beresonansi secara emosional dengan saya daripada oleh argumen faktual.', 'F'],
+                ['Saat ada pertentangan antara kenyataan dan perasaan, saya biasanya lebih memilih untuk mengikuti kata hati.', 'F'],
+                ['Saat mengambil keputusan, saya lebih mempertimbangkan perasaan orang-orang yang terkena dampak keputusan itu daripada mempertimbangkan apa yang paling logis atau efisien.', 'F'],
+                ['Saat membuat pilihan, saya lebih cenderung mengandalkan intuisi emosional daripada penalaran logis.', 'F'],
             ],
             'JP' => [
-                ['Saya membuat rencana dan jadwal sebelum mengerjakan tugas besar.', 'J'],
-                ['Kerapian dan keteraturan membuat saya nyaman saat belajar.', 'J'],
-                ['Saya menyelesaikan tugas jauh sebelum tenggat waktu.', 'J'],
-                ['Saya tidak suka perubahan rencana yang mendadak.', 'J'],
-                ['Saya bekerja paling baik di bawah tekanan tenggat waktu.', 'P'],
-                ['Saya lebih suka membiarkan pilihan tetap terbuka selama mungkin.', 'P'],
-                ['Saya spontan dan mudah menyesuaikan diri dengan perubahan rencana.', 'P'],
-                ['Saya mengerjakan tugas dengan fleksibel mengikuti suasana hati.', 'P'],
+                ['Ruang hidup dan kerja saya bersih dan terorganisir.', 'J'],
+                ['Saya memprioritaskan dan merencanakan tugas dengan efektif, seringkali menyelesaikannya jauh sebelum tenggat waktu.', 'J'],
+                ['Saya jarang mempertanyakan keputusan yang telah saya buat.', 'J'],
+                ['Saya suka menyusun daftar tugas sehari-hari.', 'J'],
+                ['Jika rencana saya terganggu, prioritas utama saya adalah kembali ke rencana tersebut secepat mungkin.', 'J'],
+                ['Saya menyelesaikan berbagai hal menurut metode tanpa melewatkan langkah apa pun.', 'J'],
+                ['Saya suka menggunakan alat pengorganisasian seperti jadwal dan daftar tugas.', 'J'],
+                ['Saya kesulitan memenuhi tenggat waktu.', 'P'],
+                ['Saya sering membiarkan hari berlalu tanpa jadwal sama sekali.', 'P'],
+                ['Saya sering menunda pekerjaan hingga detik-detik terakhir.', 'P'],
+                ['Bagi saya, menjaga konsistensi jadwal kerja atau belajar adalah sebuah tantangan.', 'P'],
+                ['Gaya kerja pribadi saya lebih mendekati letupan energi spontan daripada upaya yang teratur dan konsisten.', 'P'],
             ],
         ];
 
@@ -488,6 +503,15 @@ class DatabaseSeeder extends Seeder
                 );
             }
         }
+
+        // Nonaktifkan pernyataan bank lama yang sudah tidak dipakai lagi.
+        $activeStatements = collect($mbtiStatements)->flatten(1)->map(fn ($row) => $row[0])->all();
+
+        InstrumentQuestion::query()
+            ->where('category', InstrumentQuestion::CATEGORY_KEPRIBADIAN)
+            ->where('is_active', true)
+            ->whereNotIn('question', $activeStatements)
+            ->update(['is_active' => false]);
 
         // Strategi Belajar: 3 bagian (Perencanaan / Eksekusi / Refleksi) — selaras referensi.
         $strategiBelajarSections = [
