@@ -34,6 +34,29 @@
             ? config('navigation')[$user->role]
             : [];
 
+        if ($user && $user->role === 'siswa' && mb_strtoupper((string) ($user->studentProfile?->kelas?->jenjang ?? '')) === 'SMA') {
+            $menuGroups = collect($menuGroups)->map(function ($group) {
+                $group['items'] = collect($group['items'] ?? [])
+                    ->reject(function ($item) {
+                        $category = $item['match']['category'] ?? null;
+                        if ($category === 'minat_kerja') {
+                            return true;
+                        }
+
+                        $route = $item['route'] ?? '';
+                        if (is_string($route) && str_contains($route, 'instruments') && $category === 'minat_kerja') {
+                            return true;
+                        }
+
+                        return false;
+                    })
+                    ->values()
+                    ->all();
+
+                return $group;
+            })->all();
+        }
+
         $activeGroup = collect($menuGroups)->first(function ($group) {
             return collect($group['items'] ?? [])->contains(function ($item) {
                 $patterns = (array) ($item['active'] ?? $item['route'] ?? '');

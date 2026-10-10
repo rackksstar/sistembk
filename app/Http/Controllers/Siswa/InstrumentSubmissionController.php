@@ -92,6 +92,7 @@ class InstrumentSubmissionController extends Controller
     private function minatKerjaIndex(Request $request, Collection $latestSubmissions): View
     {
         $profileJenjang = $this->resolveProfileJenjang();
+        abort_if($profileJenjang === 'SMA', 404);
         $jenjang = in_array((string) $profileJenjang, ['SMA', 'SMK'], true)
             ? $profileJenjang
             : null;
@@ -499,6 +500,12 @@ class InstrumentSubmissionController extends Controller
             if (in_array((string) $this->resolveProfileJenjang(), ['SD', 'SMP'], true)) {
                 return back()->withErrors([
                     'jenjang' => 'Asesmen ini untuk siswa SMA/SMK.',
+                ])->withInput();
+            }
+
+            if ($isKerja && (string) $this->resolveProfileJenjang() === 'SMA') {
+                return back()->withErrors([
+                    'jenjang' => 'Asesmen minat bakat kerja hanya untuk siswa SMK.',
                 ])->withInput();
             }
         }

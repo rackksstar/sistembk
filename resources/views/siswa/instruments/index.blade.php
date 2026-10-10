@@ -2,6 +2,10 @@
 
 @section('content')
 @php
+    $user = auth()->user();
+    $jenjangProfile = strtoupper((string) ($user?->studentProfile?->kelas?->jenjang ?? ''));
+    $isSma = $jenjangProfile === 'SMA';
+    $categories = collect($categories)->when($isSma, fn ($col) => $col->except(\App\Models\InstrumentQuestion::CATEGORY_MINAT_KERJA))->toArray();
     $hasStrategiSections = $category === \App\Models\InstrumentQuestion::CATEGORY_GAYA_BELAJAR
         && $questions->contains(fn ($q) => $q->section !== null);
     $useRiasecWizard = ! empty($useRiasecWizard);

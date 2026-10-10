@@ -4,6 +4,7 @@
 @php
     $studentName = auth()->user()->name;
     $firstName = str($studentName)->before(' ');
+    $jenjang = strtoupper((string) (auth()->user()?->studentProfile?->kelas?->jenjang ?? ''));
     $actionCards = [
         [
             'title' => 'Konseling',
@@ -47,13 +48,13 @@
             'cta' => 'Baca Artikel',
             'accent' => 'bg-emerald-600',
         ],
-        [
+        ...$jenjang === 'SMK' ? [[
             'title' => 'Minat Bakat Kerja',
             'description' => 'Talents Mapping (RIASEC) → Kode Minat Holland + rekomendasi bidang karier untuk jalur kerja.',
             'href' => route('siswa.instruments.index', ['category' => 'minat_kerja']),
             'cta' => 'Isi Minat Kerja',
             'accent' => 'bg-emerald-600',
-        ],
+        ]] : [],
         [
             'title' => 'Minat Bakat Kuliah',
             'description' => 'Talents Mapping yang sama + rekomendasi prodi PCR (SMA) atau bidang karier (SMK).',
