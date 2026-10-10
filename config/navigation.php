@@ -110,6 +110,7 @@ return [
                 ['label' => 'Rapor BK', 'route' => 'guru.rapor.index', 'active' => 'guru.rapor.*', 'icon' => 'document'],
                 ['label' => 'Tryout', 'route' => 'guru.tryout.index', 'active' => 'guru.tryout.*', 'icon' => 'academic'],
                 ['label' => 'Data Siswa', 'route' => 'guru.students.index', 'active' => 'guru.students.*', 'icon' => 'user'],
+                ['label' => 'RPL Individu & Kelompok', 'route' => 'guru.rpls.index', 'active' => 'guru.rpls.*', 'icon' => 'book'],
             ],
         ],
         [
@@ -133,7 +134,6 @@ return [
                     'match' => ['module' => 'yola'],
                     'icon' => 'chart',
                 ],
-                ['label' => 'RPL Individu & Kelompok', 'route' => 'guru.rpls.index', 'active' => 'guru.rpls.*', 'icon' => 'book'],
                 ['label' => 'Laporan Kelompok', 'route' => 'guru.group-reports.index', 'active' => 'guru.group-reports.*', 'icon' => 'document'],
                 ['label' => 'Riwayat Siswa', 'route' => 'guru.student-histories.index', 'active' => 'guru.student-histories.*', 'icon' => 'user'],
                 ['label' => 'Jurnal Bulanan', 'route' => 'guru.journals.index', 'active' => 'guru.journals.*', 'icon' => 'calendar'],
