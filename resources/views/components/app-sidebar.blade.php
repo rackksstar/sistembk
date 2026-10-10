@@ -66,6 +66,8 @@
 
         return true;
     };
+
+    $shownDividers = [];
 @endphp
 
 <aside
@@ -112,19 +114,21 @@
                 $isYola = $section === 'yola';
                 $isKey = $section === 'key';
                 $isOther = $section === 'other';
+                $dividerLabel = null;
+                if ($isYola || $isOther) {
+                    if (! in_array('Tim lain', $shownDividers, true)) {
+                        $shownDividers[] = 'Tim lain';
+                        $dividerLabel = 'Tim lain';
+                    }
+                } elseif ($isKey && ! in_array('Modul Key', $shownDividers, true)) {
+                    $shownDividers[] = 'Modul Key';
+                    $dividerLabel = 'Modul Key';
+                }
             @endphp
 
-            @if($isYola)
+            @if($dividerLabel)
                 <div class="app-sidebar__divider" role="separator">
-                    <span>Tim lain</span>
-                </div>
-            @elseif($isKey)
-                <div class="app-sidebar__divider" role="separator">
-                    <span>Modul Key</span>
-                </div>
-            @elseif($isOther)
-                <div class="app-sidebar__divider" role="separator">
-                    <span>Tim lain</span>
+                    <span>{{ $dividerLabel }}</span>
                 </div>
             @endif
 

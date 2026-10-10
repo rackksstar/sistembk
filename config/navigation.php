@@ -114,6 +114,14 @@ return [
             ],
         ],
         [
+            'group' => 'Jurnal BK',
+            'section' => 'yola',
+            'icon' => 'calendar',
+            'items' => [
+                ['label' => 'Jurnal Bulanan', 'route' => 'guru.journals.index', 'active' => 'guru.journals.*', 'icon' => 'calendar'],
+            ],
+        ],
+        [
             'group' => 'Instrument',
             'section' => 'core',
             'icon' => 'beaker',
@@ -148,16 +156,8 @@ return [
             ],
         ],
         [
-            'group' => 'Siap Kerja & Asesmen (Yola)',
-            'section' => 'yola',
-            'icon' => 'beaker',
-            'items' => [
-                ['label' => 'Jurnal Bulanan', 'route' => 'guru.journals.index', 'active' => 'guru.journals.*', 'icon' => 'calendar'],
-            ],
-        ],
-        [
             'group' => 'Sosiometri',
-            'section' => 'main',
+            'section' => 'other',
             'icon' => 'chart',
             'items' => [
                 ['label' => 'Peta Sosiometri', 'route' => 'guru.sociometry.index', 'active' => ['guru.sociometry.index', 'guru.sociometry.show', 'guru.sociometry.export', 'guru.sociometry.export.student'], 'icon' => 'chart'],
