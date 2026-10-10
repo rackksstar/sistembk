@@ -8,7 +8,7 @@
  *
  * section:
  * - main / core / platform → selalu terbuka
- * - yola → modul siap kerja & asesmen diri (Minat Bakat Kerja, RPL, sosiometri)
+ * - yola → modul siap kerja & asesmen diri (Minat Bakat Kerja, RPL)
  * - key → modul lanjut kuliah (Minat Bakat Kuliah / RIASEC → PCR)
  */
 return [
@@ -221,8 +221,15 @@ return [
                     'match' => ['category' => 'angket_masalah'],
                     'icon' => 'clipboard',
                 ],
-                ['label' => 'Sosiometri', 'route' => 'siswa.sociometry.index', 'active' => 'siswa.sociometry.*', 'icon' => 'chart'],
                 ['label' => 'Info Karier', 'title' => 'Informasi Karier', 'route' => 'siswa.careers.index', 'active' => 'siswa.careers.*', 'icon' => 'briefcase'],
+            ],
+        ],
+        [
+            'group' => 'Sosiometri',
+            'section' => 'main',
+            'icon' => 'chart',
+            'items' => [
+                ['label' => 'Sosiometri', 'route' => 'siswa.sociometry.index', 'active' => 'siswa.sociometry.*', 'icon' => 'chart'],
             ],
         ],
         [
