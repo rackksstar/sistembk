@@ -114,8 +114,8 @@ return [
             ],
         ],
         [
-            'group' => 'Siap Kerja & Asesmen (Yola)',
-            'section' => 'yola',
+            'group' => 'Instrument',
+            'section' => 'core',
             'icon' => 'beaker',
             'items' => [
                 [
@@ -134,11 +134,25 @@ return [
                     'match' => ['module' => 'yola'],
                     'icon' => 'chart',
                 ],
+            ],
+        ],
+        [
+            'group' => 'LAPORAN BK',
+            'section' => 'core',
+            'icon' => 'document',
+            'items' => [
                 ['label' => 'Laporan Kelompok', 'route' => 'guru.group-reports.index', 'active' => 'guru.group-reports.*', 'icon' => 'document'],
                 ['label' => 'Riwayat Siswa', 'route' => 'guru.student-histories.index', 'active' => 'guru.student-histories.*', 'icon' => 'user'],
-                ['label' => 'Jurnal Bulanan', 'route' => 'guru.journals.index', 'active' => 'guru.journals.*', 'icon' => 'calendar'],
                 ['label' => 'Statistik Layanan', 'route' => 'guru.service-statistics.index', 'active' => 'guru.service-statistics.*', 'icon' => 'chart'],
                 ['label' => 'Feedback Siswa', 'route' => 'guru.feedback.index', 'active' => 'guru.feedback.*', 'icon' => 'chat'],
+            ],
+        ],
+        [
+            'group' => 'Siap Kerja & Asesmen (Yola)',
+            'section' => 'yola',
+            'icon' => 'beaker',
+            'items' => [
+                ['label' => 'Jurnal Bulanan', 'route' => 'guru.journals.index', 'active' => 'guru.journals.*', 'icon' => 'calendar'],
             ],
         ],
         [
