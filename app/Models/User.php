@@ -7,12 +7,12 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 #[Fillable(['name', 'username', 'email', 'password', 'school', 'school_id', 'class_id', 'role', 'status'])]
 #[Hidden(['password', 'remember_token'])]
@@ -22,11 +22,15 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     public const ROLE_ADMIN = 'admin';
+
     public const ROLE_GURU = 'guru';
+
     public const ROLE_SISWA = 'siswa';
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_APPROVED = 'disetujui';
+
     public const STATUS_REJECTED = 'ditolak';
 
     public const ROLES = [
@@ -114,7 +118,10 @@ class User extends Authenticatable
 
     public function receivedSociometryChoices(): HasMany
     {
-        return $this->hasMany(SociometryResponse::class, 'chosen_student_id');
+        // Hanya pilihan positif yang dihitung sebagai "dipilih" (popularitas);
+        // penolakan (negatif) tidak boleh menaikkan jumlah pilihan diterima.
+        return $this->hasMany(SociometryResponse::class, 'chosen_student_id')
+            ->where('relation_type', '!=', SociometryResponse::TYPE_NEGATIF);
     }
 
     public function rpls(): HasMany

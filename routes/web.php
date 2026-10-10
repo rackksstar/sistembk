@@ -50,6 +50,7 @@ use App\Http\Controllers\Siswa\PostinganController as SiswaPostinganController;
 use App\Http\Controllers\Siswa\ProdiConsultationController;
 use App\Http\Controllers\Siswa\ServiceFeedbackController;
 use App\Http\Controllers\Siswa\SociometryController;
+use App\Http\Controllers\SociometryQuestionController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -107,6 +108,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('master-pertanyaan', MasterQuestionController::class)
             ->parameters(['master-pertanyaan' => 'masterPertanyaan'])
             ->except(['create', 'show', 'edit']);
+        Route::get('/sosiometri-soal', [SociometryQuestionController::class, 'index'])->name('sociometry-questions.index');
+        Route::post('/sosiometri-soal', [SociometryQuestionController::class, 'store'])->name('sociometry-questions.store');
+        Route::put('/sosiometri-soal/{sociometryQuestion}', [SociometryQuestionController::class, 'update'])->name('sociometry-questions.update');
+        Route::delete('/sosiometri-soal/{sociometryQuestion}', [SociometryQuestionController::class, 'destroy'])->name('sociometry-questions.destroy');
         Route::resource('kategori-postingan', PostCategoryController::class)
             ->parameters(['kategori-postingan' => 'kategoriPostingan'])
             ->except(['create', 'show', 'edit']);
@@ -129,6 +134,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/sociometry', [SociometryMapController::class, 'index'])->name('sociometry.index');
         Route::get('/sociometry/manage', [SosiometryInstrumentController::class, 'index'])->name('sociometry.manage');
         Route::post('/sociometry/manage/toggle', [SosiometryInstrumentController::class, 'toggle'])->name('sociometry.manage.toggle');
+        Route::get('/sociometry/questions', [SociometryQuestionController::class, 'index'])->name('sociometry.questions.index');
+        Route::post('/sociometry/questions', [SociometryQuestionController::class, 'store'])->name('sociometry.questions.store');
+        Route::put('/sociometry/questions/{sociometryQuestion}', [SociometryQuestionController::class, 'update'])->name('sociometry.questions.update');
+        Route::delete('/sociometry/questions/{sociometryQuestion}', [SociometryQuestionController::class, 'destroy'])->name('sociometry.questions.destroy');
         Route::get('/sociometry/export', [SociometryMapController::class, 'exportClass'])->name('sociometry.export');
         Route::get('/sociometry/{student}/export', [SociometryMapController::class, 'exportStudent'])->name('sociometry.export.student');
         Route::get('/sociometry/{student}', [SociometryMapController::class, 'show'])->name('sociometry.show');

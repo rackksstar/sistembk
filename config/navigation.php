@@ -44,6 +44,14 @@ return [
             ],
         ],
         [
+            'group' => 'Sosiometri',
+            'section' => 'core',
+            'icon' => 'chart',
+            'items' => [
+                ['label' => 'Soal Sosiometri', 'route' => 'admin.sociometry-questions.index', 'active' => 'admin.sociometry-questions.*', 'icon' => 'question'],
+            ],
+        ],
+        [
             'group' => 'Karier Lanjut Kuliah (Key)',
             'section' => 'key',
             'icon' => 'academic',
@@ -125,13 +133,22 @@ return [
                     'match' => ['module' => 'yola'],
                     'icon' => 'chart',
                 ],
-                ['label' => 'Peta Sosiometri', 'route' => 'guru.sociometry.index', 'active' => 'guru.sociometry.*', 'icon' => 'chart'],
                 ['label' => 'RPL Individu & Kelompok', 'route' => 'guru.rpls.index', 'active' => 'guru.rpls.*', 'icon' => 'book'],
                 ['label' => 'Laporan Kelompok', 'route' => 'guru.group-reports.index', 'active' => 'guru.group-reports.*', 'icon' => 'document'],
                 ['label' => 'Riwayat Siswa', 'route' => 'guru.student-histories.index', 'active' => 'guru.student-histories.*', 'icon' => 'user'],
                 ['label' => 'Jurnal Bulanan', 'route' => 'guru.journals.index', 'active' => 'guru.journals.*', 'icon' => 'calendar'],
                 ['label' => 'Statistik Layanan', 'route' => 'guru.service-statistics.index', 'active' => 'guru.service-statistics.*', 'icon' => 'chart'],
                 ['label' => 'Feedback Siswa', 'route' => 'guru.feedback.index', 'active' => 'guru.feedback.*', 'icon' => 'chat'],
+            ],
+        ],
+        [
+            'group' => 'Sosiometri',
+            'section' => 'main',
+            'icon' => 'chart',
+            'items' => [
+                ['label' => 'Peta Sosiometri', 'route' => 'guru.sociometry.index', 'active' => ['guru.sociometry.index', 'guru.sociometry.show', 'guru.sociometry.export', 'guru.sociometry.export.student'], 'icon' => 'chart'],
+                ['label' => 'Soal Sosiometri', 'route' => 'guru.sociometry.questions.index', 'active' => 'guru.sociometry.questions.*', 'icon' => 'question'],
+                ['label' => 'Kelola Instrumen', 'route' => 'guru.sociometry.manage', 'active' => ['guru.sociometry.manage', 'guru.sociometry.manage.toggle'], 'icon' => 'clipboard'],
             ],
         ],
         [

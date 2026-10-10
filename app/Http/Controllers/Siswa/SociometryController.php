@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Siswa;
 
 use App\Http\Controllers\Controller;
+use App\Models\SociometryQuestion;
 use App\Models\SociometryResponse;
 use App\Models\SosiometryInstrument;
 use App\Models\User;
@@ -12,17 +13,16 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
- * Modul Sosiometri (sisi siswa): siswa memilih 1 teman dekat dan 1 teman
- * belajar beserta alasannya. Mengisi ulang akan MENGGANTI pilihan sebelumnya
- * (lihat store(): baris lama dihapus dulu sebelum baris baru dibuat).
+ * Modul Sosiometri (sisi siswa): siswa menjawab bank soal sosiometri aktif.
+ * Tiap soal meminta memilih (positif) atau menolak (negatif) satu teman
+ * beserta alasan. Mengisi ulang akan MENGGANTI seluruh jawaban sebelumnya.
  *
- * Guru bisa menonaktifkan instrumen per kelas lewat menu "Kelola Sosiometri"
- * (SosiometryInstrumentController). Saat kelas siswa dinonaktifkan, form
- * disembunyikan dan penyimpanan ditolak.
+ * Guru bisa menonaktifkan instrumen per kelas lewat menu "Kelola Instrumen".
+ * Saat kelas siswa dinonaktifkan, form disembunyikan dan penyimpanan ditolak.
  */
 class SociometryController extends Controller
 {
-    // Form isi sosiometri + riwayat pilihan siswa yang sedang login.
+    // Form isi sosiometri + jawaban siswa yang sedang login.
     public function index(): View
     {
         $this->assertInstrumentActive();
@@ -34,53 +34,62 @@ class SociometryController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
+        $questions = SociometryQuestion::query()
+            ->active()
+            ->orderBy('urutan')
+            ->orderBy('id')
+            ->get();
+
         $responses = SociometryResponse::query()
             ->where('student_id', auth()->id())
             ->with('chosenStudent:id,name')
-            ->latest()
-            ->get();
+            ->get()
+            ->keyBy('sociometry_question_id');
 
-        return view('siswa.sociometry.index', compact('students', 'responses'));
+        return view('siswa.sociometry.index', compact('students', 'questions', 'responses'));
     }
 
-    // Menyimpan pilihan sosiometri siswa (1 teman dekat + 1 teman belajar).
+    // Menyimpan jawaban sosiometri siswa (satu baris per soal aktif).
     public function store(Request $request): RedirectResponse
     {
         $this->assertInstrumentActive();
 
-        $validated = $request->validate([
-            'close_friend_id' => ['required', 'integer', 'exists:users,id', 'different:study_friend_id'],
-            'study_friend_id' => ['required', 'integer', 'exists:users,id'],
-            'reason' => ['nullable', 'string', 'max:1000'],
-        ], [
-            'close_friend_id.different' => 'Teman dekat dan teman belajar harus berbeda.',
-        ]);
+        $questions = SociometryQuestion::query()
+            ->active()
+            ->orderBy('urutan')
+            ->orderBy('id')
+            ->get();
 
-        foreach ([$validated['close_friend_id'], $validated['study_friend_id']] as $studentId) {
-            abort_if((int) $studentId === auth()->id(), 422, 'Tidak boleh memilih diri sendiri.');
+        $rules = ['answers' => ['required', 'array']];
+        foreach ($questions as $question) {
+            $rules["answers.{$question->id}.chosen_student_id"] = ['required', 'integer', 'exists:users,id'];
+            $rules["answers.{$question->id}.reason"] = ['nullable', 'string', 'max:1000'];
         }
 
-        DB::transaction(function () use ($validated) {
+        $validated = $request->validate($rules, [
+            'answers.*.chosen_student_id.required' => 'Setiap pertanyaan wajib dipilih.',
+        ]);
+
+        DB::transaction(function () use ($questions, $validated) {
             SociometryResponse::where('student_id', auth()->id())->delete();
 
-            SociometryResponse::create([
-                'student_id' => auth()->id(),
-                'chosen_student_id' => $validated['close_friend_id'],
-                'relation_type' => SociometryResponse::TYPE_CLOSE_FRIEND,
-                'reason' => $validated['reason'] ?? null,
-                'submitted_at' => now(),
-            ]);
+            foreach ($questions as $question) {
+                $chosen = $validated['answers'][$question->id]['chosen_student_id'] ?? null;
 
-            SociometryResponse::create([
-                'student_id' => auth()->id(),
-                'chosen_student_id' => $validated['study_friend_id'],
-                'relation_type' => SociometryResponse::TYPE_STUDY_FRIEND,
-                'reason' => $validated['reason'] ?? null,
-                'submitted_at' => now(),
-            ]);
+                abort_if((int) $chosen === auth()->id(), 422, 'Tidak boleh memilih diri sendiri.');
+
+                SociometryResponse::create([
+                    'student_id' => auth()->id(),
+                    'chosen_student_id' => $chosen,
+                    'sociometry_question_id' => $question->id,
+                    'relation_type' => $question->jenis,
+                    'reason' => $validated['answers'][$question->id]['reason'] ?? null,
+                    'submitted_at' => now(),
+                ]);
+            }
         });
 
-        return back()->with('success', 'Pilihan sosiometri berhasil disimpan.');
+        return back()->with('success', 'Jawaban sosiometri berhasil disimpan.');
     }
 
     /**
