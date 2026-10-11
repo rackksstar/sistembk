@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * Menu sidebar vertikal untuk dashboard admin, Guru BK, dan siswa.
@@ -150,6 +150,7 @@ return [
             'icon' => 'document',
             'items' => [
                 ['label' => 'Laporan Kelompok', 'route' => 'guru.group-reports.index', 'active' => 'guru.group-reports.*', 'icon' => 'document'],
+                ['label' => 'Laporan Individu', 'route' => 'guru.individual-reports.index', 'active' => 'guru.individual-reports.*', 'icon' => 'document'],
                 ['label' => 'Riwayat Siswa', 'route' => 'guru.student-histories.index', 'active' => 'guru.student-histories.*', 'icon' => 'user'],
                 ['label' => 'Statistik Layanan', 'route' => 'guru.service-statistics.index', 'active' => 'guru.service-statistics.*', 'icon' => 'chart'],
                 ['label' => 'Feedback Siswa', 'route' => 'guru.feedback.index', 'active' => 'guru.feedback.*', 'icon' => 'chat'],

@@ -60,6 +60,7 @@ class ConsultationRequest extends Model
         'counselor_id',
         'rpl_id',
         'subject',
+        'report_title',
         'case_category',
         'program_studi_id',
         'preferred_time',

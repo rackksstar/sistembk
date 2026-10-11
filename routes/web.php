@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AdminApprovalController;
@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\GuidanceClassController;
 use App\Http\Controllers\Admin\GuruBkController;
 use App\Http\Controllers\Admin\GuruProfileChangeController;
+use App\Http\Controllers\Admin\IndividualConsultationReportController;
 use App\Http\Controllers\Admin\InterestCategoryController;
 use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\MasterQuestionController;
@@ -85,10 +86,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/guidance-classes/{guidanceClass}/students/{student}', [GuidanceClassController::class, 'detachStudent'])->name('guidance-classes.students.detach');
         Route::get('/consultations', [AdminConsultationController::class, 'index'])->name('consultations.index');
         Route::get('/rapor', [AdminRaporController::class, 'index'])->name('rapor.index');
+        Route::get('/individual-reports', [IndividualConsultationReportController::class, 'index'])->name('individual-reports.index');
+        Route::get('/individual-reports/{consultationRequest}/print', [IndividualConsultationReportController::class, 'print'])->name('individual-reports.print');
         Route::get('/rapor/{rapor}', [AdminRaporController::class, 'show'])->name('rapor.show');
         Route::get('/rapor-cetak/{rapor}/pdf', [AdminRaporController::class, 'exportPdf'])->name('rapor.pdf');
 
-        // Phase 2 — Data Master (tambahan di bawah route existing)
+        // Phase 2 ΓÇö Data Master (tambahan di bawah route existing)
         Route::resource('sekolah', SekolahController::class)->except(['create', 'show', 'edit']);
         Route::resource('kelas', KelasController::class)->except(['create', 'show', 'edit']);
         Route::resource('guru-bk', GuruBkController::class)
@@ -130,7 +133,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/instrument-results', [InstrumentResultController::class, 'index'])->name('instrument-results.index');
         Route::get('/instrument-results/matriks-bakat', [InstrumentResultController::class, 'talentMatrix'])->name('instrument-results.talent-matrix');
 
-        // Modul Yola — sosiometri, RPL, laporan individu/kelompok, jurnal
+        // Modul Yola ΓÇö sosiometri, RPL, laporan individu/kelompok, jurnal
         Route::get('/sociometry', [SociometryMapController::class, 'index'])->name('sociometry.index');
         Route::get('/sociometry/manage', [SosiometryInstrumentController::class, 'index'])->name('sociometry.manage');
         Route::post('/sociometry/manage/toggle', [SosiometryInstrumentController::class, 'toggle'])->name('sociometry.manage.toggle');
@@ -147,6 +150,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->parameters(['group-reports' => 'groupReport'])
             ->except(['create', 'show', 'edit']);
         Route::get('/group-reports/{groupReport}/print', [GroupConsultationReportController::class, 'print'])->name('group-reports.print');
+        Route::get('/individual-reports', [IndividualConsultationReportController::class, 'guruIndex'])->name('individual-reports.index');
+        Route::post('/individual-reports', [IndividualConsultationReportController::class, 'store'])->name('individual-reports.store');
+        Route::put('/individual-reports/{consultationRequest}', [IndividualConsultationReportController::class, 'update'])->name('individual-reports.update');
+        Route::delete('/individual-reports/{consultationRequest}', [IndividualConsultationReportController::class, 'destroy'])->name('individual-reports.destroy');
+        Route::get('/individual-reports/{consultationRequest}/print', [IndividualConsultationReportController::class, 'guruPrint'])->name('individual-reports.print');
         Route::get('/student-histories', [StudentHistoryController::class, 'index'])->name('student-histories.index');
         Route::get('/service-statistics', [ServiceStatisticController::class, 'index'])->name('service-statistics.index');
         Route::resource('journals', MonthlyJournalController::class)->parameters(['journals' => 'journal'])->except(['create', 'show', 'edit']);
@@ -160,7 +168,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/consultations/{consultation}/report', [GuruConsultationController::class, 'report'])->name('consultations.report');
         Route::get('/consultations/{consultation}/print', [GuruConsultationController::class, 'print'])->name('consultations.print');
 
-        // Phase 4–6 — Core (guru)
+        // Phase 4ΓÇô6 ΓÇö Core (guru)
         Route::get('penilaian', [PenilaianController::class, 'index'])->name('penilaian.index');
         Route::get('angket', [AngketController::class, 'index'])->name('angket.index');
         Route::get('angket/{student}/pdf', [AngketController::class, 'exportPdf'])->name('angket.pdf');
@@ -180,11 +188,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('siswa')->name('siswa.')->middleware('role:siswa')->group(function () {
         Route::get('/dashboard', [SiswaDashboardController::class, 'index'])->name('dashboard');
-        // Modul Yola — instrumen klasik
+        // Modul Yola ΓÇö instrumen klasik
         Route::get('/instruments', [InstrumentSubmissionController::class, 'index'])->name('instruments.index');
         Route::post('/instruments', [InstrumentSubmissionController::class, 'store'])->name('instruments.store');
         Route::get('/instruments/strategi-belajar/hasil', [InstrumentSubmissionController::class, 'strategiBelajarResult'])->name('instruments.strategi-belajar-result');
-        // Modul Key — Minat Bakat RIASEC
+        // Modul Key ΓÇö Minat Bakat RIASEC
         Route::get('/minat-bakat', [InstrumentSubmissionController::class, 'minatBakatIndex'])->name('minat-bakat.index');
         Route::get('/instruments/hasil/{submission}', [InstrumentSubmissionController::class, 'hasil'])->name('instruments.hasil');
         Route::get('/instruments/hasil/{submission}/pdf', [InstrumentSubmissionController::class, 'hasilPdf'])->name('instruments.hasil.pdf');
@@ -205,7 +213,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/feedback', [ServiceFeedbackController::class, 'create'])->name('feedback.create');
         Route::post('/feedback', [ServiceFeedbackController::class, 'store'])->name('feedback.store');
 
-        // Phase 4–6 — Core (siswa)
+        // Phase 4ΓÇô6 ΓÇö Core (siswa)
         Route::get('penilaian', [App\Http\Controllers\Siswa\PenilaianController::class, 'index'])->name('penilaian.index');
         Route::get('penilaian/buat', [App\Http\Controllers\Siswa\PenilaianController::class, 'create'])->name('penilaian.create');
         Route::post('penilaian', [App\Http\Controllers\Siswa\PenilaianController::class, 'store'])->name('penilaian.store');
