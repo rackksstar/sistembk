@@ -3,7 +3,12 @@
 @section('content')
 <div class="space-y-6">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
-        <x-section-title title="Peta Sosiometri" description="Ringkasan pilihan teman untuk melihat siswa populer dan siswa yang belum mendapat pilihan." />
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <x-section-title title="Peta Sosiometri" description="Ringkasan pilihan teman untuk melihat siswa populer dan siswa yang belum mendapat pilihan." />
+            <a href="{{ route('guru.sociometry.manage') }}" class="inline-flex w-fit rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500">
+                Kelola instrumen per kelas
+            </a>
+        </div>
     </section>
 
     @if(isset($classSummaries))

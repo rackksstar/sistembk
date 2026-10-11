@@ -69,6 +69,41 @@
             'accent' => 'bg-indigo-600',
         ],
         [
+            'title' => 'Strategi Belajar',
+            'description' => 'Asesmen gaya/strategi belajar untuk memahami cara belajar yang cocok.',
+            'href' => route('siswa.instruments.index', ['category' => 'gaya_belajar']),
+            'cta' => 'Isi Asesmen',
+            'accent' => 'bg-sky-600',
+        ],
+        [
+            'title' => 'Kepribadian',
+            'description' => 'Isi instrumen kepribadian untuk mengenali karakter dan kecenderungan diri.',
+            'href' => route('siswa.instruments.index', ['category' => 'kepribadian']),
+            'cta' => 'Isi Kepribadian',
+            'accent' => 'bg-fuchsia-600',
+        ],
+        [
+            'title' => 'Angket Masalah',
+            'description' => 'Identifikasi area masalah yang perlu dibahas bersama Guru BK.',
+            'href' => route('siswa.instruments.index', ['category' => 'angket_masalah']),
+            'cta' => 'Isi Angket Masalah',
+            'accent' => 'bg-rose-600',
+        ],
+        [
+            'title' => 'Sosiometri',
+            'description' => 'Pilih teman sekelas sesuai instrumen sosiometri yang diaktifkan Guru BK.',
+            'href' => route('siswa.sociometry.index'),
+            'cta' => 'Buka Sosiometri',
+            'accent' => 'bg-teal-600',
+        ],
+        [
+            'title' => 'Info Karier',
+            'description' => 'Baca informasi karier dan peluang yang dikelola Admin/Guru BK.',
+            'href' => route('siswa.careers.index'),
+            'cta' => 'Lihat Karier',
+            'accent' => 'bg-orange-600',
+        ],
+        [
             'title' => 'Profil Siswa SMK',
             'description' => 'Lihat kesiapan kerja, jurusan, dan keahlian untuk rekomendasi lowongan.',
             'href' => '#smk-profile',
@@ -372,6 +407,8 @@
             'Aku lagi stres belajar',
             'Apa itu bimbingan konseling?',
             'Aku bingung pilih karier',
+            'Jalur masuk PCR apa saja?',
+            'Prodi apa saja di PCR?',
         ],
         toggle() {
             this.open = ! this.open;

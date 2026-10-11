@@ -7,7 +7,7 @@
         message: '',
         sending: false,
         messages: [
-            { role: 'assistant', text: 'Halo, saya siap mendengarkan. Ceritakan apa yang sedang kamu rasakan atau butuhkan hari ini.' },
+            { role: 'assistant', text: 'Halo, saya siap membantu. Kamu bisa cerita soal belajar/konseling, atau tanya info resmi PCR/PMB (jalur masuk, prodi, biaya, beasiswa).' },
         ],
         async send() {
             const text = this.message.trim();
@@ -133,6 +133,34 @@
             <a href="{{ route('siswa.consultations.index') }}" class="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 dark:bg-blue-600 dark:hover:bg-blue-500">
                 Ajukan Konseling
             </a>
+            @if(\Illuminate\Support\Facades\Route::has('siswa.konsultasi-prodi.index'))
+                <a href="{{ route('siswa.konsultasi-prodi.index') }}" class="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-300">
+                    Konsultasi Prodi PCR
+                </a>
+            @endif
+        </section>
+
+        <section class="ui-panel">
+            <x-section-title
+                title="Contoh pertanyaan PCR"
+                description="Jawaban mengacu ke situs resmi pmb.pcr.ac.id / pcr.ac.id."
+            />
+            <div class="mt-4 flex flex-col gap-2">
+                @foreach([
+                    'Jalur masuk PCR apa saja?',
+                    'Prodi apa saja di PCR?',
+                    'Berapa biaya kuliah PCR?',
+                    'IPS bisa daftar prodi apa di PSUD?',
+                ] as $suggestion)
+                    <button
+                        type="button"
+                        class="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-left text-xs font-semibold text-slate-700 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300 dark:hover:border-blue-900 dark:hover:bg-blue-950/30 dark:hover:text-blue-300"
+                        x-on:click="message = @js($suggestion); send()"
+                    >
+                        {{ $suggestion }}
+                    </button>
+                @endforeach
+            </div>
         </section>
     </aside>
 </div>

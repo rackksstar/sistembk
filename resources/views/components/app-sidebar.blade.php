@@ -190,7 +190,8 @@
                                 @class([
                                     'app-sidebar__link',
                                     'app-sidebar__link--active' => $active,
-                                    'app-sidebar__link--muted' => ($isOther || $isKey) && ! $active,
+                                    // Jangan mute modul Key — harus terlihat sama interaktifnya dengan menu lain.
+                                    'app-sidebar__link--muted' => $isOther && ! $active,
                                 ])
                                 @if($active) aria-current="page" @endif
                             >

@@ -37,6 +37,7 @@ use App\Http\Controllers\Guru\SociometryMapController;
 use App\Http\Controllers\Guru\SosiometryInstrumentController;
 use App\Http\Controllers\Guru\StudentController as GuruStudentController;
 use App\Http\Controllers\Guru\StudentHistoryController;
+use App\Http\Controllers\Guru\MasterQuestionController as GuruMasterQuestionController;
 use App\Http\Controllers\Guru\TryoutController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Siswa\CareerInfoController as SiswaCareerInfoController;
@@ -160,6 +161,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('rapor/{student}/edit', [RaporController::class, 'edit'])->name('rapor.edit');
         Route::put('rapor/{student}', [RaporController::class, 'update'])->name('rapor.update');
         Route::get('rapor-cetak/{rapor}/pdf', [RaporController::class, 'exportPdf'])->name('rapor.pdf');
+        Route::resource('master-pertanyaan', GuruMasterQuestionController::class)
+            ->parameters(['master-pertanyaan' => 'masterPertanyaan'])
+            ->except(['create', 'show', 'edit']);
         Route::get('tryout', [TryoutController::class, 'index'])->name('tryout.index');
         Route::get('tryout/buat', [TryoutController::class, 'create'])->name('tryout.create');
         Route::post('tryout', [TryoutController::class, 'store'])->name('tryout.store');
@@ -167,6 +171,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('tryout/{tryout}', [TryoutController::class, 'update'])->name('tryout.update');
         Route::delete('tryout/{tryout}', [TryoutController::class, 'destroy'])->name('tryout.destroy');
         Route::get('tryout/{tryout}', [TryoutController::class, 'show'])->name('tryout.show');
+        Route::patch('tryout/{tryout}/publish', [TryoutController::class, 'publish'])->name('tryout.publish');
+        Route::patch('tryout/{tryout}/unpublish', [TryoutController::class, 'unpublish'])->name('tryout.unpublish');
+        Route::patch('tryout/{tryout}/details/{detail}/scores', [TryoutController::class, 'updateScores'])->name('tryout.scores');
     });
 
     Route::prefix('siswa')->name('siswa.')->middleware('role:siswa')->group(function () {

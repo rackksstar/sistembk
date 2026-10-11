@@ -16,6 +16,7 @@ class TryOutDetail extends Model
         'try_out_id',
         'student_id',
         'jawaban',
+        'skor_per_soal',
         'rata_skor',
         'submitted_at',
     ];
@@ -24,6 +25,7 @@ class TryOutDetail extends Model
     {
         return [
             'jawaban' => 'array',
+            'skor_per_soal' => 'array',
             'rata_skor' => 'decimal:2',
             'submitted_at' => 'datetime',
         ];
@@ -37,5 +39,22 @@ class TryOutDetail extends Model
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
+    }
+
+    public function skorUntuk(int|string $soalId): ?float
+    {
+        $skor = $this->skor_per_soal[(string) $soalId] ?? null;
+
+        return $skor === null || $skor === '' ? null : (float) $skor;
+    }
+
+    public function belumDinilaiCount(iterable $soalIds = []): int
+    {
+        $ids = collect($soalIds)->map(fn ($id) => (string) $id);
+        if ($ids->isEmpty()) {
+            $ids = collect(array_keys($this->skor_per_soal ?? []));
+        }
+
+        return $ids->filter(fn ($id) => $this->skorUntuk($id) === null)->count();
     }
 }

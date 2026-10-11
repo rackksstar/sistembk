@@ -34,6 +34,7 @@ class MasterQuestionController extends Controller
             'search' => $search,
             'kategori' => $kategori,
             'active' => $active,
+            'routePrefix' => 'admin.master-pertanyaan',
         ]);
     }
 
@@ -58,7 +59,7 @@ class MasterQuestionController extends Controller
     public function destroy(MasterQuestion $masterPertanyaan): RedirectResponse
     {
         ActivityLogger::log('master-pertanyaan.deleted', $masterPertanyaan, [
-            'teks' => \Illuminate\Support\Str::limit($masterPertanyaan->teks, 80),
+            'teks' => \Illuminate\Support\Str::limit($masterPertanyaan->teks_pertanyaan, 80),
         ]);
 
         $masterPertanyaan->delete();

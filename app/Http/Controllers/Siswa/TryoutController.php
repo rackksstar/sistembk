@@ -37,7 +37,7 @@ class TryoutController extends Controller
         }
 
         $riwayat = TryOutDetail::query()
-            ->with(['tryOut:id,judul', 'tryOut.kelas:id,nama'])
+            ->with(['tryOut:id,judul,hasil_dipublikasikan,hasil_dipublikasikan_at', 'tryOut.kelas:id,nama'])
             ->where('student_id', $student->id)
             ->whereNotNull('submitted_at')
             ->latest('submitted_at')
@@ -102,7 +102,7 @@ class TryoutController extends Controller
 
         return redirect()
             ->route('siswa.tryout.index')
-            ->with('success', 'Jawaban tryout berhasil dikumpulkan.');
+            ->with('success', 'Jawaban tryout berhasil dikumpulkan. Skor tampil setelah Guru BK mempublikasikan hasil.');
     }
 
     private function remainingSeconds(TryOut $tryout, string $sessionKey): int

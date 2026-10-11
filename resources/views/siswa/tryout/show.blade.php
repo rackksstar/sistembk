@@ -35,16 +35,8 @@
             <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
                 <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Soal {{ $index + 1 }}</p>
                 <p class="mt-2 font-medium text-slate-900 dark:text-slate-100">{{ $item->teks_pertanyaan }}</p>
-                @if($item->tipe_input === \App\Models\MasterQuestion::TIPE_SKALA)
-                    <x-form-select name="jawaban[{{ $item->id }}]" class="mt-4" required>
-                        <option value="">Pilih skor 1–5</option>
-                        @for($i = 1; $i <= 5; $i++)
-                            <option value="{{ $i }}">{{ $i }}</option>
-                        @endfor
-                    </x-form-select>
-                @else
-                    <x-form-textarea name="jawaban[{{ $item->id }}]" rows="3" class="mt-4" required placeholder="Tulis jawabanmu"></x-form-textarea>
-                @endif
+                <p class="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ $item->tipeLabel() }}</p>
+                <x-master-question-field :question="$item" />
             </section>
         @endforeach
 

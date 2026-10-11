@@ -67,12 +67,18 @@ class DashboardController extends Controller
         $modules = [
             ['title' => 'Approval Guru BK', 'description' => 'Setujui atau tolak pendaftaran Guru BK.', 'href' => route('admin.approvals.index'), 'count' => User::where('role', User::ROLE_GURU)->where('status', User::STATUS_PENDING)->count()],
             ['title' => 'Sekolah MOU', 'description' => 'Input dan kelola sekolah yang sudah MOU dengan PCR.', 'href' => route('admin.sekolah.index'), 'count' => Sekolah::where('is_mou', true)->count()],
+            ['title' => 'Guru BK', 'description' => 'Kelola data Guru BK per sekolah.', 'href' => route('admin.guru-bk.index'), 'count' => User::where('role', User::ROLE_GURU)->count()],
             ['title' => 'Perubahan Profil Guru', 'description' => 'Lihat perubahan no HP, NIP, dan nama Guru BK.', 'href' => route('admin.guru-profile-changes.index'), 'count' => GuruProfileChange::whereNull('reviewed_at')->count()],
             ['title' => 'Manajemen Pengguna', 'description' => 'Atur akun admin, Guru BK, dan siswa.', 'href' => route('admin.users.index'), 'count' => User::count()],
             ['title' => 'Data Siswa', 'description' => 'Kelola NISN, tanggal lahir, dan profil siswa.', 'href' => route('admin.students.index'), 'count' => Student::count()],
             ['title' => 'Kelas Bimbingan', 'description' => 'Buat kelas dan tambahkan siswa ke kelas.', 'href' => route('admin.guidance-classes.index'), 'count' => GuidanceClass::count()],
+            ['title' => 'Master Pertanyaan', 'description' => 'Kelola soal angket dan tryout.', 'href' => route('admin.master-pertanyaan.index'), 'count' => MasterQuestion::count()],
+            ['title' => 'Kategori Minat RIASEC', 'description' => 'Master kategori minat untuk asesmen kuliah.', 'href' => route('admin.interest-categories.index'), 'count' => \App\Models\InterestCategory::count()],
+            ['title' => 'Program Studi PCR', 'description' => 'Kelola & verifikasi prodi rekomendasi siswa SMA.', 'href' => route('admin.program-studi.index'), 'count' => \App\Models\ProgramStudi::count()],
+            ['title' => 'Bidang Karier', 'description' => 'Kelola bidang karier rekomendasi siswa SMK.', 'href' => route('admin.bidang-karier.index'), 'count' => \App\Models\CareerField::count()],
             ['title' => 'Informasi Karier', 'description' => 'Kelola konten karier read-only untuk siswa.', 'href' => route('admin.careers.index'), 'count' => CareerInfo::count()],
             ['title' => 'Konseling & Laporan', 'description' => 'Pantau pengajuan, jadwal, hasil, dan evaluasi.', 'href' => route('admin.consultations.index'), 'count' => ConsultationRequest::count()],
+            ['title' => 'Log Aktivitas', 'description' => 'Audit jejak aktivitas pengguna sistem.', 'href' => route('admin.activity-logs.index'), 'count' => \App\Models\ActivityLog::count()],
         ];
 
         $postinganTerbaru = Postingan::query()

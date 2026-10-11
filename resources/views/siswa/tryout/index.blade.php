@@ -31,12 +31,19 @@
         <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Riwayat tryout</h2>
         <ul class="mt-4 space-y-2 text-sm">
             @forelse($riwayat as $item)
-                <li class="flex justify-between rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 px-4 py-3">
+                @php($published = $item->tryOut?->hasilSudahDipublikasikan())
+                <li class="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 px-4 py-3">
                     <span class="font-medium text-slate-900 dark:text-slate-100">{{ $item->tryOut->judul }}</span>
-                    <span class="text-slate-600 dark:text-slate-400">Skor {{ number_format($item->rata_skor ?? 0, 1) }} · {{ $item->submitted_at?->format('d M Y') }}</span>
+                    <span class="text-slate-600 dark:text-slate-400">
+                        @if($published)
+                            Skor {{ number_format($item->rata_skor ?? 0, 1) }} · {{ $item->submitted_at?->format('d M Y') }}
+                        @else
+                            Menunggu publikasi hasil · {{ $item->submitted_at?->format('d M Y') }}
+                        @endif
+                    </span>
                 </li>
             @empty
-                <x-empty-state title="Belum ada riwayat" description="Hasil tryout yang sudah dikerjakan akan muncul di sini." />
+                <x-empty-state title="Belum ada riwayat" description="Hasil tryout yang sudah dikerjakan akan muncul di sini setelah Guru BK mempublikasikan." />
             @endforelse
         </ul>
     </section>

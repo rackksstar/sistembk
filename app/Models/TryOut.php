@@ -35,6 +35,8 @@ class TryOut extends Model
         'selesai_at',
         'soal_ids',
         'status',
+        'hasil_dipublikasikan',
+        'hasil_dipublikasikan_at',
     ];
 
     protected function casts(): array
@@ -44,6 +46,8 @@ class TryOut extends Model
             'mulai_at' => 'datetime',
             'selesai_at' => 'datetime',
             'soal_ids' => 'array',
+            'hasil_dipublikasikan' => 'boolean',
+            'hasil_dipublikasikan_at' => 'datetime',
         ];
     }
 
@@ -84,5 +88,10 @@ class TryOut extends Model
         return $this->relationLoaded('details')
             ? $this->details->isNotEmpty()
             : $this->details()->exists();
+    }
+
+    public function hasilSudahDipublikasikan(): bool
+    {
+        return (bool) $this->hasil_dipublikasikan;
     }
 }

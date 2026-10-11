@@ -105,11 +105,7 @@
             @empty
                 <p class="text-sm text-slate-500 dark:text-slate-400">
                     Belum ada soal tryout aktif.
-                    @if(auth()->user()?->role === 'admin')
-                        Tambahkan di menu Master Pertanyaan (kategori tryout).
-                    @else
-                        Minta admin menambahkan soal kategori tryout di Master Pertanyaan.
-                    @endif
+                    <a href="{{ route('guru.master-pertanyaan.index', ['kategori' => 'tryout']) }}" class="font-semibold text-blue-600 hover:text-blue-500 dark:text-blue-400">Tambah di Master Pertanyaan →</a>
                 </p>
             @endforelse
         </div>

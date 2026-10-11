@@ -25,6 +25,8 @@ class TryOutService
             'selesai_at' => $data['selesai_at'],
             'soal_ids' => array_values($soalIds),
             'status' => $data['status'] ?? TryOut::STATUS_DRAFT,
+            'hasil_dipublikasikan' => false,
+            'hasil_dipublikasikan_at' => null,
         ]);
 
         $tryout->kelas()->sync($kelasIds);
@@ -77,7 +79,8 @@ class TryOutService
     public function submitAnswers(TryOut $tryout, Student $student, array $jawaban): TryOutDetail
     {
         $soal = $this->soalCollection($tryout);
-        $skor = $this->hitungRataSkor($soal, $jawaban);
+        $skorPerSoal = $this->hitungSkorPerSoal($soal, $jawaban);
+        $skor = $this->rataDariSkorPerSoal($skorPerSoal);
 
         return TryOutDetail::query()->updateOrCreate(
             [
@@ -86,10 +89,59 @@ class TryOutService
             ],
             [
                 'jawaban' => $jawaban,
+                'skor_per_soal' => $skorPerSoal,
                 'rata_skor' => $skor,
                 'submitted_at' => now(),
             ]
         );
+    }
+
+    /**
+     * @param  array<string, float|int|null>  $skorPerSoal
+     */
+    public function updateSkorDetail(TryOutDetail $detail, array $skorPerSoal): TryOutDetail
+    {
+        $normalized = [];
+        foreach ($skorPerSoal as $soalId => $skor) {
+            if ($skor === null || $skor === '') {
+                $normalized[(string) $soalId] = null;
+                continue;
+            }
+
+            $normalized[(string) $soalId] = round(min(100, max(0, (float) $skor)), 1);
+        }
+
+        $existing = $detail->skor_per_soal ?? [];
+        foreach ($normalized as $soalId => $skor) {
+            $existing[$soalId] = $skor;
+        }
+
+        $detail->update([
+            'skor_per_soal' => $existing,
+            'rata_skor' => $this->rataDariSkorPerSoal($existing),
+        ]);
+
+        return $detail->fresh();
+    }
+
+    public function publishHasil(TryOut $tryout): TryOut
+    {
+        $tryout->update([
+            'hasil_dipublikasikan' => true,
+            'hasil_dipublikasikan_at' => now(),
+        ]);
+
+        return $tryout->fresh();
+    }
+
+    public function unpublishHasil(TryOut $tryout): TryOut
+    {
+        $tryout->update([
+            'hasil_dipublikasikan' => false,
+            'hasil_dipublikasikan_at' => null,
+        ]);
+
+        return $tryout->fresh();
     }
 
     /** @return Collection<int, MasterQuestion> */
@@ -115,30 +167,55 @@ class TryOutService
     /**
      * @param  Collection<int, MasterQuestion>  $soal
      * @param  array<string, string>  $jawaban
+     * @return array<string, float|null>
      */
-    public function hitungRataSkor(Collection $soal, array $jawaban): float
+    public function hitungSkorPerSoal(Collection $soal, array $jawaban): array
     {
-        if ($soal->isEmpty()) {
-            return 0.0;
-        }
-
-        $total = 0;
-        $count = 0;
+        $hasil = [];
 
         foreach ($soal as $item) {
-            $nilai = trim((string) ($jawaban[$item->id] ?? ''));
+            $nilai = trim((string) ($jawaban[$item->id] ?? $jawaban[(string) $item->id] ?? ''));
+            $key = (string) $item->id;
+
             if ($nilai === '') {
+                $hasil[$key] = null;
                 continue;
             }
 
-            $count++;
-            $total += match ($item->tipe_input) {
-                MasterQuestion::TIPE_SKALA => min(5, max(1, (int) $nilai)) * 20,
-                default => strlen($nilai) >= 3 ? 80 : 40,
+            $hasil[$key] = match ($item->tipe_input) {
+                MasterQuestion::TIPE_SKALA => (float) (min(5, max(1, (int) $nilai)) * 20),
+                MasterQuestion::TIPE_PILIHAN_GANDA => $this->skorPilihanGanda($item, $nilai),
+                // Isian/esai: menunggu penilaian Guru BK.
+                default => null,
             };
         }
 
-        return $count > 0 ? round($total / $count, 1) : 0.0;
+        return $hasil;
+    }
+
+    /**
+     * @param  Collection<int, MasterQuestion>  $soal
+     * @param  array<string, string>  $jawaban
+     */
+    public function hitungRataSkor(Collection $soal, array $jawaban): float
+    {
+        return $this->rataDariSkorPerSoal($this->hitungSkorPerSoal($soal, $jawaban));
+    }
+
+    /**
+     * @param  array<string, float|int|null>  $skorPerSoal
+     */
+    public function rataDariSkorPerSoal(array $skorPerSoal): float
+    {
+        $nilai = collect($skorPerSoal)
+            ->filter(fn ($skor) => $skor !== null && $skor !== '')
+            ->map(fn ($skor) => (float) $skor);
+
+        if ($nilai->isEmpty()) {
+            return 0.0;
+        }
+
+        return round($nilai->avg(), 1);
     }
 
     public function siswaBisaAkses(TryOut $tryout, Student $student): bool
@@ -154,5 +231,16 @@ class TryOutService
         return $tryout->relationLoaded('kelas')
             ? $tryout->kelas->contains('id', $student->kelas_id)
             : $tryout->kelas()->where('kelas.id', $student->kelas_id)->exists();
+    }
+
+    private function skorPilihanGanda(MasterQuestion $item, string $jawaban): ?float
+    {
+        $kunci = trim((string) $item->kunci_jawaban);
+        if ($kunci === '') {
+            // Tanpa kunci: guru menilai manual.
+            return null;
+        }
+
+        return trim($jawaban) === $kunci ? 100.0 : 0.0;
     }
 }
