@@ -3,6 +3,9 @@
 namespace Tests\Feature\Phase3;
 
 use App\Models\ConsultationRequest;
+use App\Models\GuruBk;
+use App\Models\Kelas;
+use App\Models\Sekolah;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -47,6 +50,99 @@ class ConsultationTest extends TestCase
         ]);
     }
 
+    public function test_daftar_guru_hanya_dari_sekolah_siswa(): void
+    {
+        [$guru, $student] = $this->buatGuruDanSiswaTerhubung();
+        $siswa = $student->user;
+
+        $sekolahLain = Sekolah::query()->create([
+            'nama' => 'SMA Negeri Lain',
+            'is_mou' => true,
+        ]);
+        $kelasLain = Kelas::query()->create([
+            'sekolah_id' => $sekolahLain->id,
+            'nama' => 'XII IPA 1',
+        ]);
+        $guruLain = User::factory()->create([
+            'role' => User::ROLE_GURU,
+            'status' => User::STATUS_APPROVED,
+        ]);
+        GuruBk::query()->create([
+            'user_id' => $guruLain->id,
+            'sekolah_id' => $sekolahLain->id,
+            'no_hp' => '081200000001',
+            'nip' => '1980000000001',
+            'jabatan' => 'Guru BK',
+        ]);
+
+        $response = $this->actingAs($siswa)->get(route('siswa.consultations.index'));
+
+        $response->assertOk();
+        $teacherIds = $response->viewData('teachers')->pluck('id');
+
+        $this->assertTrue($teacherIds->contains($guru->id));
+        $this->assertFalse($teacherIds->contains($guruLain->id));
+    }
+
+    public function test_pengajuan_konseling_menolak_guru_dari_sekolah_lain(): void
+    {
+        [$guru, $student] = $this->buatGuruDanSiswaTerhubung();
+        $siswa = $student->user;
+
+        $sekolahLain = Sekolah::query()->create([
+            'nama' => 'SMA Negeri Lain',
+            'is_mou' => true,
+        ]);
+        $guruLain = User::factory()->create([
+            'role' => User::ROLE_GURU,
+            'status' => User::STATUS_APPROVED,
+        ]);
+        GuruBk::query()->create([
+            'user_id' => $guruLain->id,
+            'sekolah_id' => $sekolahLain->id,
+            'no_hp' => '081200000002',
+            'nip' => '1980000000002',
+            'jabatan' => 'Guru BK',
+        ]);
+
+        $this->actingAs($siswa)
+            ->post(route('siswa.consultations.store'), [
+                'counselor_id' => $guruLain->id,
+                'subject' => 'Tes batas sekolah',
+                'case_category' => ConsultationRequest::CASE_BELAJAR,
+                'details' => 'Pengajuan dari luar sekolah.',
+            ])
+            ->assertNotFound();
+    }
+
+    public function test_kalender_menyematkan_event_konseling_disetujui(): void
+    {
+        $guru = User::factory()->create([
+            'role' => User::ROLE_GURU,
+            'status' => User::STATUS_APPROVED,
+        ]);
+        $siswa = $this->buatSiswa();
+
+        ConsultationRequest::query()->create([
+            'student_id' => $siswa->id,
+            'counselor_id' => $guru->id,
+            'subject' => 'Manajemen waktu belajar',
+            'case_category' => ConsultationRequest::CASE_BELAJAR,
+            'details' => 'Butuh bimbingan.',
+            'preferred_time' => 'Fleksibel',
+            'status' => ConsultationRequest::STATUS_APPROVED,
+            'consultation_date' => now()->addDays(2)->toDateString(),
+            'consultation_time' => '09:00',
+        ]);
+
+        $response = $this->actingAs($guru)->get(route('guru.consultations.index'));
+
+        $response->assertOk();
+        $events = $response->viewData('calendarEvents');
+        $this->assertNotEmpty($events);
+        $this->assertStringContainsString('Manajemen waktu belajar', $events[0]['title']);
+    }
+
     public function test_guru_dapat_melihat_halaman_konseling_dan_events(): void
     {
         $guru = User::factory()->create([
@@ -62,6 +158,34 @@ class ConsultationTest extends TestCase
         $this->actingAs($guru)
             ->getJson(route('guru.consultations.events'))
             ->assertOk();
+    }
+
+    public function test_kalender_guru_menampilkan_siswa_pada_jadwal_yang_disetujui(): void
+    {
+        $siswa = $this->buatSiswa();
+        $guru = User::factory()->create([
+            'role' => User::ROLE_GURU,
+            'status' => User::STATUS_APPROVED,
+        ]);
+        $tanggal = now()->addDay()->toDateString();
+        $konseling = ConsultationRequest::create([
+            'student_id' => $siswa->id,
+            'counselor_id' => $guru->id,
+            'subject' => 'Konseling belajar',
+            'case_category' => ConsultationRequest::CASE_BELAJAR,
+            'preferred_time' => '10:00',
+            'consultation_date' => $tanggal,
+            'consultation_time' => '10:00',
+            'status' => ConsultationRequest::STATUS_APPROVED,
+        ]);
+
+        $this->actingAs($guru)
+            ->getJson(route('guru.consultations.events'))
+            ->assertOk()
+            ->assertJsonPath('0.id', $konseling->id)
+            ->assertJsonPath('0.title', $siswa->name.' — Konseling belajar')
+            ->assertJsonPath('0.start', $tanggal.'T10:00:00')
+            ->assertJsonMissingPath('0.end');
     }
 
     public function test_guru_dapat_menyetujui_pengajuan(): void

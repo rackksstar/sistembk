@@ -70,12 +70,21 @@ class ConsultationController extends Controller
             ->limit(5)
             ->get();
 
+        // Event kalender disematkan langsung ke halaman (bukan di-fetch) supaya
+        // selalu tampil walau URL APP_URL beda host/port saat dibuka dari
+        // localhost atau jaringan sekolah.
+        $calendarEvents = $this->scheduleService
+            ->calendarEventsForCounselor((int) auth()->id())
+            ->values()
+            ->all();
+
         return view('guru.consultations.index', [
             'consultations' => $consultations,
             'status' => $status,
             'statuses' => ConsultationRequest::filterableStatuses(),
             'caseCategories' => ConsultationRequest::CASE_CATEGORIES,
             'upcomingWeek' => $upcomingWeek,
+            'calendarEvents' => $calendarEvents,
             'search' => $search,
             'kategori' => $kategori,
             // Pilihan RPL individu + kelompok untuk dikaitkan dengan laporan konseling.

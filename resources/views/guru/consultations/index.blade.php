@@ -10,6 +10,7 @@
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title title="Kalender Jadwal Konseling" description="Visualisasi sesi yang sudah dijadwalkan." />
         <div id="consultation-calendar" class="mt-6 min-h-[420px] rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 p-2"></div>
+        <script type="application/json" id="consultation-events">@json($calendarEvents)</script>
         @if($upcomingWeek->isNotEmpty())
             <div class="mt-6">
                 <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">Minggu ini</p>
@@ -317,7 +318,6 @@
 </div>
 
 @push('scripts')
-<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
 <style>
     html.dark #consultation-calendar {
         --fc-page-bg-color: transparent;
@@ -355,26 +355,6 @@
         color: rgb(226 232 240);
     }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const el = document.getElementById('consultation-calendar');
-    if (!el || typeof FullCalendar === 'undefined') return;
-
-    const calendar = new FullCalendar.Calendar(el, {
-        initialView: 'dayGridMonth',
-        locale: 'id',
-        height: 'auto',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,listWeek',
-        },
-        events: '{{ route('guru.consultations.events') }}',
-        eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
-    });
-    calendar.render();
-});
-</script>
+@vite(['resources/js/calendar.js'])
 @endpush
 @endsection

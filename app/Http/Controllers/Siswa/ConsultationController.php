@@ -24,9 +24,15 @@ class ConsultationController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        $sekolahId = $request->user()->studentProfile?->kelas?->sekolah_id;
+
         $teachers = User::query()
             ->where('role', User::ROLE_GURU)
             ->where('status', User::STATUS_APPROVED)
+            ->when($sekolahId, fn ($query) => $query->whereHas(
+                'guruBkProfile',
+                fn ($profile) => $profile->where('sekolah_id', $sekolahId)
+            ))
             ->orderBy('name')
             ->get(['id', 'name']);
 
@@ -56,8 +62,15 @@ class ConsultationController extends Controller
 
     public function store(StoreConsultationRequest $request): RedirectResponse
     {
-        User::where('role', User::ROLE_GURU)
+        $sekolahId = $request->user()->studentProfile?->kelas?->sekolah_id;
+
+        User::query()
+            ->where('role', User::ROLE_GURU)
             ->where('status', User::STATUS_APPROVED)
+            ->when($sekolahId, fn ($query) => $query->whereHas(
+                'guruBkProfile',
+                fn ($profile) => $profile->where('sekolah_id', $sekolahId)
+            ))
             ->findOrFail($request->validated('counselor_id'));
 
         $preferredDate = $request->validated('preferred_date');

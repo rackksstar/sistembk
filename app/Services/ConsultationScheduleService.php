@@ -54,7 +54,6 @@ class ConsultationScheduleService
                 'id' => $consultation->id,
                 'title' => ($consultation->student?->name ?? 'Siswa').' — '.$consultation->subject,
                 'start' => $consultation->consultation_date->format('Y-m-d').'T'.$this->normalizeTime($consultation->consultation_time),
-                'end' => $consultation->consultation_date->format('Y-m-d').'T'.$this->normalizeTime($consultation->consultation_time),
                 'backgroundColor' => match ($consultation->status) {
                     ConsultationRequest::STATUS_SELESAI => '#3b82f6',
                     ConsultationRequest::STATUS_RESCHEDULED => '#f59e0b',
