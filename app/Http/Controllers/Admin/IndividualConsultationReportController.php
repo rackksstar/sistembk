@@ -10,7 +10,6 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class IndividualConsultationReportController extends Controller
@@ -81,8 +80,6 @@ class IndividualConsultationReportController extends Controller
                     ConsultationRequest::STATUS_SELESAI,
                 ])
                 ->whereNull('report_title')
-                ->whereNull('result')
-                ->whereNull('evaluation')
                 ->with(['student:id,name', 'student.studentProfile:id,user_id,kelas_id', 'student.studentProfile.kelas:id,nama'])
                 ->orderByDesc('consultation_date')
                 ->orderByDesc('id')
@@ -115,7 +112,7 @@ class IndividualConsultationReportController extends Controller
     {
         $data = $this->validatedData($request, true);
         $consultation = $this->teacherIndividualConsultation((int) $data['consultation_id']);
-        abort_if($this->hasReport($consultation), 422, 'Sesi konseling ini sudah memiliki laporan.');
+        abort_if($consultation->report_title !== null, 422, 'Sesi konseling ini sudah memiliki laporan.');
 
         unset($data['consultation_id']);
         $consultation->update([

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ConsultationRequest;
 use App\Models\GroupConsultationReport;
 use App\Models\Rpl;
+use App\Models\School;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,14 +17,28 @@ class GroupConsultationReportController extends Controller
 {
     public function index(Request $request): View
     {
+        $search = $request->string('search')->toString();
+        $status = $request->string('status')->toString();
         $category = $request->string('case_category')->toString();
         $rplId = $request->integer('rpl_id') ?: null;
+        $schoolId = $request->integer('school_id') ?: null;
 
         $reports = GroupConsultationReport::query()
-            ->with(['rpl.groupStudents:id,name', 'classRoom:id,name'])
+            ->with(['rpl.groupStudents:id,name', 'classRoom:id,name,school_id', 'classRoom.school:id,name'])
             ->where('teacher_id', auth()->id())
+            ->when($search, fn ($query) => $query->where(function ($inner) use ($search) {
+                $inner->where('title', 'like', "%{$search}%")
+                    ->orWhere('result', 'like', "%{$search}%")
+                    ->orWhere('evaluation', 'like', "%{$search}%")
+                    ->orWhere('follow_up', 'like', "%{$search}%")
+                    ->orWhereHas('rpl', fn ($rpl) => $rpl->where('title', 'like', "%{$search}%"))
+                    ->orWhereHas('classRoom', fn ($class) => $class->where('name', 'like', "%{$search}%"))
+                    ->orWhereHas('rpl.groupStudents', fn ($student) => $student->where('name', 'like', "%{$search}%"));
+            }))
+            ->when($status, fn ($query) => $query->whereHas('rpl', fn ($rpl) => $rpl->where('status', $status)))
             ->when($category, fn ($query) => $query->where('case_category', $category))
             ->when($rplId, fn ($query) => $query->where('rpl_id', $rplId))
+            ->when($schoolId, fn ($query) => $query->whereHas('classRoom', fn ($class) => $class->where('school_id', $schoolId)))
             ->latest('service_date')
             ->paginate(10)
             ->withQueryString();
@@ -38,9 +53,14 @@ class GroupConsultationReportController extends Controller
         return view('guru.group-reports.index', [
             'reports' => $reports,
             'groupRpls' => $groupRpls,
+            'search' => $search,
+            'status' => $status,
+            'statuses' => Rpl::STATUSES,
             'caseCategories' => ConsultationRequest::CASE_CATEGORIES,
             'category' => $category,
             'rplId' => $rplId,
+            'schoolId' => $schoolId,
+            'schoolOptions' => School::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

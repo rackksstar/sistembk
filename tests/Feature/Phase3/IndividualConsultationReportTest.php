@@ -124,21 +124,29 @@ class IndividualConsultationReportTest extends TestCase
             'status' => User::STATUS_APPROVED,
         ]);
         $konsultasi = $this->buatKonsultasi($guru, 'Manajemen waktu belajar');
+        $konsultasi->update([
+            'result' => 'Catatan hasil dari menu konseling.',
+            'evaluation' => 'Catatan evaluasi dari menu konseling.',
+        ]);
 
         $this->actingAs($guru)
-            ->post(route('guru.individual-reports.store'), [
-                'consultation_id' => $konsultasi->id,
-                'report_title' => 'Laporan manajemen waktu',
-                'meeting_number' => 1,
-                'duration_minutes' => 45,
-                'location' => 'Ruang BK',
-                'approach_technique' => 'Refleksi dan konseling individual',
-                'semester' => 1,
-                'year' => now()->year,
-                'result' => 'Siswa menyusun jadwal belajar.',
-                'evaluation' => 'Siswa memahami prioritas belajar.',
-                'follow_up' => 'Evaluasi jadwal pekan depan.',
-            ])
+            ->get(route('guru.individual-reports.index'))
+            ->assertOk()
+            ->assertViewHas('availableConsultations', fn ($sessions) => $sessions->contains('id', $konsultasi->id));
+
+        $this->post(route('guru.individual-reports.store'), [
+            'consultation_id' => $konsultasi->id,
+            'report_title' => 'Laporan manajemen waktu',
+            'meeting_number' => 1,
+            'duration_minutes' => 45,
+            'location' => 'Ruang BK',
+            'approach_technique' => 'Refleksi dan konseling individual',
+            'semester' => 1,
+            'year' => now()->year,
+            'result' => 'Siswa menyusun jadwal belajar.',
+            'evaluation' => 'Siswa memahami prioritas belajar.',
+            'follow_up' => 'Evaluasi jadwal pekan depan.',
+        ])
             ->assertRedirect()
             ->assertSessionHas('success');
 

@@ -13,11 +13,16 @@
             <x-alert class="mt-5" type="error" message="Periksa kembali data laporan kelompok." />
         @endif
 
-        <form method="GET" action="{{ route('guru.group-reports.index') }}" class="mt-6 grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
-            <x-form-select name="rpl_id">
-                <option value="">Semua RPL kelompok</option>
-                @foreach($groupRpls as $rpl)
-                    <option value="{{ $rpl->id }}" @selected($rplId === $rpl->id)>{{ $rpl->title }} - {{ $rpl->classRoom?->name ?? 'Tanpa kelas' }}</option>
+        <form method="GET" action="{{ route('guru.group-reports.index') }}" class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_170px_190px_190px_190px_auto]">
+            <div class="min-w-0">
+                <label for="search" class="sr-only">Cari laporan kelompok</label>
+                <input type="search" id="search" name="search" value="{{ $search }}" placeholder="Cari judul, RPL, kelas, atau siswa..."
+                    class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm placeholder:text-slate-400 focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+            </div>
+            <x-form-select name="status">
+                <option value="">Semua status RPL</option>
+                @foreach($statuses as $value => $label)
+                    <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
                 @endforeach
             </x-form-select>
             <x-form-select name="case_category">
@@ -26,7 +31,22 @@
                     <option value="{{ $value }}" @selected($category === $value)>{{ $label }}</option>
                 @endforeach
             </x-form-select>
-            <button class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white dark:bg-slate-100 dark:text-slate-900">Filter</button>
+            <x-form-select name="rpl_id">
+                <option value="">Semua RPL kelompok</option>
+                @foreach($groupRpls as $rpl)
+                    <option value="{{ $rpl->id }}" @selected($rplId === $rpl->id)>{{ $rpl->title }} - {{ $rpl->classRoom?->name ?? 'Tanpa kelas' }}</option>
+                @endforeach
+            </x-form-select>
+            <x-form-select name="school_id">
+                <option value="">Semua sekolah</option>
+                @foreach($schoolOptions as $school)
+                    <option value="{{ $school->id }}" @selected($schoolId === $school->id)>{{ $school->name }}</option>
+                @endforeach
+            </x-form-select>
+            <div class="flex gap-3 sm:col-span-2 xl:col-span-1">
+                <button class="flex-1 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500">Filter</button>
+                <x-filter-reset />
+            </div>
         </form>
     </section>
 
@@ -37,7 +57,7 @@
                     <div>
                         <span class="rounded-full bg-blue-50 dark:bg-blue-950/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-blue-700 dark:text-blue-300">{{ $report->caseCategoryLabel() }}</span>
                         <h3 class="mt-4 text-lg font-bold text-slate-950 dark:text-white">{{ $report->title }}</h3>
-                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ $report->classRoom?->name ?? '-' }} - {{ $report->service_date?->format('d M Y') }}</p>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ $report->classRoom?->school?->name ?? '-' }} · {{ $report->classRoom?->name ?? '-' }} - {{ $report->service_date?->format('d M Y') }}</p>
                         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">RPL: {{ $report->rpl?->title ?? '-' }}</p>
                     </div>
                     <div class="flex flex-wrap gap-2">

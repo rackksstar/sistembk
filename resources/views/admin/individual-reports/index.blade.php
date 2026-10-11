@@ -6,7 +6,18 @@
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Laporan Konseling Individu" description="Pilih sesi konseling individu, catat hasil pelaksanaannya, dan cetak laporan PDF." />
             @if($isGuru)
-                <button type="button" x-on:click="createOpen = true" @disabled($availableConsultations->isEmpty()) class="w-fit rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50">Tambah Laporan</button>
+                @if($availableConsultations->isEmpty())
+                    <span class="group relative inline-flex w-fit" title="Tombol aktif jika ada sesi konseling individu milik Anda yang sudah dijadwalkan dan belum memiliki laporan.">
+                        <button type="button" disabled aria-describedby="individual-report-disabled-help" class="w-fit cursor-not-allowed rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white opacity-50 shadow-lg shadow-blue-500/20">
+                            Tambah Laporan
+                        </button>
+                        <span id="individual-report-disabled-help" role="tooltip" class="pointer-events-none invisible absolute right-0 top-full z-20 mt-2 w-72 rounded-xl bg-slate-900 px-3 py-2 text-left text-xs leading-5 text-white opacity-0 shadow-lg transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                            Belum ada sesi konseling individu yang siap dibuatkan laporan. Sesi harus milik Anda, sudah dijadwalkan, dan belum memiliki laporan.
+                        </span>
+                    </span>
+                @else
+                    <button type="button" x-on:click="createOpen = true" class="w-fit rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500">Tambah Laporan</button>
+                @endif
             @endif
         </div>
 
