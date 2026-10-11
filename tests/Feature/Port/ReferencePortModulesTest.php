@@ -159,6 +159,33 @@ class ReferencePortModulesTest extends TestCase
         $this->assertSame(45, $rpl->duration_minutes);
     }
 
+    public function test_halaman_rpl_menyediakan_daftar_pengajuan_konseling_individu(): void
+    {
+        $guru = $this->buatGuru();
+        $classId = $this->buatSchoolClass()->id;
+        $siswa = $this->buatSiswaDiKelas($classId);
+
+        $individu = $this->buatConsultationRequest($guru, $siswa, ConsultationRequest::STATUS_APPROVED);
+        $ditolak = $this->buatConsultationRequest($guru, $siswa, ConsultationRequest::STATUS_REJECTED);
+
+        $rplKelompok = Rpl::query()->create($this->payloadRpl([
+            'teacher_id' => $guru->id,
+            'type' => Rpl::TYPE_KELOMPOK,
+            'class_id' => $classId,
+        ]));
+        $terkaitKelompok = $this->buatConsultationRequest($guru, $siswa, ConsultationRequest::STATUS_APPROVED);
+        $terkaitKelompok->update(['rpl_id' => $rplKelompok->id]);
+
+        $response = $this->actingAs($guru)->get(route('guru.rpls.index'));
+
+        $response->assertOk()->assertViewHas('individualConsultations');
+        $ids = $response->viewData('individualConsultations')->pluck('id');
+
+        $this->assertTrue($ids->contains($individu->id));
+        $this->assertFalse($ids->contains($ditolak->id));
+        $this->assertFalse($ids->contains($terkaitKelompok->id));
+    }
+
     // ------------------------------------------------------------------
     // 3. Laporan Konseling
     // ------------------------------------------------------------------

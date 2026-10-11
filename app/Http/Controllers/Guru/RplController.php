@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
+use App\Models\ConsultationRequest;
 use App\Models\Rpl;
 use App\Models\SchoolClass;
 use App\Models\User;
@@ -43,12 +44,30 @@ class RplController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'class_id']);
 
+        // Pengajuan konseling individu (dari siswa maupun guru) yang bisa
+        // langsung diambil siswanya saat menyusun RPL individu.
+        $individualConsultations = ConsultationRequest::query()
+            ->where(function ($query) {
+                $query->whereNull('rpl_id')
+                    ->orWhereHas('rpl', fn ($rpl) => $rpl->where('type', Rpl::TYPE_INDIVIDU));
+            })
+            ->where(function ($query) {
+                $query->whereNull('counselor_id')->orWhere('counselor_id', auth()->id());
+            })
+            ->where('status', '!=', ConsultationRequest::STATUS_REJECTED)
+            ->whereNotNull('student_id')
+            ->with(['student:id,name,class_id'])
+            ->orderByDesc('consultation_date')
+            ->orderByDesc('id')
+            ->get();
+
         return view('guru.rpls.index', [
             'rpls' => $rpls,
             'types' => Rpl::TYPES,
             'statuses' => Rpl::STATUSES,
             'classes' => $classes,
             'students' => $students,
+            'individualConsultations' => $individualConsultations,
             'type' => $type,
             'status' => $status,
             'classId' => $classId,
