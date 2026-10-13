@@ -41,19 +41,20 @@
 
 <div class="space-y-2">
     <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="deskripsi-{{ $suffix }}">Deskripsi</label>
-    <textarea id="deskripsi-{{ $suffix }}" name="deskripsi" rows="3" class="ui-input js-select2">{{ old('deskripsi', $programStudi?->deskripsi) }}</textarea>
+    <textarea id="deskripsi-{{ $suffix }}" name="deskripsi" rows="3" maxlength="5000" class="ui-input js-select2" placeholder="Ringkasan prodi untuk siswa...">{{ old('deskripsi', $programStudi?->deskripsi) }}</textarea>
     <x-input-error :messages="$errors->get('deskripsi')" class="text-sm text-red-600" />
 </div>
 
 <div class="space-y-2">
     <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="prospek-{{ $suffix }}">Prospek Karier</label>
-    <textarea id="prospek-{{ $suffix }}" name="prospek_karier" rows="2" class="ui-input js-select2">{{ old('prospek_karier', $programStudi?->prospek_karier) }}</textarea>
+    <textarea id="prospek-{{ $suffix }}" name="prospek_karier" rows="2" maxlength="5000" class="ui-input js-select2" placeholder="Contoh pekerjaan lulusan...">{{ old('prospek_karier', $programStudi?->prospek_karier) }}</textarea>
     <x-input-error :messages="$errors->get('prospek_karier')" class="text-sm text-red-600" />
 </div>
 
 <div class="space-y-2">
     <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="website-{{ $suffix }}">Website</label>
-    <input id="website-{{ $suffix }}" type="url" name="website_url" value="{{ old('website_url', $programStudi?->website_url) }}" class="ui-input js-select2" placeholder="https://pmb.pcr.ac.id/..." />
+    <input id="website-{{ $suffix }}" type="url" name="website_url" maxlength="255" value="{{ old('website_url', $programStudi?->website_url) }}" class="ui-input js-select2" placeholder="https://pmb.pcr.ac.id/..." />
+    <p class="text-xs text-slate-500 dark:text-slate-400">Opsional. Cantumkan tautan resmi prodi/PMB.</p>
     <x-input-error :messages="$errors->get('website_url')" class="text-sm text-red-600" />
 </div>
 
@@ -77,7 +78,10 @@
 </div>
 
 <div class="space-y-3">
-    <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Kategori Minat & Relevansi</p>
+    <div>
+        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Kategori Minat & Relevansi <span class="text-red-500">*</span></p>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Wajib minimal satu. Relevansi 1=rendah, 2=sedang, 3=tinggi — dipakai rumus rekomendasi siswa.</p>
+    </div>
     <div class="space-y-2 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
         @forelse($interestCategories as $cat)
             @php
@@ -96,6 +100,7 @@
                     @endfor
                 </select>
             </div>
+            <x-input-error :messages="$errors->get('categories.'.$cat->id.'.relevansi')" class="text-sm text-red-600" />
         @empty
             <p class="text-sm text-slate-500 dark:text-slate-400">Belum ada kategori minat. Tambahkan di menu Kategori Minat terlebih dahulu.</p>
         @endforelse

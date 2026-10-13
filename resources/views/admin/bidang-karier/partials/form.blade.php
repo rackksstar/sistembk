@@ -22,13 +22,13 @@
 
 <div class="space-y-2">
     <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="deskripsi-{{ $suffix }}">Deskripsi</label>
-    <textarea id="deskripsi-{{ $suffix }}" name="deskripsi" rows="3" class="ui-input js-select2">{{ old('deskripsi', $careerField?->deskripsi) }}</textarea>
+    <textarea id="deskripsi-{{ $suffix }}" name="deskripsi" rows="3" maxlength="5000" class="ui-input js-select2" placeholder="Ringkasan bidang karier...">{{ old('deskripsi', $careerField?->deskripsi) }}</textarea>
     <x-input-error :messages="$errors->get('deskripsi')" class="text-sm text-red-600" />
 </div>
 
 <div class="space-y-2">
     <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="jobs-{{ $suffix }}">Contoh Pekerjaan</label>
-    <textarea id="jobs-{{ $suffix }}" name="contoh_pekerjaan_text" rows="4" class="ui-input js-select2" placeholder="Satu pekerjaan per baris">{{ $jobsText }}</textarea>
+    <textarea id="jobs-{{ $suffix }}" name="contoh_pekerjaan_text" rows="4" maxlength="5000" class="ui-input js-select2" placeholder="Satu pekerjaan per baris">{{ $jobsText }}</textarea>
     <p class="text-xs text-slate-500 dark:text-slate-400">Tulis satu contoh pekerjaan per baris.</p>
     <x-input-error :messages="$errors->get('contoh_pekerjaan_text')" class="text-sm text-red-600" />
 </div>
@@ -55,7 +55,10 @@
 </div>
 
 <div class="space-y-3">
-    <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Kategori Minat & Relevansi</p>
+    <div>
+        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Kategori Minat & Relevansi <span class="text-red-500">*</span></p>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Wajib minimal satu. Relevansi 1=rendah, 2=sedang, 3=tinggi — dipakai rumus rekomendasi siswa SMK.</p>
+    </div>
     <div class="space-y-2 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
         @forelse($interestCategories as $cat)
             @php
@@ -74,6 +77,7 @@
                     @endfor
                 </select>
             </div>
+            <x-input-error :messages="$errors->get('categories.'.$cat->id.'.relevansi')" class="text-sm text-red-600" />
         @empty
             <p class="text-sm text-slate-500 dark:text-slate-400">Belum ada kategori minat. Tambahkan di menu Kategori Minat terlebih dahulu.</p>
         @endforelse

@@ -456,21 +456,24 @@ flowchart TD
 
 ---
 
-## 9. Chatbot PCR
+## 9. Chatbot PCR + Konseling
 
 **Menu siswa:** Layanan BK → Chatbot Konseling.
 
-**Harus ada dulu:**
+**Harus ada dulu (lokal / VPS / cloud):**
 
 ```text
-① chatbot_service berjalan (.env, API key LLM)
-② Knowledge di-index:
-     - Buku BK (PDF)
-     - knowledge/pcr_pmb_resmi.md (pmb.pcr.ac.id / pcr.ac.id)
-③ Siswa login
+① Python 3.11–3.13 + venv di chatbot_service/
+② cp .env.example .env → set CHATBOT_API_TOKEN (wajib di server)
+③ python ingest_buku.py  (wajib tiap server; index tidak di-commit)
+④ uvicorn / systemd bind 127.0.0.1:8000
+⑤ Laravel: CHATBOT_SERVICE_URL + CHATBOT_API_TOKEN sama
+⑥ Siswa login → Chatbot
 ```
 
-**Bukan scoring.** Menjawab dari indeks pengetahuan (jalur masuk PSUD/UMPCR, biaya, prodi, beasiswa, konseling umum).
+**Perilaku:** jawaban terkurasi BK/PCR + FTS knowledge; follow-up memakai riwayat; jadwal PCR selalu diarahkan ke situs resmi; topik di luar scope ditolak; krisis diarahkan ke Guru BK + hotline.
+
+Detail deploy: `chatbot_service/README.md`.
 
 ---
 
@@ -642,7 +645,21 @@ Setelah seed/migrate, pastikan prodi yang mau tampil di rekomendasi sudah **`is_
 
 ---
 
-## 14. Referensi teknis
+## 14. Inventaris field form CRUD Key
+
+| Form | Field wajib | Field opsional / catatan |
+| --- | --- | --- |
+| **Kategori Minat RIASEC** | `kode` (A–Z), `nama`, `is_active` | `deskripsi`, `warna` (#hex + color picker), `urutan` |
+| **Program Studi PCR** | `institusi`, `nama`, `jenjang` (D3/D4), `is_verified`, `is_active`, **≥1 kategori + relevansi 1–3** | `jurusan`, `deskripsi`, `prospek_karier`, `website_url` |
+| **Bidang Karier** | `nama`, `is_active`, **≥1 kategori + relevansi 1–3** | `deskripsi`, `contoh_pekerjaan` (per baris), `job_zone` 1–5 |
+| **Soal Minat Bakat (Guru Key)** | `category=minat_bakat`, `question`, `talent_code`, `interest_category_id` (auto), `options` (≥2), `is_active` | `jenjang_target` (semua/SMA/SMK), `bobot` 1–5 |
+| **Konsultasi Prodi (Siswa)** | `subject`, `program_studi_id` (verified), `counselor_id`, `details` | `preferred_date` (≥ hari ini), `preferred_time` |
+| **Asesmen Minat Bakat (Siswa)** | `category`, `jenjang` (SMA/SMK), `answers[id]` semua soal | — (bukan CRUD master) |
+| **Hasil Minat Bakat (Guru)** | — | Read-only (tidak ada form edit) |
+
+---
+
+## 15. Referensi teknis
 
 | Topik | Lokasi |
 | --- | --- |

@@ -7,11 +7,12 @@ from dotenv import load_dotenv
 from pypdf import PdfReader
 from tqdm import tqdm
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent
+load_dotenv(BASE_DIR / ".env")
 
-PDF_PATH = os.environ.get("BOOK_PDF_PATH", "Buku_Bimbingan_Konseling_Masdudi.pdf")
-KNOWLEDGE_DIR = os.environ.get("KNOWLEDGE_DIR", "./knowledge")
-BOOK_INDEX_DB = os.environ.get("BOOK_INDEX_DB", "./book_index.sqlite3")
+PDF_PATH = os.environ.get("BOOK_PDF_PATH", str(BASE_DIR / "Buku_Bimbingan_Konseling_Masdudi.pdf"))
+KNOWLEDGE_DIR = os.environ.get("KNOWLEDGE_DIR", str(BASE_DIR / "knowledge"))
+BOOK_INDEX_DB = os.environ.get("BOOK_INDEX_DB", str(BASE_DIR / "book_index.sqlite3"))
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE", "800"))
 CHUNK_OVERLAP = int(os.environ.get("CHUNK_OVERLAP", "150"))
 

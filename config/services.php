@@ -24,6 +24,8 @@ return [
 
     'konseling_chatbot' => [
         'service_url' => env('CHATBOT_SERVICE_URL', 'http://127.0.0.1:8000'),
+        'token' => env('CHATBOT_API_TOKEN', ''),
+        'timeout' => (int) env('CHATBOT_TIMEOUT', 30),
     ],
 
     'ses' => [

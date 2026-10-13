@@ -1,5 +1,6 @@
 @php
     $formKey = $question?->id ?? 'new';
+    $isKeyModule = ($module ?? 'yola') === 'key';
     $yolaLikert = [
         ['label' => 'Sangat Tidak Sesuai', 'score' => 1],
         ['label' => 'Tidak Sesuai', 'score' => 2],
@@ -14,7 +15,7 @@
     $selectedAxis = old('mbti_axis', $question?->mbti_axis ?? array_key_first($mbtiAxes));
     $selectedPole = old('mbti_pole', $question?->mbti_pole ?? '');
 
-    $defaultOptions = (($module ?? 'yola') === 'key')
+    $defaultOptions = $isKeyModule
         ? \App\Models\InstrumentQuestion::TALENTS_LIKERT_OPTIONS
         : $yolaLikert;
     $initialOptions = collect(old('options', $question?->options ?? $defaultOptions))
@@ -32,7 +33,7 @@
 <div
     class="space-y-4"
     x-data="{
-        category: @js(old('category', $question?->category ?? (($module ?? 'yola') === 'key' ? 'minat_bakat' : 'minat_kerja'))),
+        category: @js(old('category', $question?->category ?? ($isKeyModule ? 'minat_bakat' : 'minat_kerja'))),
         talentCode: @js($initialTalent),
         section: @js(old('section', $question?->section)),
         interestCategories: @js($interestCategories->map(fn ($c) => ['id' => $c->id, 'kode' => $c->kode, 'nama' => $c->nama])->values()),
@@ -91,19 +92,29 @@
     }"
 >
     <div class="space-y-2">
-        <x-input-label for="category_{{ $formKey }}" value="Jenis Instrumen" />
-        <x-form-select id="category_{{ $formKey }}" name="category" x-model="category" required>
-            <option value="">Pilih kategori</option>
-            @foreach($categories as $value => $label)
-                <option value="{{ $value }}">{{ $label }}</option>
-            @endforeach
-        </x-form-select>
-        <p class="text-xs text-slate-500 dark:text-slate-400">Kategori "Kepribadian" memakai pernyataan skala Likert ala 16Personalities, kategori lain memakai skor Likert seperti biasa.</p>
+        @if($isKeyModule)
+            <input type="hidden" name="category" value="minat_bakat">
+            <x-input-label value="Jenis Instrumen" />
+            <p class="rounded-2xl border border-blue-100 bg-blue-50/70 px-4 py-3 text-sm font-medium text-slate-700 dark:border-blue-900/40 dark:bg-blue-950/20 dark:text-slate-300">
+                Minat Bakat Kuliah (RIASEC / Talents Mapping)
+            </p>
+        @else
+            <x-input-label for="category_{{ $formKey }}" value="Jenis Instrumen" />
+            <x-form-select id="category_{{ $formKey }}" name="category" x-model="category" required>
+                <option value="">Pilih kategori</option>
+                @foreach($categories as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+            </x-form-select>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Kategori "Kepribadian" memakai pernyataan skala Likert ala 16Personalities, kategori lain memakai skor Likert seperti biasa.</p>
+        @endif
+        <x-input-error :messages="$errors->get('category')" />
     </div>
 
     <div class="space-y-2">
         <x-input-label for="question_{{ $formKey }}" value="Soal" />
-        <textarea id="question_{{ $formKey }}" name="question" rows="4" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 shadow-xs focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">{{ old('question', $question?->question) }}</textarea>
+        <textarea id="question_{{ $formKey }}" name="question" rows="4" required maxlength="1000" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 shadow-xs focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" placeholder="{{ $isKeyModule ? 'Contoh: Memperbaiki mesin atau peralatan teknis' : 'Tulis pernyataan soal...' }}">{{ old('question', $question?->question) }}</textarea>
+        <x-input-error :messages="$errors->get('question')" />
     </div>
 
     <div x-show="isStrategiBelajar" x-cloak class="space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
@@ -137,7 +148,10 @@
                     <option value="{{ $code }}">{{ $code }} — {{ $label }}</option>
                 @endforeach
             </x-form-select>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Wajib. Menentukan ember skor RIASEC soal ini.</p>
+            <x-input-error :messages="$errors->get('talent_code')" />
             <input type="hidden" name="interest_category_id" :value="interestCategoryId">
+            <x-input-error :messages="$errors->get('interest_category_id')" />
         </div>
 
         <div class="grid gap-3 sm:grid-cols-2">
@@ -150,9 +164,11 @@
                     x-bind:required="isMinatBakat"
                 >
                     @foreach($jenjangTargets as $target)
-                        <option value="{{ $target }}">{{ $target === 'semua' ? 'Semua' : $target }}</option>
+                        <option value="{{ $target }}">{{ $target === 'semua' ? 'Semua (SMA & SMK)' : $target }}</option>
                     @endforeach
                 </x-form-select>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Filter soal saat siswa mengerjakan sesuai jenjang.</p>
+                <x-input-error :messages="$errors->get('jenjang_target')" />
             </div>
 
             <div class="space-y-2">
@@ -166,6 +182,8 @@
                     x-model.number="bobot"
                     x-bind:required="isMinatBakat"
                 />
+                <p class="text-xs text-slate-500 dark:text-slate-400">Pengali skor jawaban (default 1).</p>
+                <x-input-error :messages="$errors->get('bobot')" />
             </div>
         </div>
     </div>
@@ -257,12 +275,16 @@
             </div>
         </template>
         <p class="text-xs text-slate-500 dark:text-slate-400">Minimal 2 dan maksimal 6 pilihan jawaban. Default Talents Mapping: Sangat Tidak Suka (1) – Sangat Suka (5).</p>
+        <x-input-error :messages="$errors->get('options')" />
+        <x-input-error :messages="$errors->get('options.0.label')" />
+        <x-input-error :messages="$errors->get('options.0.score')" />
     </div>
 
     <label class="flex items-center gap-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-300">
         <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $question?->is_active ?? true)) class="rounded-sm border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500">
         Aktif dan tampil untuk siswa
     </label>
+    <x-input-error :messages="$errors->get('is_active')" />
 
     <x-primary-button>{{ $submit }}</x-primary-button>
 </div>

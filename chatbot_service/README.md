@@ -1,63 +1,104 @@
-# Chatbot Konseling Siswa (+ Knowledge PCR)
+# Chatbot Konseling Siswa (+ Knowledge PCR + Sistem BK)
 
-Laravel mengirim pesan siswa ke FastAPI lokal. FastAPI menjawab dari:
+Laravel mengirim pesan siswa ke FastAPI. Service menjawab **tanpa LLM eksternal** dari:
 
-1. **Buku Bimbingan Konseling** (PDF)
-2. **Knowledge resmi PCR/PMB** (`knowledge/*.md`) dari [pmb.pcr.ac.id](https://pmb.pcr.ac.id) dan [pcr.ac.id](https://pcr.ac.id)
+1. Jawaban terkurasi (BK + PCR/PMB + panduan menu Sistem BK)
+2. Retrieval FTS: PDF buku BK + `knowledge/*.md`
+3. Riwayat singkat per siswa (follow-up seperti “berapa biayanya?” setelah bicara PCR)
 
-Tanpa layanan AI eksternal.
-
-## Setup
+## Setup lokal
 
 ```bash
 cd chatbot_service
-# Disarankan Python 3.11–3.13 (bukan 3.14+)
+# Python 3.11–3.13 (hindari 3.14+ bila pydantic belum kompatibel)
 python3.13 -m venv venv
-source venv/bin/activate   # Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env       # Windows: copy .env.example .env
+cp .env.example .env
 ```
 
-Pastikan PDF buku ada (default: `Buku_Bimbingan_Konseling_Masdudi.pdf`) dan file knowledge di `knowledge/`.
+Pastikan PDF buku ada dan folder `knowledge/` berisi file `.md`.
 
-## Ingest / Reindex (wajib setelah update knowledge)
+### Ingest (wajib setelah update knowledge)
 
 ```bash
 python ingest_buku.py
 ```
 
-Ini membuat ulang `book_index.sqlite3` dari PDF + seluruh `knowledge/*.md`.
+Membuat ulang `book_index.sqlite3` (file ini **tidak** di-commit; harus di-build di setiap server).
 
-## Jalankan Service
+### Jalankan
 
 ```bash
 uvicorn app:app --host 127.0.0.1 --port 8000
 ```
 
-Laravel memakai:
+Laravel `.env`:
 
 ```env
 CHATBOT_SERVICE_URL=http://127.0.0.1:8000
+CHATBOT_API_TOKEN=   # opsional di local; WAJIB di VPS/cloud
+CHATBOT_TIMEOUT=30
 ```
+
+Jika `CHATBOT_API_TOKEN` diisi di service, isi **nilai yang sama** di Laravel.
 
 ## Tes cepat
 
 ```bash
+./scripts/smoke_test.sh
+# atau:
 curl http://127.0.0.1:8000/health
-
 curl -X POST http://127.0.0.1:8000/chat \
   -H "Content-Type: application/json" \
+  -H "X-Chatbot-Token: $CHATBOT_API_TOKEN" \
   -d '{"studentId":"test-1","message":"Jalur masuk PCR apa saja?"}'
-
-curl -X POST http://127.0.0.1:8000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"studentId":"test-1","message":"Berapa biaya kuliah PCR?"}'
 ```
 
-## Update knowledge PCR
+## Deploy VPS / cloud (disarankan)
 
-1. Edit / tambah file di `knowledge/` (sumber resmi saja).
-2. Jalankan ulang `python ingest_buku.py`.
-3. Restart `uvicorn` jika sudah berjalan.
+1. Clone repo, buat venv, `pip install -r requirements.txt`
+2. Salin `.env.example` → `.env`, set `CHATBOT_API_TOKEN` (random panjang)
+3. `python ingest_buku.py`
+4. Bind **hanya localhost** (Nginx/Laravel di host yang sama) atau jaringan private:
 
-Jangan mengarang jadwal/biaya di luar sumber resmi. Chatbot sudah diarahkan untuk selalu menyertakan tautan PMB.
+```bash
+uvicorn app:app --host 127.0.0.1 --port 8000
+```
+
+5. Laravel produksi:
+
+```env
+CHATBOT_SERVICE_URL=http://127.0.0.1:8000
+CHATBOT_API_TOKEN=sama_dengan_service
+```
+
+6. Aktifkan systemd (contoh unit di `deploy/chatbot.service`)
+
+**Jangan** expose port 8000 ke publik tanpa token + firewall.
+
+### Docker (opsional)
+
+```bash
+docker build -t sistembk-chatbot .
+docker run -d --name chatbot -p 127.0.0.1:8000:8000 \
+  -e CHATBOT_API_TOKEN=rahasia \
+  -v "$(pwd)/book_index.sqlite3:/app/book_index.sqlite3" \
+  sistembk-chatbot
+```
+
+Image menjalankan ingest saat build jika PDF/knowledge tersedia.
+
+## Aturan jawaban (agar tidak salah)
+
+- PCR/PMB: hanya dari knowledge resmi + jawaban terkurasi; jadwal selalu diarahkan ke situs.
+- Follow-up singkat memakai riwayat (mis. “berapa biayanya?” setelah topik PCR).
+- Topik di luar BK/PCR ditolak dengan sopan.
+- Krisis (ide bunuh diri dll.) → arahkan ke Guru BK + hotline 119 ext 8.
+- Jangan mengarang passing grade / kuota / tanggal yang tidak ada di knowledge.
+
+## Update knowledge
+
+1. Edit/tambah `knowledge/*.md` (sumber resmi saja)
+2. `python ingest_buku.py`
+3. Restart uvicorn / systemd

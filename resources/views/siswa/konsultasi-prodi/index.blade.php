@@ -41,6 +41,10 @@
                     <p class="mt-4 rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
                         Belum ada program studi PCR yang diverifikasi Admin. Minta Admin memverifikasi prodi di menu Program Studi.
                     </p>
+                @elseif($teachers->isEmpty())
+                    <p class="mt-4 rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+                        Belum ada Guru BK yang disetujui di sistem. Hubungi Admin agar akun Guru BK di-approve terlebih dahulu.
+                    </p>
                 @else
                     <form action="{{ route('siswa.konsultasi-prodi.store') }}" method="POST" class="mt-6 grid gap-4 md:grid-cols-2">
                         @csrf
@@ -50,6 +54,7 @@
                                 id="subject"
                                 name="subject"
                                 class="w-full"
+                                maxlength="120"
                                 :value="old('subject', $prefillSubject)"
                                 required
                                 placeholder="Contoh: Cocokkah saya masuk D4 Teknik Informatika?"
@@ -70,6 +75,7 @@
                                     </option>
                                 @endforeach
                             </x-form-select>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Hanya prodi aktif yang sudah diverifikasi Admin.</p>
                             <x-input-error :messages="$errors->get('program_studi_id')" />
                         </div>
 
@@ -81,18 +87,19 @@
                                     <option value="{{ $teacher->id }}" @selected(old('counselor_id') == $teacher->id)>{{ $teacher->name }}</option>
                                 @endforeach
                             </x-form-select>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Prioritas Guru BK sekolahmu; jika kosong, tampil Guru BK lain yang sudah disetujui.</p>
                             <x-input-error :messages="$errors->get('counselor_id')" />
                         </div>
 
                         <div class="space-y-2">
                             <x-input-label for="preferred_date" value="Preferensi tanggal (opsional)" />
-                            <x-text-input id="preferred_date" type="date" name="preferred_date" class="w-full" :value="old('preferred_date')" />
+                            <x-text-input id="preferred_date" type="date" name="preferred_date" class="w-full" :value="old('preferred_date')" min="{{ now()->toDateString() }}" />
                             <x-input-error :messages="$errors->get('preferred_date')" />
                         </div>
 
                         <div class="md:col-span-2 space-y-2">
                             <x-input-label for="preferred_time" value="Preferensi waktu (opsional)" />
-                            <x-text-input id="preferred_time" name="preferred_time" class="w-full" :value="old('preferred_time')" placeholder="Contoh: Senin pagi / 10:00" />
+                            <x-text-input id="preferred_time" name="preferred_time" class="w-full" maxlength="80" :value="old('preferred_time')" placeholder="Contoh: Senin pagi / 10:00" />
                             <x-input-error :messages="$errors->get('preferred_time')" />
                         </div>
 
@@ -103,9 +110,11 @@
                                 name="details"
                                 rows="4"
                                 required
+                                maxlength="2000"
                                 class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:focus:ring-blue-900/50"
                                 placeholder="Ceritakan minatmu, hasil asesmen, atau keraguan tentang prodi tersebut."
                             >{{ old('details') }}</textarea>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Maksimal 2000 karakter.</p>
                             <x-input-error :messages="$errors->get('details')" />
                         </div>
 

@@ -1,0 +1,20 @@
+[Unit]
+Description=Sistem BK Chatbot FastAPI
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/sistembk/chatbot_service
+EnvironmentFile=/var/www/sistembk/chatbot_service/.env
+ExecStart=/var/www/sistembk/chatbot_service/venv/bin/uvicorn app:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=3
+
+# Keamanan dasar
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
