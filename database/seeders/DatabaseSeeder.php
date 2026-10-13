@@ -798,6 +798,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             InterestCategorySeeder::class,
             MinatQuestionSeeder::class,
+            SociometryQuestionSeeder::class,
             ProgramStudiPcrSeeder::class,
             CareerFieldSeeder::class,
             MultiSchoolTestingSeeder::class,

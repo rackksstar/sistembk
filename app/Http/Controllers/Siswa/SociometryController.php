@@ -94,20 +94,20 @@ class SociometryController extends Controller
 
     /**
      * Tolak aksi bila instrumen sosiometri kelas siswa dinonaktifkan guru.
-     * Kelas tanpa baris pengaturan dianggap aktif (default).
+     * Kelas tanpa pengaturan aktif dan siswa tanpa kelas tidak boleh mengaksesnya.
      */
     private function assertInstrumentActive(): void
     {
         $kelasId = auth()->user()?->studentProfile?->kelas_id;
 
-        if (! $kelasId) {
-            return;
-        }
+        abort_if(! $kelasId, 403, 'Anda belum terdaftar di kelas untuk mengakses sosiometri.');
 
         $instrument = SosiometryInstrument::query()->where('kelas_id', $kelasId)->first();
 
-        if ($instrument && ! $instrument->is_active) {
-            abort(403, 'Instrumen sosiometri untuk kelas Anda sedang dinonaktifkan. Silakan hubungi guru BK.');
-        }
+        abort_if(
+            ! $instrument || ! $instrument->is_active,
+            403,
+            'Instrumen sosiometri untuk kelas Anda sedang dinonaktifkan. Silakan hubungi guru BK.'
+        );
     }
 }

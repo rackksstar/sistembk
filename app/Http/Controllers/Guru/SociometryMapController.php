@@ -3,84 +3,77 @@
 namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
-use App\Models\Kelas;
 use App\Models\SociometryResponse;
 use App\Models\User;
+use App\Support\SociometrySchoolScope;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class SociometryMapController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, SociometrySchoolScope $schoolScope): View
     {
-        // Basic student popularity list (existing)
-        $students = User::query()
-            ->where('role', User::ROLE_SISWA)
+        $teacher = $request->user();
+        $schoolScope->schoolIdOrFail($teacher);
+        $studentIds = fn () => $schoolScope->students($teacher)->select('users.id');
+
+        $students = $schoolScope->students($teacher)
             ->where('status', User::STATUS_APPROVED)
-            ->withCount('receivedSociometryChoices')
+            ->withCount([
+                'receivedSociometryChoices' => fn (Builder $query) => $query->whereIn('student_id', $studentIds()),
+            ])
             ->orderByDesc('received_sociometry_choices_count')
             ->orderBy('name')
             ->get(['id', 'name', 'email']);
 
-        // All responses (optionally filter by kelas)
         $kelasId = $request->integer('kelas_id') ?: null;
         $filterStatus = $request->string('filled')->toString() ?: 'all';
 
-        // precompute filled student user ids
-        $filledUserIds = SociometryResponse::query()->distinct()->pluck('student_id')->toArray();
-
-        $responsesQuery = SociometryResponse::query()
-            ->with(['student:id,name', 'chosenStudent:id,name'])
-            ->latest('submitted_at');
-
         if ($kelasId) {
-            // Map kelas -> user ids
-            $userIds = Kelas::query()
-                ->where('id', $kelasId)
-                ->with('students:id,user_id,kelas_id')
-                ->get()
-                ->flatMap(fn ($k) => $k->students->pluck('user_id'))
-                ->filter()
-                ->unique()
-                ->toArray();
-
-            $responsesQuery->whereIn('student_id', $userIds);
+            $schoolScope->classes($teacher)->findOrFail($kelasId);
         }
+
+        $filledUserIds = SociometryResponse::query()
+            ->whereIn('student_id', $studentIds())
+            ->distinct()
+            ->pluck('student_id')
+            ->all();
+
+        $responsesQuery = $this->responsesForSchool($schoolScope, $teacher)->latest('submitted_at');
 
         if ($filterStatus === 'filled') {
             $responsesQuery->whereIn('student_id', $filledUserIds);
+        }
+
+        $classUserIds = null;
+        if ($kelasId) {
+            $classUserIds = $schoolScope->students($teacher)
+                ->whereHas('studentProfile', fn (Builder $query) => $query->where('kelas_id', $kelasId))
+                ->select('users.id');
+            $responsesQuery->whereIn('student_id', $classUserIds);
         }
 
         $responses = $responsesQuery->get();
 
         $notFilledStudents = collect([]);
         if ($filterStatus === 'not_filled') {
-            // determine users in scope (kelas or all) who haven't filled
-            $scopeUserIds = [];
+            $notFilledQuery = $schoolScope->students($teacher)
+                ->whereNotIn('id', $filledUserIds)
+                ->orderBy('name');
             if ($kelasId) {
-                $scopeUserIds = Kelas::query()
-                    ->where('id', $kelasId)
-                    ->with('students:id,user_id,kelas_id')
-                    ->get()
-                    ->flatMap(fn ($k) => $k->students->pluck('user_id'))
-                    ->filter()
-                    ->unique()
-                    ->toArray();
-            } else {
-                $scopeUserIds = User::query()->where('role', User::ROLE_SISWA)->pluck('id')->toArray();
+                $notFilledQuery->whereHas('studentProfile', fn (Builder $query) => $query->where('kelas_id', $kelasId));
             }
-
-            $notFilledIds = array_values(array_diff($scopeUserIds, $filledUserIds));
-            $notFilledStudents = User::query()->whereIn('id', $notFilledIds)->get(['id', 'name']);
+            $notFilledStudents = $notFilledQuery->get(['id', 'name']);
         }
 
-        // Popular / isolated as before
         $popular = $students->where('received_sociometry_choices_count', '>', 0)->take(5);
         $isolated = $students->where('received_sociometry_choices_count', 0);
 
-        // Class summaries: total, filled, not_filled
-        $kelasList = Kelas::with('students:id,user_id,kelas_id')->get();
+        $kelasList = $schoolScope->classes($teacher)
+            ->with('students:id,user_id,kelas_id')
+            ->get();
 
         $classSummaries = $kelasList->map(function ($kelas) use ($filledUserIds) {
             $userIds = $kelas->students->pluck('user_id')->filter()->unique();
@@ -111,17 +104,21 @@ class SociometryMapController extends Controller
     /**
      * Preview analisis sosiometri untuk seorang siswa
      */
-    public function show(int $studentId): View
+    public function show(int $studentId, SociometrySchoolScope $schoolScope): View
     {
-        $student = User::query()->where('id', $studentId)->where('role', User::ROLE_SISWA)->firstOrFail(['id', 'name']);
+        $teacher = auth()->user();
+        $student = $schoolScope->students($teacher)->whereKey($studentId)->firstOrFail(['id', 'name']);
+        $studentIds = fn () => $schoolScope->students($teacher)->select('users.id');
 
         $inbound = SociometryResponse::query()
             ->where('chosen_student_id', $student->id)
+            ->whereIn('student_id', $studentIds())
             ->with('student:id,name')
             ->get();
 
         $outbound = SociometryResponse::query()
             ->where('student_id', $student->id)
+            ->whereIn('chosen_student_id', $studentIds())
             ->with('chosenStudent:id,name')
             ->get();
 
@@ -145,27 +142,32 @@ class SociometryMapController extends Controller
     /**
      * Export rekap sosiometri per kelas (atau keseluruhan jika no kelas)
      */
-    public function exportClass(Request $request)
+    public function exportClass(Request $request, SociometrySchoolScope $schoolScope)
     {
+        $teacher = $request->user();
         $kelasId = $request->integer('kelas_id') ?: null;
         $filterStatus = $request->string('filled')->toString() ?: 'all';
 
         $kelas = null;
-        $students = collect([]);
-
         if ($kelasId) {
-            $kelas = Kelas::find($kelasId);
-            $students = $kelas ? $kelas->students()->with('user')->get() : collect([]);
+            $kelas = $schoolScope->classes($teacher)
+                ->with('students.user')
+                ->findOrFail($kelasId);
+            $students = $kelas->students;
         } else {
-            $students = User::query()->where('role', User::ROLE_SISWA)->get();
+            $students = $schoolScope->students($teacher)->with('studentProfile')->get();
         }
 
-        $filledUserIds = SociometryResponse::query()->distinct()->pluck('student_id')->toArray();
+        $studentIds = fn () => $schoolScope->students($teacher)->select('users.id');
+        $filledUserIds = SociometryResponse::query()
+            ->whereIn('student_id', $studentIds())
+            ->distinct()
+            ->pluck('student_id')
+            ->all();
 
-        $responses = SociometryResponse::query()->with(['student:id,name', 'chosenStudent:id,name']);
-        if ($kelasId && $kelas) {
-            $userIds = $kelas->students->pluck('user_id')->toArray();
-            $responses->whereIn('student_id', $userIds);
+        $responses = $this->responsesForSchool($schoolScope, $teacher);
+        if ($kelasId) {
+            $responses->whereIn('student_id', $kelas->students->pluck('user_id')->filter()->unique());
         }
         if ($filterStatus === 'filled') {
             $responses->whereIn('student_id', $filledUserIds);
@@ -187,12 +189,22 @@ class SociometryMapController extends Controller
     /**
      * Export analisis sosiometri per siswa ke PDF
      */
-    public function exportStudent(int $studentId)
+    public function exportStudent(int $studentId, SociometrySchoolScope $schoolScope)
     {
-        $student = User::query()->where('id', $studentId)->where('role', User::ROLE_SISWA)->firstOrFail(['id', 'name']);
+        $teacher = auth()->user();
+        $student = $schoolScope->students($teacher)->whereKey($studentId)->firstOrFail(['id', 'name']);
+        $studentIds = fn () => $schoolScope->students($teacher)->select('users.id');
 
-        $inbound = SociometryResponse::query()->where('chosen_student_id', $student->id)->with('student:id,name')->get();
-        $outbound = SociometryResponse::query()->where('student_id', $student->id)->with('chosenStudent:id,name')->get();
+        $inbound = SociometryResponse::query()
+            ->where('chosen_student_id', $student->id)
+            ->whereIn('student_id', $studentIds())
+            ->with('student:id,name')
+            ->get();
+        $outbound = SociometryResponse::query()
+            ->where('student_id', $student->id)
+            ->whereIn('chosen_student_id', $studentIds())
+            ->with('chosenStudent:id,name')
+            ->get();
 
         $inboundCounts = $inbound->groupBy('relation_type')->map->count();
         $totalInbound = $inbound->count();
@@ -207,5 +219,18 @@ class SociometryMapController extends Controller
         $name = 'sosiometry_student_'.preg_replace('/[^A-Za-z0-9_-]/', '_', $student->name).'.pdf';
 
         return $pdf->download($name);
+    }
+
+    /**
+     * @return Builder<SociometryResponse>
+     */
+    private function responsesForSchool(SociometrySchoolScope $schoolScope, User $teacher): Builder
+    {
+        $studentIds = fn () => $schoolScope->students($teacher)->select('users.id');
+
+        return SociometryResponse::query()
+            ->whereIn('student_id', $studentIds())
+            ->whereIn('chosen_student_id', $studentIds())
+            ->with(['student:id,name', 'chosenStudent:id,name']);
     }
 }
