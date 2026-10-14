@@ -30,13 +30,13 @@ Membuat ulang `book_index.sqlite3` (file ini **tidak** di-commit; harus di-build
 ### Jalankan
 
 ```bash
-uvicorn app:app --host 127.0.0.1 --port 8000
+uvicorn app:app --host 127.0.0.1 --port 8001
 ```
 
 Laravel `.env`:
 
 ```env
-CHATBOT_SERVICE_URL=http://127.0.0.1:8000
+CHATBOT_SERVICE_URL=http://127.0.0.1:8001
 CHATBOT_API_TOKEN=   # opsional di local; WAJIB di VPS/cloud
 CHATBOT_TIMEOUT=30
 ```
@@ -48,8 +48,8 @@ Jika `CHATBOT_API_TOKEN` diisi di service, isi **nilai yang sama** di Laravel.
 ```bash
 ./scripts/smoke_test.sh
 # atau:
-curl http://127.0.0.1:8000/health
-curl -X POST http://127.0.0.1:8000/chat \
+curl http://127.0.0.1:8001/health
+curl -X POST http://127.0.0.1:8001/chat \
   -H "Content-Type: application/json" \
   -H "X-Chatbot-Token: $CHATBOT_API_TOKEN" \
   -d '{"studentId":"test-1","message":"Jalur masuk PCR apa saja?"}'
@@ -63,31 +63,21 @@ curl -X POST http://127.0.0.1:8000/chat \
 4. Bind **hanya localhost** (Nginx/Laravel di host yang sama) atau jaringan private:
 
 ```bash
-uvicorn app:app --host 127.0.0.1 --port 8000
+uvicorn app:app --host 127.0.0.1 --port 8001
 ```
 
 5. Laravel produksi:
 
 ```env
-CHATBOT_SERVICE_URL=http://127.0.0.1:8000
+CHATBOT_SERVICE_URL=http://127.0.0.1:8001
 CHATBOT_API_TOKEN=sama_dengan_service
 ```
 
 6. Aktifkan systemd (contoh unit di `deploy/chatbot.service`)
 
-**Jangan** expose port 8000 ke publik tanpa token + firewall.
+**Jangan** expose port 8001 ke publik tanpa token + firewall.
 
-### Docker (opsional)
-
-```bash
-docker build -t sistembk-chatbot .
-docker run -d --name chatbot -p 127.0.0.1:8000:8000 \
-  -e CHATBOT_API_TOKEN=rahasia \
-  -v "$(pwd)/book_index.sqlite3:/app/book_index.sqlite3" \
-  sistembk-chatbot
-```
-
-Image menjalankan ingest saat build jika PDF/knowledge tersedia.
+> Laravel core memakai **port 8000**. Chatbot wajib di **8001** (atau port lain yang tidak bentrok), tanpa Docker.
 
 ## Aturan jawaban (agar tidak salah)
 

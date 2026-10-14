@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_URL="${CHATBOT_BASE_URL:-http://127.0.0.1:8000}"
+BASE_URL="${CHATBOT_BASE_URL:-http://127.0.0.1:8001}"
 TOKEN="${CHATBOT_API_TOKEN:-}"
 
 hdr=(-H "Content-Type: application/json" -H "Accept: application/json")
@@ -44,6 +44,23 @@ assert body.get("reply"), body
 PY
   echo
 }
+
+echo "== sapaan halo =="
+chat "halo"
+python3 - <<'PY'
+import json, urllib.request
+req = urllib.request.Request(
+    "http://127.0.0.1:8001/chat",
+    data=json.dumps({"studentId": "smoke-halo", "message": "halo"}).encode(),
+    headers={"Content-Type": "application/json"},
+    method="POST",
+)
+with urllib.request.urlopen(req, timeout=30) as resp:
+    reply = json.load(resp)["reply"].lower()
+assert "senang" in reply or "halo" in reply
+assert "bab 11" not in reply and "daftar isi" not in reply
+print("sapaan OK")
+PY
 
 echo "== PCR jalur =="
 chat "Jalur masuk PCR apa saja?"

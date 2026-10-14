@@ -466,7 +466,7 @@ flowchart TD
 ① Python 3.11–3.13 + venv di chatbot_service/
 ② cp .env.example .env → set CHATBOT_API_TOKEN (wajib di server)
 ③ python ingest_buku.py  (wajib tiap server; index tidak di-commit)
-④ uvicorn / systemd bind 127.0.0.1:8000
+④ uvicorn / systemd bind 127.0.0.1:8001
 ⑤ Laravel: CHATBOT_SERVICE_URL + CHATBOT_API_TOKEN sama
 ⑥ Siswa login → Chatbot
 ```

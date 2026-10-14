@@ -52,6 +52,7 @@ class ChatbotController extends Controller
                 ->post($serviceUrl.'/chat', [
                     'message' => $validated['message'],
                     'studentId' => (string) ($student?->id ?? $request->user()->id),
+                    'studentName' => (string) ($request->user()->name ?? ''),
                 ]);
         } catch (ConnectionException $e) {
             Log::warning('chatbot.connection_failed', [

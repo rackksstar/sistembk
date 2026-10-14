@@ -40,11 +40,18 @@ app = FastAPI(title="Chatbot Konseling Siswa", version="2.0.0")
 class ChatRequest(BaseModel):
     studentId: str = Field(min_length=1, max_length=64)
     message: str = Field(min_length=1, max_length=MAX_MESSAGE_CHARS)
+    studentName: str | None = Field(default=None, max_length=120)
 
 
 class ChatResponse(BaseModel):
     reply: str
     meta: dict | None = None
+
+
+WEAK_QUERY_TERMS = {
+    "siapa", "apa", "bagaimana", "kenapa", "mengapa", "kok", "loh", "yah",
+    "dong", "nih", "deh", "sih", "aja", "saja", "kah",
+}
 
 
 @app.middleware("http")
@@ -180,40 +187,75 @@ def is_pcr_message(message: str) -> bool:
     lowered = message.lower()
     keywords = [
         "pcr", "caltex", "pmb", "politeknik", "prodi", "program studi",
-        "umpcr", "psud", "beasiswa", "spp", "spi", "kipk", "rapor",
-        "pendaftaran", "kuliah di", "kampus pcr", "pekanbaru",
-        "teknik informatika", "sistem informasi", "akuntansi perpajakan",
-        "mekatronika", "animasi", "bisnis digital", "humas",
-        "rekognisi pembelajaran", "rpl kuliah",
+        "umpcr", "psud", "beasiswa", "spp", "spi", "kipk",
+        "pendaftaran pmb", "pendaftaran pcr", "kuliah di", "kampus pcr",
+        "pekanbaru", "teknik informatika", "sistem informasi",
+        "akuntansi perpajakan", "mekatronika", "animasi", "bisnis digital",
+        "humas", "rekognisi pembelajaran", "rpl kuliah", "ujian mandiri",
+        "nilai rapor", "rata-rata rapor",
     ]
-    return any(key in lowered for key in keywords)
+    if any(key in lowered for key in keywords):
+        return True
+    # "pendaftaran" / "jurusan" saja masih sering soal PMB di konteks sekolah ini
+    if re.search(r"\b(pendaftaran|jurusan)\b", lowered) and not is_emotional_message(message):
+        return True
+    return False
 
 
 def history_suggests_pcr(history: list[tuple[str, str]]) -> bool:
+    """Hanya dari pesan USER sebelumnya — jangan ikut greeting asisten yang sekadar menyebut PCR."""
     for role, content in reversed(history[-8:]):
-        text = (content or "").lower()
-        if "pmb.pcr.ac.id" in text or "politeknik caltex" in text:
-            return True
-        if role == "user" and is_pcr_message(text):
-            return True
-        if role == "assistant" and ("pcr" in text or "pmb" in text):
+        if role == "user" and is_pcr_message(content or ""):
             return True
     return False
 
 
 def is_followup_message(message: str) -> bool:
+    """Follow-up singkat saja (hindari 'ya' di dalam 'siapa'; jangan anggap pertanyaan panjang)."""
     lowered = message.lower().strip()
-    if len(lowered.split()) <= 8:
-        cues = [
-            "itu", "yang tadi", "lanjut", "lebih detail", "jelaskan", "berapa",
-            "contoh", "terus", "lalu", "yang kedua", "yang pertama", "oke",
-            "iya", "ya", "gimana", "bagaimana", "detail", "syarat", "jadwal",
-        ]
-        return any(cue in lowered for cue in cues)
-    return False
+    words = re.findall(r"[a-z0-9]+", lowered)
+    if not words or len(words) > 6:
+        return False
+
+    # Satu/dua kata afirmasi atau topik lanjutan
+    short_only = {
+        "itu", "lanjut", "berapa", "contoh", "terus", "lalu", "oke", "okay",
+        "iya", "ya", "gimana", "detail", "syarat", "jadwal", "biaya", "prodi",
+        "jurusan", "beasiswa", "kontak", "iya", "yoi", "lanjutkan",
+    }
+    if len(words) <= 3 and any(w in short_only for w in words):
+        return True
+
+    phrases = [
+        "yang tadi", "lebih detail", "jelaskan lagi", "yang kedua", "yang pertama",
+        "bagaimana itu", "yang itu", "soal itu", "tentang itu", "terus bagaimana",
+    ]
+    return any(p in lowered for p in phrases)
+
+
+def is_personal_identity_message(message: str) -> bool:
+    lowered = message.lower().strip()
+    patterns = [
+        r"\bsiapa\s+(saya|aku)\b",
+        r"\b(saya|aku)\s+siapa\b",
+        r"\bnama\s+(saya|aku)\b",
+        r"\b(saya|aku)\s+ini\s+siapa\b",
+        r"\bsiapa\s+(kamu|anda|kau)\b",
+        r"\b(kamu|anda)\s+siapa\b",
+        r"\bnama\s+(kamu|anda)\b",
+    ]
+    return any(re.search(p, lowered) for p in patterns)
+
+
+def has_strong_query_terms(message: str) -> bool:
+    terms = query_terms(message)
+    strong = [t for t in terms if t not in WEAK_QUERY_TERMS]
+    return len(strong) > 0
 
 
 def prefer_pcr_context(message: str, history: list[tuple[str, str]]) -> bool:
+    if is_personal_identity_message(message):
+        return False
     if is_pcr_message(message):
         return True
     return is_followup_message(message) and history_suggests_pcr(history)
@@ -262,6 +304,91 @@ def is_sistem_bk_message(message: str) -> bool:
     return any(k in lowered for k in keys)
 
 
+def is_greeting_message(message: str) -> bool:
+    text = re.sub(r"[^\w\s]", " ", message.lower()).strip()
+    text = re.sub(r"\s+", " ", text)
+    if not text:
+        return False
+
+    greetings = {
+        "halo", "halo halo", "hai", "hay", "hi", "hello", "helo",
+        "hallo", "hei", "hey", "yo", "pagi", "siang", "sore", "malam",
+        "selamat pagi", "selamat siang", "selamat sore", "selamat malam",
+        "assalamualaikum", "assalamu alaikum", "assalamu'alaikum",
+        "waalaikumsalam", "waalaikumussalam", "salam", "permisi",
+        "halo kak", "hai kak", "halo min", "halo bot",
+    }
+    if text in greetings:
+        return True
+
+    # Sapaan singkat + nama panggilan
+    if len(text.split()) <= 4 and any(
+        text.startswith(g) for g in ("halo", "hai", "hi ", "hello", "assalam", "selamat")
+    ):
+        return True
+
+    return False
+
+
+def is_thanks_or_ack(message: str) -> bool:
+    text = re.sub(r"[^\w\s]", " ", message.lower()).strip()
+    text = re.sub(r"\s+", " ", text)
+    acks = {
+        "ok", "oke", "okay", "baik", "sip", "siap", "thanks", "thank you",
+        "makasih", "terima kasih", "trims", "trimakasih", "suwun", "thanks ya",
+        "makasih ya", "oke thanks", "baiklah",
+    }
+    return text in acks or (len(text.split()) <= 4 and any(
+        w in text for w in ("makasih", "terima kasih", "thanks")
+    ))
+
+
+def greeting_reply() -> str:
+    return (
+        "Halo! Senang bisa membantu.\n\n"
+        "Cerita saja soal belajar, pertemanan, atau rencana karier — aku dengerin. "
+        "Boleh juga tanya info resmi **PCR/PMB** (jalur masuk, prodi, biaya, beasiswa), "
+        "atau cara pakai **Minat Bakat Kuliah** / **Konsultasi Prodi**.\n\n"
+        "Mau mulai dari mana?"
+    )
+
+
+def thanks_reply() -> str:
+    return (
+        "Sama-sama. Kalau masih ada yang ingin ditanyakan soal sekolah, konseling, "
+        "atau PCR/PMB, tulis saja ya."
+    )
+
+
+def identity_reply(message: str, student_name: str | None = None) -> str:
+    lowered = message.lower()
+    asking_bot = bool(re.search(r"\b(kamu|anda)\b", lowered)) and "siapa" in lowered
+
+    if asking_bot:
+        return (
+            "Aku asisten **Chatbot Konseling** di Sistem BK. "
+            "Aku membantu ngobrol soal belajar, konseling sekolah, minat/karier, "
+            "dan info resmi PCR/PMB. Aku bukan Guru BK manusia — untuk urusan penting "
+            "atau pribadi yang rumit, lanjut ke Guru BK ya."
+        )
+
+    name = (student_name or "").strip()
+    if name:
+        first = name.split()[0]
+        return (
+            f"Di sistem ini kamu login sebagai **{name}**.\n\n"
+            f"Kalau yang kamu maksud lebih dalam — misalnya mengenal minat, bakat, atau arah kuliah — "
+            f"kita bisa mulai dari situ, {first}. Mau coba tanya soal Minat Bakat Kuliah, "
+            f"pilihan prodi PCR, atau cerita dulu apa yang sedang kamu pikirkan?"
+        )
+
+    return (
+        "Aku mengenalmu sebagai siswa yang sedang login di Sistem BK. "
+        "Untuk mengenal minat dan arah kuliah lebih dalam, kamu bisa kerjakan "
+        "**Minat Bakat Kuliah**, atau cerita saja apa yang ingin kamu bahas sekarang."
+    )
+
+
 def guidance_closing() -> str:
     return (
         "Kalau kamu ingin cerita lebih lanjut atau butuh arahan yang lebih sesuai dengan keadaanmu, "
@@ -272,10 +399,14 @@ def guidance_closing() -> str:
 
 def pcr_closing() -> str:
     return (
-        "Sumber resmi: https://pmb.pcr.ac.id dan https://pcr.ac.id.\n"
-        "Kontak PMB: 081170750001 / 081170750002 / 081170750003 · email pmb@pcr.ac.id.\n"
-        "Untuk tanggal/biaya paling baru, cek langsung situs resmi karena bisa berubah. "
-        "Kalau masih bingung pilih prodi, diskusikan juga dengan Guru BK atau menu Konsultasi Prodi di sistem."
+        "**Sumber resmi**\n"
+        "• https://pmb.pcr.ac.id\n"
+        "• https://pcr.ac.id\n\n"
+        "**Kontak PMB**\n"
+        "• WA/Telp: 081170750001 / 081170750002 / 081170750003\n"
+        "• Email: pmb@pcr.ac.id\n\n"
+        "Tanggal & biaya bisa berubah — cek situs resmi untuk info terbaru. "
+        "Kalau masih bingung pilih prodi, tanya Guru BK atau buka menu **Konsultasi Prodi**."
     )
 
 
@@ -361,21 +492,17 @@ def retrieve_context(query: str, k: int = TOP_K, prefer_pcr: bool = False) -> li
                 )
                 rows = list({(r["source"], r["page"], r["content"]): r for r in list(rows) + list(pcr_rows)}.values())
 
-        if not rows:
-            if prefer_pcr:
-                rows = conn.execute(
-                    """
-                    SELECT page, source, content FROM chunks
-                    WHERE lower(source) LIKE '%pcr%' OR lower(source) LIKE '%pmb%'
-                    ORDER BY id LIMIT ?
-                    """,
-                    (k,),
-                ).fetchall()
-            else:
-                rows = conn.execute(
-                    "SELECT page, source, content FROM chunks WHERE page >= ? ORDER BY id LIMIT ?",
-                    (MIN_CONTENT_PAGE, k),
-                ).fetchall()
+        # Jangan fallback ke halaman awal buku (sering daftar isi) bila FTS kosong.
+        # Itu penyebab bug jawaban aneh untuk pesan seperti "halo".
+        if not rows and prefer_pcr and fts_query:
+            rows = conn.execute(
+                """
+                SELECT page, source, content FROM chunks
+                WHERE lower(source) LIKE '%pcr%' OR lower(source) LIKE '%pmb%'
+                ORDER BY id LIMIT ?
+                """,
+                (k,),
+            ).fetchall()
 
     return [
         {
@@ -387,20 +514,54 @@ def retrieve_context(query: str, k: int = TOP_K, prefer_pcr: bool = False) -> li
     ]
 
 
-def pick_sentences(query: str, contexts: list[dict]):
+def is_junk_sentence(sentence: str) -> bool:
+    """Filter potongan daftar isi / heading bab / kutipan tak relevan."""
+    lowered = sentence.lower()
+    if re.search(r"\bbab\s+\d+\b", lowered):
+        return True
+    if lowered.count(" -") >= 3 or lowered.count("–") >= 3:
+        return True
+    page_hits = len(re.findall(r"\b\d{2,3}\b", sentence))
+    if page_hits >= 4 and ("bab" in lowered or "konsep" in lowered or "bimbingan" in lowered):
+        return True
+    letter_sections = len(re.findall(r"\b[A-E]\.[A-Z]", sentence))
+    if letter_sections >= 2:
+        return True
+    # Kutipan agama / meta-buku yang sering salah cocok dengan kata generik ("siapa", "makna").
+    if re.search(
+        r"\b(al[-\s]?qur['’]?an|tuhanmu|sesungguhnya tuhan|buku bimbingan|"
+        r"hal\.\s*\d+|makna hikmah|serulah kepada)\b",
+        lowered,
+    ):
+        return True
+    return False
+
+
+def pick_sentences(query: str, contexts: list[dict], prefer_pcr: bool = False):
     terms = set(query_terms(query))
+    strong_terms = {t for t in terms if t not in WEAK_QUERY_TERMS}
+    if not strong_terms and not prefer_pcr:
+        return []
+
     ranked = []
+    min_score = 2 if not prefer_pcr else 1
 
     for context in contexts:
+        source = context.get("source") or ""
+        # Mode PCR: hanya potongan dari knowledge resmi PCR/PMB.
+        if prefer_pcr and not is_pcr_source(source):
+            continue
+
         for sentence in split_sentences(context["content"]):
-            if len(sentence) > 320:
+            if len(sentence) > 280 or is_junk_sentence(sentence):
                 continue
             sentence_terms = set(query_terms(sentence))
-            score = len(terms & sentence_terms)
-            if is_pcr_source(context["source"]):
+            overlap = strong_terms & sentence_terms if strong_terms else terms & sentence_terms
+            score = len(overlap)
+            if is_pcr_source(source) and prefer_pcr:
                 score += 1
-            if score > 0:
-                ranked.append((score, context["source"], context["page"], sentence))
+            if score >= min_score:
+                ranked.append((score, source, context["page"], sentence))
 
     ranked.sort(key=lambda item: item[0], reverse=True)
     selected = []
@@ -412,18 +573,10 @@ def pick_sentences(query: str, contexts: list[dict]):
             continue
         seen.add(key)
         selected.append((source, page, sentence))
-        if len(selected) >= 5:
+        if len(selected) >= 4:
             break
 
-    if selected:
-        return selected
-
-    fallback = []
-    for context in contexts[:2]:
-        sentences = split_sentences(context["content"])
-        if sentences:
-            fallback.append((context["source"], context["page"], sentences[0]))
-    return fallback
+    return selected
 
 
 def crisis_reply() -> str:
@@ -492,68 +645,96 @@ def direct_pcr_answer(message: str) -> str | None:
             "Sumber: https://pmb.pcr.ac.id/faq · https://pmb.pcr.ac.id/panduan/informasi"
         )
 
-    if any(k in lowered for k in ["jalur", "psud", "umpcr", "mandiri", "cara daftar", "pendaftaran"]):
+    if any(k in lowered for k in ["jalur", "psud", "umpcr", "ujian mandiri", "cara daftar", "pendaftaran"]):
         return with_pcr_closing(
-            "PCR punya beberapa jalur masuk utama:\n\n"
-            "1. **PSUD** — pakai nilai rapor semester I–IV, rata-rata minimal **8,0/80**, **gratis**, tanpa ujian. "
-            "IPA bisa pilih semua prodi; IPS hanya **Akuntansi Perpajakan** dan **Sistem Informasi**.\n"
-            "2. **UMPCR** — ujian bersama (gelombang I/II/III), CBT, ada biaya formulir, pilih prodi bebas asal lulus passing grade.\n"
-            "3. **Ujian Mandiri** — CBT hari kerja (Senin–Jumat), hasil bisa dilihat hari yang sama.\n"
-            "4. **Beasiswa** — Yayasan PCR, Pemda, KIPK, dan alumni (syarat detail di formulir PMB).\n\n"
-            "Alur daftar singkat: buat akun email → verifikasi → pilih formulir jalur aktif → bayar (jika berbayar) → "
-            "lengkapi data/berkas → seleksi → pengumuman → daftar ulang jika lulus.\n\n"
-            "Detail: https://pmb.pcr.ac.id/panduan/informasi · jadwal: https://pmb.pcr.ac.id/panduan/jadwal"
+            "**Jalur masuk PCR** ada 4 yang utama:\n\n"
+            "**1. PSUD** (nilai rapor)\n"
+            "• Rapor semester I–IV, rata-rata minimal **8,0 / 80**\n"
+            "• **Gratis**, tanpa ujian\n"
+            "• IPA: semua prodi\n"
+            "• IPS: hanya **Akuntansi Perpajakan** & **Sistem Informasi**\n\n"
+            "**2. UMPCR** (ujian bersama)\n"
+            "• Gelombang I / II / III, ujian CBT\n"
+            "• Ada biaya formulir\n"
+            "• Prodi bebas, asal lulus passing grade\n\n"
+            "**3. Ujian Mandiri**\n"
+            "• CBT hari kerja (Senin–Jumat)\n"
+            "• Hasil bisa dilihat di hari yang sama\n\n"
+            "**4. Beasiswa**\n"
+            "• Yayasan PCR, Pemda, KIPK, dan alumni\n"
+            "• Syarat detail ada di formulir PMB\n\n"
+            "**Alur daftar singkat**\n"
+            "1. Buat akun email → verifikasi\n"
+            "2. Pilih formulir jalur yang aktif\n"
+            "3. Bayar (jika berbayar) → lengkapi data/berkas\n"
+            "4. Seleksi → pengumuman → daftar ulang jika lulus\n\n"
+            "**Link resmi**\n"
+            "• Info jalur: https://pmb.pcr.ac.id/panduan/informasi\n"
+            "• Jadwal: https://pmb.pcr.ac.id/panduan/jadwal"
         )
 
     if any(k in lowered for k in ["biaya", "spp", "spi", "uang kuliah", "bayar"]):
         return with_pcr_closing(
-            "Ringkasan biaya resmi PCR (cek ulang di situs karena bisa berubah):\n\n"
-            "- Orientasi & seragam: **Rp 2.000.000** (sekali saat registrasi ulang)\n"
-            "- SPP per semester: **Rp 7.100.000** atau **Rp 7.500.000**\n"
-            "  (Rp 7.500.000 untuk Teknik Informatika, Sistem Informasi, Teknik Mesin, dan Teknik Mekatronika)\n"
-            "- Pengembangan institusi (SPI): disebut mulai sekitar **Rp 12.000.000** (ada skema lain di situs)\n\n"
-            "Pembayaran bisa dicicil/bertahap. Detail: https://pmb.pcr.ac.id/panduan/biaya"
+            "**Ringkasan biaya PCR** (bisa berubah — cek situs resmi):\n\n"
+            "• Orientasi & seragam: **Rp 2.000.000** (sekali, registrasi ulang)\n"
+            "• SPP / semester: **Rp 7.100.000** atau **Rp 7.500.000**\n"
+            "  → Rp 7.500.000 untuk TI, SI, Teknik Mesin, Mekatronika\n"
+            "• SPI (pengembangan institusi): mulai sekitar **Rp 12.000.000**\n\n"
+            "Pembayaran bisa dicicil/bertahap.\n"
+            "Detail: https://pmb.pcr.ac.id/panduan/biaya"
         )
 
     if any(k in lowered for k in ["jadwal", "tanggal daftar", "kapan daftar", "deadline"]):
         return with_pcr_closing(
             "Jadwal PMB PCR berubah tiap tahun akademik, jadi aku **tidak mengunci tanggal** di sini "
-            "agar tidak salah informasi.\n\n"
-            "Cek tanggal resmi di: https://pmb.pcr.ac.id/panduan/jadwal"
+            "agar informasinya tidak salah.\n\n"
+            "Cek tanggal resmi:\n"
+            "https://pmb.pcr.ac.id/panduan/jadwal"
         )
 
     if any(k in lowered for k in ["prodi", "jurusan", "program studi", "teknik informatika", "sistem informasi", "animasi"]):
         return with_pcr_closing(
-            "Program studi PCR (Sarjana Terapan / D4) dikelompokkan seperti ini:\n\n"
-            "**Teknologi Informasi:** Teknik Informatika, Sistem Informasi, Teknologi Rekayasa Komputer, Animasi "
-            "(plus Magister Terapan Teknik Komputer).\n"
-            "**Teknologi Industri:** Teknik Elektronika, Teknik Listrik, Teknik Mesin, TRJT, TRSE, Mekatronika, "
-            "Kecerdasan Buatan dan Robotika.\n"
-            "**Bisnis & Komunikasi:** Akuntansi Perpajakan, Hubungan Masyarakat dan Komunikasi Digital, Bisnis Digital.\n\n"
-            "Kalau kamu IPS dan mau jalur PSUD, pilihan terbatas ke Akuntansi Perpajakan & Sistem Informasi; "
-            "prodi lain biasanya lewat UMPCR/Mandiri.\n"
+            "**Program studi PCR** (Sarjana Terapan / D4):\n\n"
+            "**Teknologi Informasi**\n"
+            "• Teknik Informatika\n"
+            "• Sistem Informasi\n"
+            "• Teknologi Rekayasa Komputer\n"
+            "• Animasi\n"
+            "• (+ Magister Terapan Teknik Komputer)\n\n"
+            "**Teknologi Industri**\n"
+            "• Teknik Elektronika, Teknik Listrik, Teknik Mesin\n"
+            "• TRJT, TRSE, Mekatronika\n"
+            "• Kecerdasan Buatan dan Robotika\n\n"
+            "**Bisnis & Komunikasi**\n"
+            "• Akuntansi Perpajakan\n"
+            "• Hubungan Masyarakat dan Komunikasi Digital\n"
+            "• Bisnis Digital\n\n"
+            "Catatan IPS + PSUD: hanya Akuntansi Perpajakan & Sistem Informasi; "
+            "prodi lain biasanya lewat UMPCR / Ujian Mandiri.\n"
             "Daftar lengkap: https://pmb.pcr.ac.id/prodi"
         )
 
     if "beasiswa" in lowered or "kip" in lowered:
         return with_pcr_closing(
-            "PCR punya beberapa beasiswa, antara lain:\n"
-            "- Beasiswa Prestasi Yayasan PCR\n"
-            "- Beasiswa Pemerintah Daerah\n"
-            "- Beasiswa KIPK (SPP + biaya hidup)\n"
-            "- Beasiswa Ikatan Keluarga Alumni PCR\n\n"
-            "Untuk KIP/DTKS/PKH biasanya wajib diunggah salah satunya. Syarat lengkap ada di "
-            "https://pmb.pcr.ac.id/formulir dan info jalur di https://pmb.pcr.ac.id/panduan/informasi"
+            "**Beasiswa PCR** yang umum ditawarkan:\n\n"
+            "• Beasiswa Prestasi Yayasan PCR\n"
+            "• Beasiswa Pemerintah Daerah\n"
+            "• Beasiswa KIPK (SPP + biaya hidup)\n"
+            "• Beasiswa Ikatan Keluarga Alumni PCR\n\n"
+            "Untuk KIP / DTKS / PKH biasanya wajib unggah salah satunya.\n"
+            "• Formulir: https://pmb.pcr.ac.id/formulir\n"
+            "• Info jalur: https://pmb.pcr.ac.id/panduan/informasi"
         )
 
     if any(k in lowered for k in ["kontak", "whatsapp", "hubungi", "alamat", "email pmb"]):
-        return with_pcr_closing(
-            "Kontak resmi PMB PCR:\n"
-            "- WA/Telepon: 081170750001, 081170750002, 081170750003\n"
-            "- Bantuan data/berkas (FAQ): 082375369696\n"
-            "- Email: pmb@pcr.ac.id / pcr@pcr.ac.id\n"
-            "- Alamat: Jl. Umbansari No.1, Rumbai, Pekanbaru, Riau 28265\n"
-            "- Situs: https://pmb.pcr.ac.id · https://pcr.ac.id"
+        return (
+            "**Kontak resmi PMB PCR**\n\n"
+            "• WA/Telepon: 081170750001, 081170750002, 081170750003\n"
+            "• Bantuan data/berkas (FAQ): 082375369696\n"
+            "• Email: pmb@pcr.ac.id / pcr@pcr.ac.id\n"
+            "• Alamat: Jl. Umbansari No.1, Rumbai, Pekanbaru, Riau 28265\n"
+            "• Situs: https://pmb.pcr.ac.id · https://pcr.ac.id\n\n"
+            "Tanggal & biaya bisa berubah — selalu cocokkan di situs resmi."
         )
 
     if "rpl" in lowered or "kuliah sambil" in lowered or "karyawan" in lowered:
@@ -631,16 +812,52 @@ def direct_bk_answer(message: str) -> str | None:
     return None
 
 
-def direct_answer(message: str, prefer_pcr: bool = False) -> str | None:
+def last_user_pcr_topic(history: list[tuple[str, str]]) -> str | None:
+    """Ambil topik PCR terakhir dari pesan user untuk follow-up singkat (ya/lanjut)."""
+    for role, content in reversed(history[-8:]):
+        if role != "user":
+            continue
+        text = (content or "").lower()
+        if not is_pcr_message(text):
+            continue
+        if any(k in text for k in ["biaya", "spp", "spi"]):
+            return "biaya kuliah pcr"
+        if "beasiswa" in text or "kip" in text:
+            return "beasiswa pcr"
+        if any(k in text for k in ["jadwal", "tanggal daftar", "kapan daftar"]):
+            return "jadwal pmb pcr"
+        if any(k in text for k in ["jalur", "psud", "umpcr", "pendaftaran", "daftar"]):
+            return "jalur masuk pcr"
+        if any(k in text for k in ["prodi", "jurusan", "program studi"]):
+            return "prodi pcr"
+        if any(k in text for k in ["kontak", "whatsapp", "hubungi"]):
+            return "kontak pmb pcr"
+        return "prodi pcr"
+    return None
+
+
+def direct_answer(
+    message: str,
+    prefer_pcr: bool = False,
+    student_name: str | None = None,
+    history: list[tuple[str, str]] | None = None,
+) -> str | None:
+    if is_greeting_message(message):
+        return greeting_reply()
+
+    if is_personal_identity_message(message):
+        return identity_reply(message, student_name)
+
     if is_sistem_bk_message(message):
         sistem = sistem_bk_answer(message)
         if sistem:
             return sistem
 
     if prefer_pcr or is_pcr_message(message):
-        # Follow-up biaya/jadwal tanpa kata "PCR" tetap dijawab akurat.
+        # Follow-up biaya/jadwal/prodi tanpa kata "PCR" tetap dijawab akurat.
         if prefer_pcr and not is_pcr_message(message):
             lowered = message.lower()
+            words = re.findall(r"[a-z0-9]+", lowered)
             if any(k in lowered for k in ["biaya", "spp", "spi", "bayar"]):
                 return direct_pcr_answer("biaya kuliah pcr")
             if any(k in lowered for k in ["jadwal", "tanggal", "kapan"]):
@@ -651,20 +868,54 @@ def direct_answer(message: str, prefer_pcr: bool = False) -> str | None:
                 return direct_pcr_answer("jalur masuk pcr")
             if "beasiswa" in lowered or "kip" in lowered:
                 return direct_pcr_answer("beasiswa pcr")
+            # "ya" / "lanjut" / "oke" → lanjutkan topik PCR terakhir
+            if len(words) <= 3 and any(
+                w in {"ya", "iya", "yoi", "oke", "okay", "lanjut", "lanjutkan", "terus", "gimana"}
+                for w in words
+            ):
+                topic = last_user_pcr_topic(history or [])
+                if topic:
+                    return direct_pcr_answer(topic)
+                return with_pcr_closing(
+                    "Siap. Mau dilanjut yang mana soal PCR/PMB?\n"
+                    "1. Jalur masuk\n2. Prodi\n3. Biaya\n4. Beasiswa\n5. Kontak PMB"
+                )
 
         pcr = direct_pcr_answer(message)
         if pcr:
             return pcr
 
+    if is_thanks_or_ack(message):
+        return thanks_reply()
+
     return direct_bk_answer(message)
 
 
-def build_local_reply(message: str, contexts: list[dict], prefer_pcr: bool) -> str:
-    answer = direct_answer(message, prefer_pcr=prefer_pcr)
+def build_local_reply(
+    message: str,
+    contexts: list[dict],
+    prefer_pcr: bool,
+    student_name: str | None = None,
+    history: list[tuple[str, str]] | None = None,
+) -> str:
+    answer = direct_answer(
+        message,
+        prefer_pcr=prefer_pcr,
+        student_name=student_name,
+        history=history,
+    )
     if answer:
         return answer
 
-    selected = pick_sentences(message, contexts)
+    # Jangan retrieval untuk pertanyaan generik tanpa kata kunci kuat.
+    if not prefer_pcr and not has_strong_query_terms(message):
+        return with_guidance_closing(
+            "Biar aku bantu lebih tepat, coba tulis lebih spesifik ya — "
+            "misalnya soal belajar, pertemanan, karier, Minat Bakat, atau info PCR/PMB "
+            "(jalur masuk, prodi, biaya, beasiswa)."
+        )
+
+    selected = pick_sentences(message, contexts, prefer_pcr=prefer_pcr)
 
     if not selected:
         if prefer_pcr:
@@ -674,8 +925,9 @@ def build_local_reply(message: str, contexts: list[dict], prefer_pcr: bool) -> s
                 "Sementara itu kamu bisa cek https://pmb.pcr.ac.id atau hubungi Tim PMB."
             )
         return with_guidance_closing(
-            "Aku belum cukup paham maksud pertanyaanmu. Coba tulis lebih spesifik ya, "
-            "misalnya tentang belajar, pertemanan, karier, PCR/PMB, Minat Bakat, atau cara menghadapi masalah tertentu."
+            "Aku belum cukup yakin dengan jawaban yang tepat untuk itu. "
+            "Coba tulis lebih spesifik, misalnya tentang belajar, karier, "
+            "PCR/PMB, atau Minat Bakat Kuliah."
         )
 
     if prefer_pcr:
@@ -688,15 +940,17 @@ def build_local_reply(message: str, contexts: list[dict], prefer_pcr: bool) -> s
         )
         closing = guidance_closing()
     else:
-        opening = "Intinya, ini bisa dipahami dengan sederhana seperti ini."
+        opening = "Ini poin yang paling relevan:"
         closing = guidance_closing()
 
     points = []
     for index, (source, page, sentence) in enumerate(selected, start=1):
         cleaned = re.sub(r"\s+-\s+", " ", sentence)
         cleaned = re.sub(r"\s+", " ", cleaned).strip()
-        label = "bagian" if is_pcr_source(source) else "hal."
-        points.append(f"{index}. {cleaned} ({source}, {label} {page})")
+        if is_pcr_source(source):
+            points.append(f"{index}. {cleaned}")
+        else:
+            points.append(f"{index}. {cleaned}")
 
     return "\n\n".join([opening, "\n".join(points), closing])
 
@@ -728,10 +982,61 @@ def chat(req: ChatRequest, x_chatbot_token: str | None = Header(default=None)):
         save_message(req.studentId, "assistant", reply_text)
         return ChatResponse(reply=reply_text, meta={"kind": "out_of_scope"})
 
+    # Jawaban langsung tanpa retrieval (lebih akurat & cepat).
+    if is_greeting_message(message):
+        reply_text = greeting_reply()
+        save_message(req.studentId, "user", message)
+        save_message(req.studentId, "assistant", reply_text)
+        return ChatResponse(reply=reply_text, meta={"kind": "greeting", "contexts": 0})
+
+    if is_personal_identity_message(message):
+        reply_text = identity_reply(message, req.studentName)
+        save_message(req.studentId, "user", message)
+        save_message(req.studentId, "assistant", reply_text)
+        return ChatResponse(reply=reply_text, meta={"kind": "identity", "contexts": 0})
+
     history = load_history(req.studentId)
     want_pcr = prefer_pcr_context(message, history)
-    contexts = retrieve_context(message, prefer_pcr=want_pcr)
-    reply_text = build_local_reply(message, contexts, prefer_pcr=want_pcr)
+
+    # "makasih" murni — tapi "oke/ya" setelah topik PCR dilanjut, bukan ditutup.
+    if is_thanks_or_ack(message) and not (
+        want_pcr and is_followup_message(message)
+    ):
+        reply_text = thanks_reply()
+        save_message(req.studentId, "user", message)
+        save_message(req.studentId, "assistant", reply_text)
+        return ChatResponse(reply=reply_text, meta={"kind": "thanks", "contexts": 0})
+
+    # Prioritas: jawaban terkurasi (akurat) sebelum retrieval buku/knowledge.
+    curated = direct_answer(
+        message,
+        prefer_pcr=want_pcr,
+        student_name=req.studentName,
+        history=history,
+    )
+    if curated:
+        save_message(req.studentId, "user", message)
+        save_message(req.studentId, "assistant", curated)
+        if is_sistem_bk_message(message):
+            kind = "sistem_bk"
+        elif want_pcr or is_pcr_message(message):
+            kind = "pcr"
+        else:
+            kind = "bk"
+        return ChatResponse(reply=curated, meta={"kind": kind, "contexts": 0})
+
+    # Retrieval cadangan — jangan untuk query lemah tanpa konteks PCR.
+    contexts: list[dict] = []
+    if want_pcr or has_strong_query_terms(message):
+        contexts = retrieve_context(message, prefer_pcr=want_pcr)
+
+    reply_text = build_local_reply(
+        message,
+        contexts,
+        prefer_pcr=want_pcr,
+        student_name=req.studentName,
+        history=history,
+    )
 
     save_message(req.studentId, "user", message)
     save_message(req.studentId, "assistant", reply_text)

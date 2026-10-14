@@ -395,82 +395,42 @@
     @endif
 </div>
 
-<div
-    x-data="{
-        open: false,
-        message: '',
-        sending: false,
-        messages: [
-            { role: 'assistant', text: 'Hai {{ $firstName }}. Mau cerita atau tanya soal sekolah, belajar, pertemanan, atau rencana karier? Aku bantu pelan-pelan ya.' },
+@php
+    $floatingChatConfig = [
+        'endpoint' => route('siswa.chatbot.store'),
+        'csrf' => csrf_token(),
+        'floating' => true,
+        'open' => false,
+        'messages' => [
+            [
+                'role' => 'assistant',
+                'text' => "Hai {$firstName}! Mau cerita soal sekolah, belajar, pertemanan, atau rencana karier? Aku bantu pelan-pelan ya. Boleh juga tanya info PCR/PMB.",
+            ],
         ],
-        quickMessages: [
+        'quickMessages' => [
             'Aku lagi stres belajar',
             'Apa itu bimbingan konseling?',
             'Aku bingung pilih karier',
             'Jalur masuk PCR apa saja?',
             'Prodi apa saja di PCR?',
         ],
-        toggle() {
-            this.open = ! this.open;
-            if (this.open) {
-                this.$nextTick(() => this.scrollToBottom());
-            }
-        },
-        useQuickMessage(text) {
-            this.message = text;
-            this.send();
-        },
-        async send() {
-            const text = this.message.trim();
+    ];
+@endphp
 
-            if (! text || this.sending) {
-                return;
-            }
-
-            this.messages.push({ role: 'user', text });
-            this.message = '';
-            this.sending = true;
-            this.$nextTick(() => this.scrollToBottom());
-
-            try {
-                const response = await fetch('{{ route('siswa.chatbot.store') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    },
-                    body: JSON.stringify({ message: text }),
-                });
-                const data = await response.json();
-
-                this.messages.push({
-                    role: 'assistant',
-                    text: data.reply || 'Aku belum bisa menangkap maksudnya. Coba tulis dengan kalimat yang lebih jelas ya.',
-                });
-            } catch (error) {
-                this.messages.push({
-                    role: 'assistant',
-                    text: 'Maaf, chat sedang belum tersambung. Coba lagi sebentar ya.',
-                });
-            } finally {
-                this.sending = false;
-                this.$nextTick(() => this.scrollToBottom());
-            }
-        },
-        scrollToBottom() {
-            if (this.$refs.chatBody) {
-                this.$refs.chatBody.scrollTop = this.$refs.chatBody.scrollHeight;
-            }
-        },
-    }"
+<div
+    x-data="siswaChatbot(@js($floatingChatConfig))"
     x-on:keydown.escape.window="open = false"
     class="fixed bottom-5 right-5 z-40 sm:bottom-6 sm:right-6"
 >
     <div
         x-cloak
         x-show="open"
-        x-transition.origin.bottom.right
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+        x-transition:leave-end="opacity-0 translate-y-3 scale-95"
         class="mb-4 flex h-[min(620px,calc(100vh-7rem))] w-[calc(100vw-2.5rem)] max-w-sm flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/20 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40 sm:w-96"
         role="dialog"
         aria-label="Chatbot Konseling"
@@ -482,7 +442,10 @@
                 </span>
                 <div class="min-w-0">
                     <p class="truncate text-sm font-bold">Teman BK</p>
-                    <p class="truncate text-xs text-slate-300">Siap bantu ngobrol</p>
+                    <p class="flex items-center gap-1.5 truncate text-xs text-slate-300">
+                        <span class="chat-status-dot" aria-hidden="true"></span>
+                        <span x-text="busy ? (sending ? 'Membalas…' : 'Menulis…') : 'Siap bantu ngobrol'"></span>
+                    </p>
                 </div>
             </div>
             <button
@@ -497,23 +460,26 @@
             </button>
         </div>
 
-        <div x-ref="chatBody" class="min-h-0 flex-1 space-y-3 overflow-y-auto bg-slate-50 p-4 dark:bg-slate-950/50">
-            <template x-for="(item, index) in messages" :key="index">
-                <div class="flex" :class="item.role === 'user' ? 'justify-end' : 'justify-start'">
+        <div x-ref="chatBody" class="min-h-0 flex-1 space-y-3 overflow-y-auto scroll-smooth bg-slate-50 p-4 dark:bg-slate-950/50">
+            <template x-for="item in messages" :key="item.id">
+                <div class="chat-bubble-in flex" :class="item.role === 'user' ? 'justify-end' : 'justify-start'">
                     <div
                         class="max-w-[86%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-xs"
                         :class="item.role === 'user'
                             ? 'rounded-br-md bg-blue-600 text-white shadow-blue-500/20'
                             : 'rounded-bl-md border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200'"
                     >
-                        <p class="whitespace-pre-line" x-text="item.text"></p>
+                        <div class="chat-md break-words" x-html="formatChatHtml(item.text)"></div>
+                        <span x-show="item.streaming" x-cloak class="chat-caret" aria-hidden="true"></span>
                     </div>
                 </div>
             </template>
 
-            <div x-show="sending" x-cloak class="flex justify-start">
-                <div class="rounded-2xl rounded-bl-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-xs dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
-                    Sedang menulis...
+            <div x-show="sending" x-cloak class="chat-bubble-in flex justify-start" role="status" aria-live="polite">
+                <div class="inline-flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-slate-200 bg-white px-4 py-3 shadow-xs dark:border-slate-700 dark:bg-slate-900">
+                    <span class="chat-typing-dot"></span>
+                    <span class="chat-typing-dot"></span>
+                    <span class="chat-typing-dot"></span>
                 </div>
             </div>
         </div>
@@ -524,27 +490,28 @@
                     <button
                         type="button"
                         x-on:click="useQuickMessage(text)"
-                        class="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-blue-300 hover:text-blue-700 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-blue-500 dark:hover:text-blue-300"
-                        x-bind:disabled="sending"
+                        class="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-blue-300 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-blue-500 dark:hover:text-blue-300"
+                        x-bind:disabled="busy"
                         x-text="text"
                     ></button>
                 </template>
             </div>
 
-            <form x-on:submit.prevent="send" class="flex gap-2">
+            <form x-on:submit.prevent="send()" class="flex gap-2">
                 <input
+                    x-ref="chatInput"
                     x-model="message"
                     type="text"
                     class="ui-input min-w-0 flex-1 rounded-2xl py-3"
-                    placeholder="Tulis pesan..."
+                    placeholder="Tulis pesan…"
                     maxlength="2000"
                     autocomplete="off"
-                    x-bind:disabled="sending"
+                    x-bind:disabled="busy"
                 >
                 <button
                     type="submit"
                     class="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-                    x-bind:disabled="sending || !message.trim()"
+                    x-bind:disabled="busy || !message.trim()"
                     aria-label="Kirim pesan"
                 >
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
