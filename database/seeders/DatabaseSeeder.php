@@ -795,12 +795,37 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        CareerInfo::query()->updateOrCreate(
+            ['title' => 'Teknisi Mekatronika'],
+            [
+                'description' => 'Mengintegrasikan mekanik, elektronika, dan otomasi pada sistem industri modern.',
+                'category' => 'Teknik',
+            ]
+        );
+
+        CareerInfo::query()->updateOrCreate(
+            ['title' => 'Spesialis Digital Marketing'],
+            [
+                'description' => 'Merancang kampanye digital, menganalisis data audiens, dan mengoptimalkan konversi bisnis online.',
+                'category' => 'Bisnis',
+            ]
+        );
+
+        CareerInfo::query()->updateOrCreate(
+            ['title' => 'Akuntan Perpajakan'],
+            [
+                'description' => 'Mengelola laporan keuangan dan kepatuhan pajak untuk perusahaan maupun klien.',
+                'category' => 'Bisnis',
+            ]
+        );
+
         $this->call([
             InterestCategorySeeder::class,
             MinatQuestionSeeder::class,
             SociometryQuestionSeeder::class,
             ProgramStudiPcrSeeder::class,
             CareerFieldSeeder::class,
+            MasterQuestionSeeder::class,
             MultiSchoolTestingSeeder::class,
         ]);
 

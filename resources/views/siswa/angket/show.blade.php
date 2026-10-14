@@ -32,19 +32,9 @@
                     <div class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 p-5">
                         <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Soal {{ $index + 1 }}</p>
                         <p class="mt-2 text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $soal->teks_pertanyaan }}</p>
-                        <div class="mt-4 space-y-2">
-                            <x-input-label :for="'jawaban_'.$soal->id" value="Jawaban Anda" />
-                            <textarea
-                                id="jawaban_{{ $soal->id }}"
-                                name="jawaban[{{ $soal->id }}]"
-                                rows="3"
-                                required
-                                maxlength="500"
-                                class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50"
-                                placeholder="Tulis jawaban Anda..."
-                            >{{ old('jawaban.'.$soal->id, $jawabanLama) }}</textarea>
-                            <x-input-error :messages="$errors->get('jawaban.'.$soal->id)" />
-                        </div>
+                        <p class="mt-1 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ $soal->tipeLabel() }}</p>
+                        <x-input-label :for="'jawaban_'.$soal->id" class="mt-3" value="Jawaban Anda" />
+                        <x-master-question-field :question="$soal" :value="$jawabanLama" id-prefix="jawaban" />
                     </div>
                 @endforeach
 

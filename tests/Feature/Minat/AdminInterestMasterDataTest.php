@@ -177,6 +177,34 @@ class AdminInterestMasterDataTest extends TestCase
         $this->assertDatabaseMissing('program_studis', ['id' => $prodi->id]);
     }
 
+    public function test_program_studi_wajib_punya_minimal_satu_kategori_minat(): void
+    {
+        $admin = $this->buatAdmin();
+
+        $this->actingAs($admin)
+            ->post(route('admin.program-studi.store'), [
+                'institusi' => 'Politeknik Caltex Riau',
+                'nama' => 'Sistem Informasi',
+                'jenjang_pendidikan' => 'D4',
+                'is_verified' => 1,
+                'is_active' => 1,
+                'categories' => [],
+            ])
+            ->assertSessionHasErrors(['categories']);
+    }
+
+    public function test_bidang_karier_wajib_punya_minimal_satu_kategori_minat(): void
+    {
+        $admin = $this->buatAdmin();
+
+        $this->actingAs($admin)
+            ->post(route('admin.bidang-karier.store'), [
+                'nama' => 'Tanpa Minat',
+                'is_active' => 1,
+            ])
+            ->assertSessionHasErrors(['categories']);
+    }
+
     public function test_admin_crud_bidang_karier(): void
     {
         $admin = $this->buatAdmin();

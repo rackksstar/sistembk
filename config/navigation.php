@@ -108,6 +108,7 @@ return [
                 ['label' => 'Penilaian', 'title' => 'Laporan Penilaian', 'route' => 'guru.penilaian.index', 'active' => 'guru.penilaian.*', 'icon' => 'star'],
                 ['label' => 'Angket', 'title' => 'Laporan Angket', 'route' => 'guru.angket.index', 'active' => 'guru.angket.*', 'icon' => 'clipboard'],
                 ['label' => 'Rapor BK', 'route' => 'guru.rapor.index', 'active' => 'guru.rapor.*', 'icon' => 'document'],
+                ['label' => 'Master Pertanyaan', 'route' => 'guru.master-pertanyaan.index', 'active' => 'guru.master-pertanyaan.*', 'icon' => 'question'],
                 ['label' => 'Tryout', 'route' => 'guru.tryout.index', 'active' => 'guru.tryout.*', 'icon' => 'academic'],
                 ['label' => 'Data Siswa', 'route' => 'guru.students.index', 'active' => 'guru.students.*', 'icon' => 'user'],
                 ['label' => 'RPL Individu & Kelompok', 'route' => 'guru.rpls.index', 'active' => 'guru.rpls.*', 'icon' => 'book'],

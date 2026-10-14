@@ -2,12 +2,14 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Models\InterestCategory;
+use App\Http\Requests\Admin\Concerns\ValidatesInterestCategoryLinks;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateCareerFieldRequest extends FormRequest
 {
+    use ValidatesInterestCategoryLinks;
+
     public function authorize(): bool
     {
         return $this->user()?->role === User::ROLE_ADMIN;
@@ -17,11 +19,11 @@ class UpdateCareerFieldRequest extends FormRequest
     {
         return [
             'nama' => ['required', 'string', 'max:150'],
-            'deskripsi' => ['nullable', 'string'],
-            'contoh_pekerjaan_text' => ['nullable', 'string'],
+            'deskripsi' => ['nullable', 'string', 'max:5000'],
+            'contoh_pekerjaan_text' => ['nullable', 'string', 'max:5000'],
             'job_zone' => ['nullable', 'integer', 'min:1', 'max:5'],
             'is_active' => ['required', 'boolean'],
-            'categories' => ['nullable', 'array'],
+            'categories' => ['required', 'array'],
             'categories.*' => ['array'],
             'categories.*.enabled' => ['nullable', 'boolean'],
             'categories.*.relevansi' => ['nullable', 'integer', 'min:1', 'max:3'],
@@ -30,26 +32,10 @@ class UpdateCareerFieldRequest extends FormRequest
 
     public function withValidator($validator): void
     {
-        $validator->after(function ($validator) {
-            $ids = collect($this->input('categories', []))
-                ->filter(fn ($row) => ! empty($row['enabled']))
-                ->keys()
-                ->map(fn ($id) => (int) $id)
-                ->filter()
-                ->values();
-
-            if ($ids->isEmpty()) {
-                return;
-            }
-
-            $validCount = InterestCategory::query()
-                ->whereIn('id', $ids)
-                ->count();
-
-            if ($validCount !== $ids->count()) {
-                $validator->errors()->add('categories', 'Salah satu kategori minat tidak valid.');
-            }
-        });
+        $this->validateInterestCategoryLinks(
+            $validator,
+            'Pilih minimal satu kategori minat RIASEC beserta relevansinya agar bidang karier bisa direkomendasikan.'
+        );
     }
 
     public function messages(): array
@@ -57,11 +43,14 @@ class UpdateCareerFieldRequest extends FormRequest
         return [
             'nama.required' => 'Nama bidang karier wajib diisi.',
             'nama.max' => 'Nama bidang karier maksimal 150 karakter.',
+            'deskripsi.max' => 'Deskripsi maksimal 5000 karakter.',
+            'contoh_pekerjaan_text.max' => 'Contoh pekerjaan maksimal 5000 karakter.',
             'job_zone.integer' => 'Job zone harus berupa angka.',
             'job_zone.min' => 'Job zone minimal 1.',
             'job_zone.max' => 'Job zone maksimal 5.',
             'is_active.required' => 'Status aktif wajib dipilih.',
             'is_active.boolean' => 'Status aktif tidak valid.',
+            'categories.required' => 'Pilih minimal satu kategori minat RIASEC.',
             'categories.*.relevansi.min' => 'Relevansi minimal 1.',
             'categories.*.relevansi.max' => 'Relevansi maksimal 3.',
         ];

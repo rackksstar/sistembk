@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Kelas;
 use App\Models\MasterQuestion;
 use App\Models\TryOut;
+use App\Models\TryOutDetail;
 use App\Services\TryOutService;
 use App\Support\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
@@ -68,9 +69,52 @@ class TryoutController extends Controller
             'details.student.kelas:id,nama',
         ]);
 
+        $soal = $this->tryOutService->soalCollection($tryout);
         $rataKeseluruhan = round($tryout->details->avg('rata_skor') ?? 0, 1);
 
-        return view('guru.tryout.show', compact('tryout', 'rataKeseluruhan'));
+        return view('guru.tryout.show', compact('tryout', 'rataKeseluruhan', 'soal'));
+    }
+
+    public function updateScores(Request $request, TryOut $tryout, TryOutDetail $detail): RedirectResponse
+    {
+        $this->authorizeTryout($tryout);
+        abort_unless($detail->try_out_id === $tryout->id, 404);
+
+        $soalIds = collect($tryout->soal_ids ?? [])->map(fn ($id) => (string) $id);
+        $validated = $request->validate([
+            'skor' => ['required', 'array'],
+            'skor.*' => ['nullable', 'numeric', 'min:0', 'max:100'],
+        ]);
+
+        $payload = collect($validated['skor'] ?? [])
+            ->filter(fn ($value, $key) => $soalIds->contains((string) $key))
+            ->all();
+
+        $this->tryOutService->updateSkorDetail($detail, $payload);
+
+        ActivityLogger::log('tryout.scores.updated', $detail, ['try_out_id' => $tryout->id]);
+
+        return back()->with('success', 'Nilai siswa berhasil diperbarui.');
+    }
+
+    public function publish(TryOut $tryout): RedirectResponse
+    {
+        $this->authorizeTryout($tryout);
+
+        $this->tryOutService->publishHasil($tryout);
+        ActivityLogger::log('tryout.hasil.published', $tryout);
+
+        return back()->with('success', 'Hasil tryout dipublikasikan. Siswa sekarang bisa melihat skor.');
+    }
+
+    public function unpublish(TryOut $tryout): RedirectResponse
+    {
+        $this->authorizeTryout($tryout);
+
+        $this->tryOutService->unpublishHasil($tryout);
+        ActivityLogger::log('tryout.hasil.unpublished', $tryout);
+
+        return back()->with('success', 'Publikasi hasil dibatalkan. Siswa tidak lagi melihat skor.');
     }
 
     public function edit(TryOut $tryout): View

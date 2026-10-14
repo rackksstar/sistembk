@@ -3,7 +3,13 @@
 @section('content')
 <div class="space-y-6">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
-        <x-section-title title="Kelola Instrumen Sosiometri" description="Aktifkan atau nonaktifkan instrumen sosiometri per kelas." />
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <x-section-title title="Kelola Instrumen Sosiometri" description="Aktifkan atau nonaktifkan instrumen sosiometri per kelas." />
+            <a href="{{ route('guru.sociometry.index') }}" class="inline-flex w-fit rounded-2xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800/60">
+                ← Lihat peta sosiometri
+            </a>
+        </div>
+        <x-alert class="mt-4" type="success" :message="session('success')" />
         <div class="mt-4 overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800 text-sm">
                 <thead class="bg-slate-50 dark:bg-slate-800/60 text-left text-xs font-bold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">
