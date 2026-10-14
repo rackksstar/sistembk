@@ -67,7 +67,8 @@ class InstrumentSubmissionController extends Controller
         $questions = InstrumentQuestion::query()
             ->where('category', $category)
             ->where('is_active', true)
-            ->oldest()
+            ->when(isset(InstrumentQuestion::SECTIONS[$category]), fn ($q) => $q->orderBy('section')->orderBy('id'))
+            ->when(! isset(InstrumentQuestion::SECTIONS[$category]), fn ($q) => $q->oldest())
             ->get();
 
         return view('siswa.instruments.index', [
@@ -316,6 +317,13 @@ class InstrumentSubmissionController extends Controller
                 ->with('success', 'Jawaban instrumen berhasil dikirim dan diskor otomatis.');
         }
 
+        // Asesmen Masalah: ke halaman hasil per-bidang (Pribadi/Sosial/Belajar/Karir).
+        if ($validated['category'] === InstrumentQuestion::CATEGORY_ANGKET_MASALAH) {
+            return redirect()
+                ->route('siswa.instruments.masalah-result')
+                ->with('success', 'Jawaban instrumen berhasil dikirim dan diskor otomatis.');
+        }
+
         // Instrumen Yola lain: langsung ke halaman hasil (bukan kembali ke form).
         if (InstrumentQuestion::isYolaCategory($validated['category'])) {
             return redirect()
@@ -356,6 +364,34 @@ class InstrumentSubmissionController extends Controller
         ]);
     }
 
+    /**
+     * Hasil Asesmen Masalah per bidang (Pribadi / Sosial / Belajar / Karir).
+     */
+    public function masalahResult(): View
+    {
+        $submission = InstrumentSubmission::query()
+            ->where('student_id', auth()->id())
+            ->where('category', InstrumentQuestion::CATEGORY_ANGKET_MASALAH)
+            ->with('answers.question:id,section')
+            ->latest('submitted_at')
+            ->first();
+
+        abort_unless($submission, 404);
+
+        $sectionResults = $submission->masalahSectionResults();
+
+        if ($sectionResults === []) {
+            return view('siswa.instruments.hasil-simple', [
+                'submission' => $submission,
+            ]);
+        }
+
+        return view('siswa.instruments.masalah-result', [
+            'submission' => $submission,
+            'results' => $sectionResults,
+        ]);
+    }
+
     public function hasil(InstrumentSubmission $submission): View
     {
         $this->assertOwnsSubmission($submission);
@@ -382,6 +418,16 @@ class InstrumentSubmissionController extends Controller
             $sectionResults = $submission->strategiBelajarSectionResults();
             if ($sectionResults !== []) {
                 return view('siswa.instruments.strategi-belajar-result', [
+                    'submission' => $submission,
+                    'results' => $sectionResults,
+                ]);
+            }
+        }
+
+        if ($submission->category === InstrumentQuestion::CATEGORY_ANGKET_MASALAH) {
+            $sectionResults = $submission->masalahSectionResults();
+            if ($sectionResults !== []) {
+                return view('siswa.instruments.masalah-result', [
                     'submission' => $submission,
                     'results' => $sectionResults,
                 ]);

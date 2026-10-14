@@ -6,8 +6,10 @@
     $jenjangProfile = strtoupper((string) ($user?->studentProfile?->kelas?->jenjang ?? ''));
     $isSma = $jenjangProfile === 'SMA';
     $categories = collect($categories)->when($isSma, fn ($col) => $col->except(\App\Models\InstrumentQuestion::CATEGORY_MINAT_KERJA))->toArray();
-    $hasStrategiSections = $category === \App\Models\InstrumentQuestion::CATEGORY_GAYA_BELAJAR
+    $hasStrategiSections = isset(\App\Models\InstrumentQuestion::SECTIONS[$category])
         && $questions->contains(fn ($q) => $q->section !== null);
+    $sectionLabels = \App\Models\InstrumentQuestion::SECTIONS[$category] ?? [];
+    $isMasalah = $category === \App\Models\InstrumentQuestion::CATEGORY_ANGKET_MASALAH;
     $useRiasecWizard = ! empty($useRiasecWizard);
     $useTalentsLikert = ! empty($useTalentsLikert);
     $activeLabel = $categories[$category] ?? 'Instrumen';
@@ -15,7 +17,7 @@
         \App\Models\InstrumentQuestion::CATEGORY_MINAT_KERJA => 'Talents Mapping seperti referensi Yola: 99 kegiatan, skala 1–5, lalu Kode Minat Holland + rekomendasi karier.',
         \App\Models\InstrumentQuestion::CATEGORY_GAYA_BELAJAR => 'Tiga bagian: Perencanaan, Eksekusi, dan Refleksi belajar.',
         \App\Models\InstrumentQuestion::CATEGORY_KEPRIBADIAN => 'Gambaran singkat pola diri dalam situasi sehari-hari.',
-        \App\Models\InstrumentQuestion::CATEGORY_ANGKET_MASALAH => 'Pemetaan area yang mungkin perlu didukung Guru BK.',
+        \App\Models\InstrumentQuestion::CATEGORY_ANGKET_MASALAH => 'Empat bidang: Pribadi (1–20), Sosial (21–31), Belajar (32–43), dan Karir (44–50).',
     ];
 @endphp
 <div class="space-y-6">
@@ -96,6 +98,10 @@
                                 <a href="{{ route('siswa.instruments.strategi-belajar-result') }}" class="mt-2 inline-flex text-xs font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-300">
                                     Lihat rincian hasil →
                                 </a>
+                            @elseif($value === \App\Models\InstrumentQuestion::CATEGORY_ANGKET_MASALAH)
+                                <a href="{{ route('siswa.instruments.masalah-result') }}" class="mt-2 inline-flex text-xs font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-300">
+                                    Lihat rincian hasil →
+                                </a>
                             @else
                                 <a href="{{ route('siswa.instruments.hasil', $submission) }}" class="mt-2 inline-flex text-xs font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-300">
                                     Lihat rincian hasil →
@@ -144,6 +150,12 @@
                 'jenjang' => $jenjang,
                 'needsJenjangChooser' => $needsJenjangChooser ?? false,
                 'track' => 'kerja',
+            ])
+        @elseif($hasStrategiSections && $isMasalah)
+            @include('siswa.instruments.partials.masalah-form', [
+                'questions' => $questions,
+                'category' => $category,
+                'sectionLabels' => $sectionLabels,
             ])
         @elseif($hasStrategiSections)
             @include('siswa.instruments.partials.strategi-belajar-form', [

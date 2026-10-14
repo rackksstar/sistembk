@@ -13,6 +13,7 @@ trait ValidatesInstrumentQuestion
     {
         $isMinatBakat = $this->input('category') === InstrumentQuestion::CATEGORY_MINAT_BAKAT;
         $isStrategi = $this->input('category') === InstrumentQuestion::CATEGORY_GAYA_BELAJAR;
+        $isMasalah = $this->input('category') === InstrumentQuestion::CATEGORY_ANGKET_MASALAH;
         $talentCode = strtoupper(trim((string) $this->input('talent_code', '')));
         $interestCategoryId = $this->input('interest_category_id');
         $section = $this->input('section');
@@ -38,7 +39,7 @@ trait ValidatesInstrumentQuestion
             $interestCategoryId = null;
         }
 
-        if (! $isStrategi || $section === '' || $section === null) {
+        if (! $isStrategi && ! $isMasalah || $section === '' || $section === null) {
             $section = null;
         }
 
@@ -57,6 +58,9 @@ trait ValidatesInstrumentQuestion
     public function rules(): array
     {
         $strategiSections = array_keys(InstrumentQuestion::SECTIONS[InstrumentQuestion::CATEGORY_GAYA_BELAJAR] ?? []);
+        $masalahSections = array_keys(InstrumentQuestion::SECTIONS[InstrumentQuestion::CATEGORY_ANGKET_MASALAH] ?? []);
+        $sectionAllowed = array_unique(array_merge($strategiSections, $masalahSections));
+        $isMasalah = $this->input('category') === InstrumentQuestion::CATEGORY_ANGKET_MASALAH;
         $isKepribadian = $this->input('category') === InstrumentQuestion::CATEGORY_KEPRIBADIAN;
 
         $rules = [
@@ -65,8 +69,11 @@ trait ValidatesInstrumentQuestion
             'is_active' => ['nullable', 'boolean'],
             'section' => [
                 'nullable',
-                'required_if:category,'.InstrumentQuestion::CATEGORY_GAYA_BELAJAR,
-                Rule::in($strategiSections),
+                Rule::requiredIf(fn () => in_array($this->input('category'), [
+                    InstrumentQuestion::CATEGORY_GAYA_BELAJAR,
+                    InstrumentQuestion::CATEGORY_ANGKET_MASALAH,
+                ], true)),
+                Rule::in($sectionAllowed),
             ],
             'talent_code' => [
                 'nullable',
@@ -135,8 +142,8 @@ trait ValidatesInstrumentQuestion
             'category.in' => 'Jenis instrumen tidak valid.',
             'question.required' => 'Teks soal wajib diisi.',
             'question.max' => 'Teks soal maksimal 1000 karakter.',
-            'section.required_if' => 'Bagian Strategi Belajar wajib dipilih.',
-            'section.in' => 'Bagian Strategi Belajar tidak valid.',
+            'section.required' => 'Bagian instrumen wajib dipilih.',
+            'section.in' => 'Bagian instrumen tidak valid.',
             'talent_code.required_if' => 'Kode RIASEC (Talents Mapping) wajib dipilih untuk soal Minat Bakat Kuliah.',
             'talent_code.in' => 'Kode RIASEC tidak valid.',
             'interest_category_id.required_if' => 'Kategori minat wajib dipilih untuk soal Minat Bakat Kuliah.',
@@ -176,7 +183,10 @@ trait ValidatesInstrumentQuestion
             $validated['talent_code'] = null;
         }
 
-        if (($validated['category'] ?? null) !== InstrumentQuestion::CATEGORY_GAYA_BELAJAR) {
+        if (! in_array($validated['category'] ?? null, [
+            InstrumentQuestion::CATEGORY_GAYA_BELAJAR,
+            InstrumentQuestion::CATEGORY_ANGKET_MASALAH,
+        ], true)) {
             $validated['section'] = null;
         }
 

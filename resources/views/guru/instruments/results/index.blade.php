@@ -63,8 +63,23 @@
                     $strategiResults = $submission->category === \App\Models\InstrumentQuestion::CATEGORY_GAYA_BELAJAR
                         ? $submission->strategiBelajarSectionResults()
                         : [];
+                    $masalahResults = $submission->category === \App\Models\InstrumentQuestion::CATEGORY_ANGKET_MASALAH
+                        ? $submission->masalahSectionResults()
+                        : [];
+                    $masalahBadge = ['ringan' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300', 'sedang' => 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300', 'tinggi' => 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300'];
                 @endphp
-                @if($strategiResults !== [])
+                @if($masalahResults !== [])
+                    <div class="mt-4 space-y-2">
+                        @foreach($masalahResults as $result)
+                            <div class="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-800/60">
+                                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ $result['label'] }} · {{ $result['percentage'] }}%</span>
+                                <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold {{ $masalahBadge[$result['level']] ?? 'bg-slate-100 text-slate-700' }}">
+                                    {{ $result['level_label'] }}
+                                </span>
+                            </div>
+                        @endforeach
+                    </div>
+                @elseif($strategiResults !== [])
                     <div class="mt-4 space-y-2">
                         @foreach($strategiResults as $result)
                             <div class="flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-800/60">

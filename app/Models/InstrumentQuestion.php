@@ -54,13 +54,19 @@ class InstrumentQuestion extends Model
     public const JENJANG_TARGETS = ['semua', 'SMA', 'SMK'];
 
     /**
-     * Bagian numbered (ala ruangguru) untuk Strategi Belajar.
+     * Bagian numbered (ala ruangguru) untuk Strategi Belajar dan Asesmen Masalah.
      */
     public const SECTIONS = [
         self::CATEGORY_GAYA_BELAJAR => [
             1 => 'Perencanaan Belajar',
             2 => 'Eksekusi Belajar',
             3 => 'Refleksi Belajar',
+        ],
+        self::CATEGORY_ANGKET_MASALAH => [
+            1 => 'Pribadi',
+            2 => 'Sosial',
+            3 => 'Belajar',
+            4 => 'Karir',
         ],
     ];
 

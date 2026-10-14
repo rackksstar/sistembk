@@ -199,6 +199,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/instruments', [InstrumentSubmissionController::class, 'index'])->name('instruments.index');
         Route::post('/instruments', [InstrumentSubmissionController::class, 'store'])->name('instruments.store');
         Route::get('/instruments/strategi-belajar/hasil', [InstrumentSubmissionController::class, 'strategiBelajarResult'])->name('instruments.strategi-belajar-result');
+        Route::get('/instruments/masalah/hasil', [InstrumentSubmissionController::class, 'masalahResult'])->name('instruments.masalah-result');
         // Modul Key ΓÇö Minat Bakat RIASEC
         Route::get('/minat-bakat', [InstrumentSubmissionController::class, 'minatBakatIndex'])->name('minat-bakat.index');
         Route::get('/instruments/hasil/{submission}', [InstrumentSubmissionController::class, 'hasil'])->name('instruments.hasil');

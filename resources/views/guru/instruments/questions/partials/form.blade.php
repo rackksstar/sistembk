@@ -28,6 +28,7 @@
     $initialTalent = old('talent_code', $question?->talent_code
         ?? $interestCategories->firstWhere('id', old('interest_category_id', $question?->interest_category_id))?->kode);
     $strategiSections = \App\Models\InstrumentQuestion::SECTIONS[\App\Models\InstrumentQuestion::CATEGORY_GAYA_BELAJAR] ?? [];
+    $masalahSections = \App\Models\InstrumentQuestion::SECTIONS[\App\Models\InstrumentQuestion::CATEGORY_ANGKET_MASALAH] ?? [];
 @endphp
 
 <div
@@ -52,6 +53,18 @@
         },
         get isStrategiBelajar() {
             return this.category === 'gaya_belajar';
+        },
+        get isMasalah() {
+            return this.category === 'angket_masalah';
+        },
+        get needsSection() {
+            return this.isStrategiBelajar || this.isMasalah;
+        },
+        get sectionOptions() {
+            if (this.category === 'angket_masalah') {
+                return @js($masalahSections);
+            }
+            return @js($strategiSections);
         },
         get interestCategoryId() {
             const match = this.interestCategories.find((item) => item.kode === this.talentCode);
@@ -79,13 +92,13 @@
                 });
             };
             this.$watch('category', (value) => {
-                if (value !== 'gaya_belajar') {
+                if (value !== 'gaya_belajar' && value !== 'angket_masalah') {
                     this.section = null;
                 }
                 refresh();
             });
             this.$watch('isMinatBakat', refresh);
-            this.$watch('isStrategiBelajar', refresh);
+            this.$watch('needsSection', refresh);
             this.$watch('isKepribadian', refresh);
             refresh();
         },
@@ -117,21 +130,21 @@
         <x-input-error :messages="$errors->get('question')" />
     </div>
 
-    <div x-show="isStrategiBelajar" x-cloak class="space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
-        <x-input-label for="section_{{ $formKey }}" value="Bagian Strategi Belajar" />
+    <div x-show="needsSection" x-cloak class="space-y-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+        <x-input-label for="section_{{ $formKey }}" value="Bagian Instrumen" />
         <x-form-select
             id="section_{{ $formKey }}"
             name="section"
             x-model="section"
-            x-bind:required="isStrategiBelajar"
-            x-bind:disabled="!isStrategiBelajar"
+            x-bind:required="needsSection"
+            x-bind:disabled="!needsSection"
         >
             <option value="">Pilih bagian</option>
-            @foreach($strategiSections as $num => $label)
-                <option value="{{ $num }}">Bagian {{ $num }}: {{ $label }}</option>
-            @endforeach
+            <template x-for="(label, num) in sectionOptions" :key="num">
+                <option :value="num" x-text="'Bagian ' + num + ': ' + label"></option>
+            </template>
         </x-form-select>
-        <p class="text-xs text-slate-500 dark:text-slate-400">Wajib diisi agar wizard siswa (3 bagian) dan hasil per-bagian tampil benar.</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Wajib diisi untuk Strategi Belajar (3 bagian) dan Asesmen Masalah (4 bidang).</p>
     </div>
 
     <div x-show="isMinatBakat" x-cloak class="space-y-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 p-4">

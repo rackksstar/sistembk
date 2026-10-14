@@ -135,6 +135,81 @@ class InstrumentSubmission extends Model
     }
 
     /**
+     * Rincian hasil Asesmen Masalah per bidang (Pribadi/Sosial/Belajar/Karir).
+     * Skor tinggi = banyak masalah diakui → level tinggi berarti prioritas.
+     *
+     * @return list<array{section: int, label: string, percentage: int, level: string, level_label: string, level_color: string, description: string, tips: list<string>}>
+     */
+    public function masalahSectionResults(): array
+    {
+        if ($this->category !== InstrumentQuestion::CATEGORY_ANGKET_MASALAH) {
+            return [];
+        }
+
+        $this->loadMissing('answers.question');
+
+        $scoresBySection = $this->answers
+            ->groupBy(fn (InstrumentAnswer $answer) => $answer->question?->section)
+            ->filter(fn ($_, $section) => $section !== null && $section !== '')
+            ->map(fn ($answers) => [
+                'score' => $answers->sum('score'),
+                'count' => $answers->count(),
+            ]);
+
+        if ($scoresBySection->isEmpty()) {
+            return [];
+        }
+
+        $thresholds = config('masalah_results.thresholds');
+        $levels = config('masalah_results.levels');
+        $sectionContent = config('masalah_results.sections');
+        $sectionLabels = InstrumentQuestion::SECTIONS[InstrumentQuestion::CATEGORY_ANGKET_MASALAH] ?? [];
+
+        $results = [];
+        foreach ($sectionLabels as $num => $label) {
+            $stats = $scoresBySection->get($num, ['score' => 0, 'count' => 0]);
+            if (($stats['count'] ?? 0) < 1) {
+                continue;
+            }
+
+            $sectionAnswers = $this->answers->filter(
+                fn (InstrumentAnswer $answer) => (int) ($answer->question?->section ?? 0) === (int) $num
+            );
+            $maxPerQuestion = $sectionAnswers
+                ->map(function (InstrumentAnswer $answer) {
+                    $scores = collect($answer->question?->options ?? [])
+                        ->filter(fn ($option) => is_array($option) && array_key_exists('score', $option))
+                        ->map(fn ($option) => (int) $option['score']);
+
+                    return $scores->max() ?: 5;
+                })
+                ->max() ?: 5;
+
+            $maxScore = max($stats['count'], 1) * $maxPerQuestion;
+            $percentage = ($stats['score'] / $maxScore) * 100;
+
+            $level = match (true) {
+                $percentage >= ($thresholds['tinggi'] ?? 70) => 'tinggi',
+                $percentage >= ($thresholds['sedang'] ?? 40) => 'sedang',
+                default => 'ringan',
+            };
+
+            $results[] = [
+                'section' => (int) $num,
+                'label' => $label,
+                'percentage' => (int) round($percentage),
+                'level' => $level,
+                'level_label' => $levels[$level]['label'] ?? $level,
+                'level_color' => $levels[$level]['color'] ?? 'slate',
+                'description' => $sectionContent[$num][$level]['description'] ?? '',
+                'tips' => $sectionContent[$num][$level]['tips'] ?? [],
+            ];
+        }
+
+        return $results;
+    }
+
+    /**
      * Skor per dimensi RIASEC (Talents Mapping), diurutkan dari persentase tertinggi.
      * Prefer snapshot category_scores; fallback hitung dari jawaban + talent_code.
      *
