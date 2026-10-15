@@ -254,7 +254,8 @@ return [
                     'match' => ['category' => 'angket_masalah'],
                     'icon' => 'clipboard',
                 ],
-                ['label' => 'Info Karier', 'title' => 'Informasi Karier', 'route' => 'siswa.careers.index', 'active' => 'siswa.careers.*', 'icon' => 'briefcase'],
+                // HIDDEN sementara: menu Info Karier siswa disembunyikan (jangan hapus baris di bawah).
+                // ['label' => 'Info Karier', 'title' => 'Informasi Karier', 'route' => 'siswa.careers.index', 'active' => 'siswa.careers.*', 'icon' => 'briefcase'],
             ],
         ],
         [
