@@ -311,7 +311,11 @@ class ReferencePortModulesTest extends TestCase
             ])
             ->assertSessionHas('success');
 
-        $question = InstrumentQuestion::query()->firstOrFail();
+        // Migration angket masalah mengisi 50 baris — ambil soal kepribadian yang baru dibuat.
+        $question = InstrumentQuestion::query()
+            ->where('category', InstrumentQuestion::CATEGORY_KEPRIBADIAN)
+            ->where('question', 'Saya bersemangat mengobrol dengan banyak teman.')
+            ->firstOrFail();
 
         $this->assertSame('EI', $question->mbti_axis);
         $this->assertSame('E', $question->mbti_pole);
@@ -336,7 +340,10 @@ class ReferencePortModulesTest extends TestCase
             ])
             ->assertSessionHasErrors(['mbti_axis', 'mbti_pole']);
 
-        $this->assertDatabaseCount('instrument_questions', 0);
+        $this->assertDatabaseMissing('instrument_questions', [
+            'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
+            'question' => 'Soal tanpa dimensi MBTI.',
+        ]);
     }
 
     public function test_soal_kepribadian_menolak_kutub_di_luar_dimensi(): void
@@ -353,7 +360,10 @@ class ReferencePortModulesTest extends TestCase
             ])
             ->assertSessionHasErrors(['mbti_pole']);
 
-        $this->assertDatabaseCount('instrument_questions', 0);
+        $this->assertDatabaseMissing('instrument_questions', [
+            'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN,
+            'question' => 'Kutub T tidak termasuk dimensi EI.',
+        ]);
     }
 
     public function test_hasil_instrumen_mbti_ditampilkan_di_halaman_guru_dan_siswa(): void
