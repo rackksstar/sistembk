@@ -64,7 +64,9 @@
 
             <div class="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 @foreach($categories as $value => $label)
-                    @php($submission = $latestSubmissions[$value] ?? null)
+                    @php
+                        $submission = $latestSubmissions[$value] ?? null;
+                    @endphp
                     <div @class([
                         'rounded-2xl border p-4 transition',
                         'border-emerald-200 bg-emerald-50/70 dark:border-emerald-900/50 dark:bg-emerald-950/20' => $category === $value,

@@ -110,7 +110,9 @@
             @if($mbtiBreakdown !== [])
                 <div class="mt-5 space-y-5">
                     @foreach($mbtiBreakdown as $axis)
-                        @php($otherPercentage = 100 - $axis['percentage'])
+                        @php
+                            $otherPercentage = 100 - $axis['percentage'];
+                        @endphp
                         <div>
                             <div class="flex items-center justify-between gap-3 text-xs font-semibold">
                                 <span class="text-slate-800 dark:text-slate-100">{{ $axis['chosen_label'] }} ({{ $axis['code'] }}) · {{ $axis['percentage'] }}%</span>

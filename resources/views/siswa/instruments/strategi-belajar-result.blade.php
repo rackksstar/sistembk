@@ -28,6 +28,8 @@
 
 @section('content')
 <div class="space-y-6">
+    <x-alert type="success" :message="session('success')" />
+
     <section class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xs">
         <div class="bg-linear-to-r from-sky-500 to-blue-600 px-6 py-5 text-center">
             <h2 class="text-lg font-bold text-white">Hasil Tes Strategi Belajar</h2>
@@ -54,7 +56,9 @@
     </section>
 
     @foreach($results as $result)
-        @php($classes = $levelClasses[$result['level']] ?? $levelClasses['cukup'])
+        @php
+            $classes = $levelClasses[$result['level']] ?? $levelClasses['cukup'];
+        @endphp
         <section
             class="rounded-3xl border-2 {{ $classes['card'] }} bg-white p-6 shadow-xs dark:bg-slate-900"
             x-data="{ open: true }"

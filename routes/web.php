@@ -94,7 +94,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Phase 2 ΓÇö Data Master (tambahan di bawah route existing)
         Route::resource('sekolah', SekolahController::class)->except(['create', 'show', 'edit']);
-        Route::resource('kelas', KelasController::class)->except(['create', 'show', 'edit']);
+        Route::resource('kelas', KelasController::class)
+            // Str::singular('kelas') menghasilkan 'kela', sehingga binding otomatis
+            // gagal (controller memakai $kelas) dan update/delete menjadi no-op.
+            ->parameters(['kelas' => 'kelas'])
+            ->except(['create', 'show', 'edit']);
         Route::resource('guru-bk', GuruBkController::class)
             ->parameters(['guru-bk' => 'guruBk'])
             ->except(['create', 'show', 'edit']);

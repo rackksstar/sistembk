@@ -2,6 +2,9 @@
 
 @section('content')
 <div class="space-y-6">
+    {{-- Konfirmasi simpan dari RaporController@update. Tanpa alert ini pesan
+         sukses yang dibawa redirect kebaca tapi tidak pernah tampil. --}}
+    <x-alert class="mt-5" type="success" :message="session('success')" />
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <x-section-title
             title="Rapor BK"

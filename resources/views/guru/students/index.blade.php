@@ -3,7 +3,7 @@
 @section('content')
 <div class="space-y-6" x-data="{
     createOpen: {{ $errors->any() && ! $errors->has('csv_file') && old('form_context') !== 'edit' ? 'true' : 'false' }},
-    importOpen: {{ $errors->has('csv_file') ? 'true' : 'false' }},
+    importOpen: {{ $errors->has('csv_file') || session('import_errors') ? 'true' : 'false' }},
     editOpen: {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }}
 }">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
@@ -75,7 +75,7 @@
     </section>
 
     <div x-show="createOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-        <div x-on:click.outside="createOpen = false" class="w-full max-w-xl rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+        <div x-on:click.outside="createOpen = false" class="w-full max-w-xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
             <x-section-title title="Tambah Data Siswa" description="Isi data yang akan dipakai siswa saat login." />
             <form method="POST" action="{{ route('guru.students.store') }}" class="mt-6 space-y-4">
                 @csrf
@@ -86,11 +86,21 @@
     </div>
 
     <div x-show="importOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-        <div x-on:click.outside="importOpen = false" class="w-full max-w-xl rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
-            <x-section-title title="Import CSV Siswa" description="Upload file CSV berisi nama, NISN, tanggal lahir, sekolah, dan kelas (opsional)." />
+        <div x-on:click.outside="importOpen = false" class="w-full max-w-xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <x-section-title title="Import CSV Siswa" description="Upload file CSV berisi nama, NISN, tanggal lahir, sekolah, dan kelas." />
             <div class="mt-5 rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-950/40 p-4 text-sm leading-6 text-blue-700 dark:text-blue-300">
-                Format header: <span class="font-semibold">nama, nisn, tanggal_lahir, sekolah, kelas_id</span>. Tanggal lahir dapat memakai format <span class="font-semibold">YYYY-MM-DD</span>, <span class="font-semibold">DD/MM/YYYY</span>, atau <span class="font-semibold">DD-MM-YYYY</span>. Kolom <span class="font-semibold">kelas_id</span> harus ID kelas sekolah Anda agar tryout/angket/rapor sinkron.
+                Format header: <span class="font-semibold">nama, nisn, tanggal_lahir, sekolah, kelas_id</span>. Tanggal lahir dapat memakai format <span class="font-semibold">YYYY-MM-DD</span>, <span class="font-semibold">DD/MM/YYYY</span>, atau <span class="font-semibold">DD-MM-YYYY</span>. Kolom <span class="font-semibold">kelas_id</span> wajib berisi ID kelas sekolah Anda agar tryout/angket/rapor sinkron; baris yang kosong atau tidak valid akan dilewati.
             </div>
+            @if (session('import_errors'))
+                <div class="mt-4 rounded-2xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 p-4 text-sm leading-6 text-red-700 dark:text-red-300">
+                    <p class="font-semibold">Beberapa baris dilewati:</p>
+                    <ul class="mt-2 list-disc space-y-1 pl-5">
+                        @foreach (session('import_errors') as $pesanBaris)
+                            <li>{{ $pesanBaris }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             <form method="POST" action="{{ route('guru.students.import') }}" enctype="multipart/form-data" class="mt-6 space-y-4">
                 @csrf
                 <div class="space-y-2">
@@ -105,7 +115,7 @@
 
     @foreach($students as $student)
         <div x-show="editOpen === {{ $student->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="editOpen = null" class="w-full max-w-xl rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <div x-on:click.outside="editOpen = null" class="w-full max-w-xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <x-section-title title="Edit Data Siswa" description="Perbarui NISN dan tanggal lahir bila ada perubahan." />
                 <form method="POST" action="{{ route('guru.students.update', $student) }}" class="mt-6 space-y-4">
                     @csrf

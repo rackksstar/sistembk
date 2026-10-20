@@ -80,13 +80,17 @@ class StudentController extends Controller
         $created = 0;
         $updated = 0;
         $skipped = 0;
+        $errors = [];
+        $rowNumber = 1; // Baris 1 adalah header, jadi data pertama ada di baris 2.
         $allowedKelasIds = $this->kelasForCounselor()->pluck('id');
 
         while (($row = fgetcsv($file)) !== false) {
+            $rowNumber++;
             $data = array_combine($headers, array_slice(array_pad($row, count($headers), null), 0, count($headers)));
 
             if (! $data) {
                 $skipped++;
+                $errors[] = "Baris {$rowNumber}: jumlah kolom tidak sesuai header.";
                 continue;
             }
 
@@ -100,26 +104,32 @@ class StudentController extends Controller
 
             if ($name === '' || $nisn === '' || ! $birthDate) {
                 $skipped++;
+                $errors[] = "Baris {$rowNumber}: nama, NISN, dan tanggal lahir wajib diisi.";
                 continue;
             }
 
-            if ($kelasId && ! $allowedKelasIds->contains($kelasId)) {
-                $kelasId = null;
+            // kelas_id wajib: baris tanpa kelas valid ditolak, bukan disimpan
+            // tanpa kelas (siswa tanpa kelas tidak masuk cakupan guru BK).
+            if (! $kelasId) {
+                $skipped++;
+                $errors[] = "Baris {$rowNumber}: kelas_id wajib diisi.";
+                continue;
             }
 
-            $payload = [
-                'name' => $name,
-                'birth_date' => $birthDate,
-                'school' => $school,
-            ];
-
-            if ($kelasId) {
-                $payload['kelas_id'] = $kelasId;
+            if (! $allowedKelasIds->contains($kelasId)) {
+                $skipped++;
+                $errors[] = "Baris {$rowNumber}: kelas_id {$kelasId} bukan kelas sekolah Anda.";
+                continue;
             }
 
             $student = Student::updateOrCreate(
                 ['nisn' => $nisn],
-                $payload
+                [
+                    'name' => $name,
+                    'birth_date' => $birthDate,
+                    'school' => $school,
+                    'kelas_id' => $kelasId,
+                ]
             );
 
             $student->wasRecentlyCreated ? $created++ : $updated++;
@@ -134,7 +144,9 @@ class StudentController extends Controller
             'dilewati' => $skipped,
         ]);
 
-        return back()->with('success', "Import selesai. {$created} data baru, {$updated} data diperbarui, {$skipped} baris dilewati.");
+        return back()
+            ->with('success', "Import selesai. {$created} data baru, {$updated} data diperbarui, {$skipped} baris dilewati.")
+            ->with('import_errors', $errors);
     }
 
     public function update(Request $request, Student $student): RedirectResponse
@@ -167,8 +179,6 @@ class StudentController extends Controller
 
     private function validatedData(Request $request, ?Student $student = null): array
     {
-        $user = auth()->user()->loadMissing('guruBkProfile');
-        $sekolahId = $user->guruBkProfile?->sekolah_id;
         $allowedKelasIds = $this->kelasForCounselor()->pluck('id')->all();
 
         return $request->validate([
@@ -181,9 +191,7 @@ class StudentController extends Controller
             ],
             'birth_date' => ['required', 'date', 'before:today'],
             'school' => ['nullable', 'string', 'max:255'],
-            'kelas_id' => $sekolahId
-                ? ['required', 'integer', Rule::in($allowedKelasIds)]
-                : ['nullable', 'integer', Rule::in($allowedKelasIds)],
+            'kelas_id' => ['required', 'integer', Rule::in($allowedKelasIds)],
         ], [
             'nisn.unique' => 'NISN sudah digunakan siswa lain.',
             'birth_date.before' => 'Tanggal lahir harus valid dan sebelum hari ini.',

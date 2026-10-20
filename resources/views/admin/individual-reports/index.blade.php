@@ -119,7 +119,7 @@
 
     @if($isGuru)
         <div x-show="createOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="createOpen = false" class="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <div x-on:click.outside="createOpen = false" class="max-h-[calc(100vh-2rem)] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <div class="flex items-start justify-between gap-4">
                     <x-section-title title="Tambah Laporan Individu" description="Pilih sesi konseling individu lalu isi laporan pelaksanaannya." />
                     <button type="button" x-on:click="createOpen = false" class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-600 dark:text-slate-300">x</button>
@@ -135,9 +135,14 @@
             </div>
         </div>
 
+    @endif
+
         @foreach($consultations as $consultation)
+            {{-- Modal edit hanya untuk Guru BK; modal detail bersifat read-only
+                 sehingga harus tetap tersedia untuk admin. --}}
+            @if($isGuru)
             <div x-show="editOpen === {{ $consultation->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-                <div x-on:click.outside="editOpen = null" class="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+                <div x-on:click.outside="editOpen = null" class="max-h-[calc(100vh-2rem)] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                     <div class="flex items-start justify-between gap-4">
                         <x-section-title title="Edit Laporan Individu" description="Perbarui laporan untuk sesi konseling yang dipilih." />
                         <button type="button" x-on:click="editOpen = null" class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-600 dark:text-slate-300">x</button>
@@ -149,9 +154,10 @@
                     </form>
                 </div>
             </div>
+            @endif
 
             <div x-show="detailOpen === {{ $consultation->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-                <div x-on:click.outside="detailOpen = null" class="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+                <div x-on:click.outside="detailOpen = null" class="max-h-[calc(100vh-2rem)] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                     <div class="flex items-start justify-between gap-4">
                         <x-section-title title="Detail Laporan Individu" :description="$consultation->report_title ?: $consultation->subject" />
                         <button type="button" x-on:click="detailOpen = null" class="rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-sm font-semibold text-slate-600 dark:text-slate-300">Tutup</button>
@@ -170,6 +176,5 @@
                 </div>
             </div>
         @endforeach
-    @endif
 </div>
 @endsection

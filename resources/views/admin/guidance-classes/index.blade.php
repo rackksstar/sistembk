@@ -64,7 +64,7 @@
     <div>{{ $classes->links() }}</div>
 
     <div x-show="createOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-        <div x-on:click.outside="createOpen = false" class="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+        <div x-on:click.outside="createOpen = false" class="w-full max-w-lg max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
             <x-section-title title="Tambah Kelas" description="Buat kelas bimbingan baru." />
             <form method="POST" action="{{ route('admin.guidance-classes.store') }}" class="mt-6 space-y-4">
                 @csrf
@@ -75,7 +75,7 @@
 
     @foreach($classes as $class)
         <div x-show="editOpen === {{ $class->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="editOpen = null" class="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <div x-on:click.outside="editOpen = null" class="w-full max-w-lg max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <x-section-title title="Edit Kelas" description="Perbarui informasi kelas bimbingan." />
                 <form method="POST" action="{{ route('admin.guidance-classes.update', $class) }}" class="mt-6 space-y-4">
                     @csrf @method('PUT')

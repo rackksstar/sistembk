@@ -64,7 +64,7 @@
     {{ $journals->links() }}
 
     <div x-show="createOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-        <div x-on:click.outside="createOpen = false" class="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+        <div x-on:click.outside="createOpen = false" class="max-h-[calc(100vh-2rem)] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
             <x-section-title title="Tambah Entri Jurnal" description="Catat satu kegiatan layanan BK pada tanggal tertentu." />
             <form method="POST" action="{{ route('guru.journals.store') }}" class="mt-6">
                 @csrf
@@ -75,7 +75,7 @@
 
     @foreach($journals as $journal)
         <div x-show="editOpen === {{ $journal->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="editOpen = null" class="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <div x-on:click.outside="editOpen = null" class="max-h-[calc(100vh-2rem)] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <x-section-title title="Edit Jurnal" description="{{ $journal->periodLabel() }}" />
                 <form method="POST" action="{{ route('guru.journals.update', $journal) }}" class="mt-6">
                     @csrf @method('PUT')

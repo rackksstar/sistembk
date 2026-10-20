@@ -18,8 +18,11 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/e2e
 /storage/pail
 /vendor
+/test-results
+/playwright-report
 chatbot_service/.env
 chatbot_service/venv/
 chatbot_service/chat_memory.sqlite3
