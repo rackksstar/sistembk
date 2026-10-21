@@ -79,6 +79,24 @@
         $pageCrumb = request()->routeIs('profile.*')
             ? 'Akun'
             : ($activeGroup['group'] ?? $roleLabel);
+
+        // Daftar ringkas seluruh menu untuk command palette (Ctrl+K).
+        $paletteItems = collect($menuGroups)
+            ->flatMap(function ($group) {
+                return collect($group['items'] ?? [])
+                    ->map(function ($item) use ($group) {
+                        return [
+                            'label' => $item['label'] ?? '',
+                            'group' => $group['group'] ?? '',
+                            'href' => isset($item['route'])
+                                ? route($item['route'], $item['params'] ?? [])
+                                : route('login'),
+                        ];
+                    });
+            })
+            ->filter(fn ($item) => $item['label'] !== '')
+            ->values()
+            ->all();
     @endphp
 
     <div
@@ -124,6 +142,7 @@
                 </div>
 
                 <div class="flex items-center gap-2 sm:gap-3">
+                    <x-command-palette :items="$paletteItems" />
                     <x-theme-toggle />
                     <span class="hidden text-right sm:block">
                         <span class="app-topbar__user-name">{{ $user?->name }}</span>

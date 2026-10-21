@@ -2,13 +2,17 @@
 
 @section('content')
 <div class="space-y-6" x-data="{
-    createOpen: {{ $errors->any() && old('form_context') !== 'edit' ? 'true' : 'false' }},
+    createOpen: {{ $errors->any() && ! $errors->has('import_file') && old('form_context') !== 'edit' ? 'true' : 'false' }},
+    importOpen: {{ $errors->has('import_file') || session('import_errors') ? 'true' : 'false' }},
     editOpen: {{ $errors->any() && old('form_context') === 'edit' ? (int) old('editing_id') : 'null' }}
 }">
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <x-section-title title="Manajemen Data Siswa" description="CRUD siswa dengan validasi NISN unik dan tanggal lahir valid." />
-            <button x-on:click="createOpen = true" class="w-fit rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">Tambah siswa</button>
+            <div class="flex flex-wrap items-center gap-3">
+                <button x-on:click="createOpen = true" class="w-fit rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white hover:bg-blue-500">Tambah siswa</button>
+                <button x-on:click="importOpen = true" class="w-fit rounded-2xl border border-blue-200 dark:border-blue-800 bg-white dark:bg-slate-900 px-5 py-3 text-sm font-semibold text-blue-700 dark:text-blue-300 hover:border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40">Import Excel/CSV</button>
+            </div>
         </div>
         <x-alert class="mt-5" type="success" :message="session('success')" />
 
@@ -96,5 +100,37 @@
             </div>
         </div>
     @endforeach
+
+    <div x-show="importOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+        <div x-on:click.outside="importOpen = false" class="w-full max-w-xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <x-section-title title="Import Siswa" description="Upload file CSV atau Excel berisi data siswa." />
+            <div class="mt-5 rounded-2xl border border-blue-100 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-950/40 p-4 text-sm leading-6 text-blue-700 dark:text-blue-300">
+                <p><span class="font-semibold">Langkah singkat:</span> unduh template Excel (sudah ada dropdown seluruh kelas + ID), isi datanya, lalu upload kembali.</p>
+                <p class="mt-2">Header: <span class="font-semibold">nama, nisn, tanggal_lahir, sekolah, kelas</span>. Pada kolom <span class="font-semibold">kelas</span> cukup pilih dari dropdown (bentuk <span class="font-semibold">Nama Kelas (ID)</span>). Format tanggal <span class="font-semibold">DD/MM/YYYY</span>, <span class="font-semibold">YYYY-MM-DD</span>, atau <span class="font-semibold">DD-MM-YYYY</span>. Semua kelas tersedia; baris yang kosong atau tidak valid akan dilewati.</p>
+                <div class="mt-3">
+                    <a href="{{ route('admin.students.template') }}" class="inline-flex items-center rounded-2xl bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-800 px-4 py-2 text-sm font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40">Unduh template Excel</a>
+                </div>
+            </div>
+            @if (session('import_errors'))
+                <div class="mt-4 rounded-2xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 p-4 text-sm leading-6 text-red-700 dark:text-red-300">
+                    <p class="font-semibold">Beberapa baris dilewati:</p>
+                    <ul class="mt-2 list-disc space-y-1 pl-5">
+                        @foreach (session('import_errors') as $pesanBaris)
+                            <li>{{ $pesanBaris }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+            <form method="POST" action="{{ route('admin.students.import') }}" enctype="multipart/form-data" class="mt-6 space-y-4">
+                @csrf
+                <div class="space-y-2">
+                    <label for="import-file-admin" class="block text-sm font-semibold text-slate-900 dark:text-slate-100">File CSV atau Excel</label>
+                    <input id="import-file-admin" name="import_file" type="file" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50" />
+                    <x-input-error :messages="$errors->get('import_file')" class="text-sm text-red-600" />
+                </div>
+                <button class="w-full rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-500">Upload dan import</button>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection

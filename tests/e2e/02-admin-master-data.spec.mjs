@@ -1,3 +1,6 @@
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+
 import {
     disableNativeValidation,
     expect,
@@ -7,6 +10,7 @@ import {
     test,
     uniqueValue,
 } from './helpers.mjs';
+import { e2eEnv, projectRoot } from './scripts/env.mjs';
 
 /**
  * E2E — Master data Admin: Sekolah, Kelas, Siswa, Guru BK, Akun, Kelas Bimbingan.
@@ -169,6 +173,52 @@ test.describe('Admin — Data Master', () => {
         await form.getByRole('button', { name: 'Simpan siswa' }).click();
 
         await expect(page.getByText('NISN sudah digunakan siswa lain.').first()).toBeVisible();
+    });
+
+    test('Siswa: import Excel dari template (dropdown kelas) dan laporkan baris bermasalah', async ({ page }) => {
+        await page.goto('/admin/students');
+        await expect(page.getByRole('heading', { name: 'Manajemen Data Siswa' })).toBeVisible();
+
+        // Template Excel memuat dropdown kelas; berkas harus bisa diunduh.
+        await page.getByRole('button', { name: 'Import Excel/CSV' }).click();
+        await expect(page.getByRole('link', { name: /unduh template excel/i })).toBeVisible();
+        const [download] = await Promise.all([
+            page.waitForEvent('download'),
+            page.getByRole('link', { name: /unduh template excel/i }).click(),
+        ]);
+        expect(download.suggestedFilename().toLowerCase()).toMatch(/\.xlsx$/);
+
+        // Berkas .xlsx berisi kolom kelas "Nama Kelas (ID)" -> import harus
+        // menyimpan siswa dan melaporkan baris tanpa kelas per baris.
+        const fixture = path.join(projectRoot, 'storage', 'app', 'e2e-import-siswa-admin.xlsx');
+        const out = spawnSync('php', [
+            path.join(projectRoot, 'tests', 'e2e', 'scripts', 'make-student-import-fixture.php'),
+            fixture,
+        ], {
+            cwd: projectRoot,
+            env: { ...process.env, ...e2eEnv },
+            stdio: 'inherit',
+            shell: true,
+        });
+        expect(out.status).toBe(0);
+
+        await page.goto('/admin/students');
+        await page.getByRole('button', { name: 'Import Excel/CSV' }).click();
+        const form = formByAction(page, '/admin/students/import');
+        await form.locator('input[name="import_file"]').setInputFiles(fixture);
+        await form.getByRole('button', { name: 'Upload dan import' }).click();
+
+        await expect(page.getByText(/Import selesai\./).first()).toBeVisible();
+        await expect(page.getByText('Baris 3: kelas_id wajib diisi.').first()).toBeVisible();
+
+        await page.goto('/admin/students');
+        await page.locator('input[name="search"]').fill('Siswa Impor Xlsx');
+        await page.getByRole('button', { name: 'Filter' }).first().click();
+        await expect(tableRow(page, 'Siswa Impor Xlsx')).toBeVisible();
+
+        // Bersihkan agar database kembali seperti semula.
+        await tableRow(page, 'Siswa Impor Xlsx').getByRole('button', { name: 'Delete' }).click();
+        await expect(page.getByText('Data siswa berhasil dihapus.').first()).toBeVisible();
     });
 
     test('Guru BK: create membuat akun login, lalu update dan delete', async ({ page }) => {

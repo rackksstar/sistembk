@@ -79,6 +79,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/approvals/{user}/reject', [AdminApprovalController::class, 'reject'])->name('approvals.reject');
         Route::resource('users', UserController::class)->except(['create', 'show', 'edit']);
         Route::resource('careers', CareerInfoController::class)->except(['create', 'show', 'edit']);
+        // Harus sebelum `Route::resource('students')`, kalau tidak `template`
+        // tertangkap sebagai `{student}`.
+        Route::get('/students/template', [StudentController::class, 'template'])->name('students.template');
+        Route::post('/students/import', [StudentController::class, 'import'])->name('students.import');
         Route::resource('students', StudentController::class)->except(['create', 'show', 'edit']);
         Route::resource('guidance-classes', GuidanceClassController::class)
             ->parameters(['guidance-classes' => 'guidanceClass'])
@@ -130,6 +134,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('guru')->name('guru.')->middleware('role:guru')->group(function () {
         Route::get('/dashboard', [GuruDashboardController::class, 'index'])->name('dashboard');
+        // Ditaruh sebelum `Route::resource('students')` agar `template` tidak
+        // tertangkap sebagai `{student}`.
+        Route::get('/students/template', [GuruStudentController::class, 'template'])->name('students.template');
         Route::post('/students/import', [GuruStudentController::class, 'import'])->name('students.import');
         Route::resource('students', GuruStudentController::class)->except(['create', 'show', 'edit']);
         Route::resource('instrument-questions', InstrumentQuestionController::class)

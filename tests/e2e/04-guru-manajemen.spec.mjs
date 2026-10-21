@@ -1,3 +1,6 @@
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+
 import {
     answerAllLikert,
     expect,
@@ -7,6 +10,7 @@ import {
     test,
     uniqueValue,
 } from './helpers.mjs';
+import { e2eEnv, projectRoot } from './scripts/env.mjs';
 
 /**
  * E2E — Modul Guru BK: data siswa (+import CSV), master pertanyaan,
@@ -45,7 +49,7 @@ test.describe('Guru — Manajemen Data & Layanan', () => {
 
         // FILTER
         await page.locator('input[name="search"]').fill(nama);
-        await page.getByRole('button', { name: 'Cari' }).click();
+        await page.getByRole('button', { name: 'Cari', exact: true }).click();
         await expect(tableRow(page, nama)).toBeVisible();
 
         // DELETE
@@ -75,9 +79,9 @@ test.describe('Guru — Manajemen Data & Layanan', () => {
             `${namaTanpaKelas},${nisnTanpaKelas},2008-08-10,SMA Negeri 1 Contoh,`,
         ].join('\n');
 
-        await page.getByRole('button', { name: 'Import CSV' }).click();
+        await page.getByRole('button', { name: 'Import Excel/CSV' }).click();
         const form = formByAction(page, '/guru/students/import');
-        await form.locator('input[name="csv_file"]').setInputFiles({
+        await form.locator('input[name="import_file"]').setInputFiles({
             name: 'siswa-e2e.csv',
             mimeType: 'text/csv',
             buffer: Buffer.from(csv, 'utf8'),
@@ -90,18 +94,63 @@ test.describe('Guru — Manajemen Data & Layanan', () => {
 
         await page.goto('/guru/students');
         await page.locator('input[name="search"]').fill(namaImpor);
-        await page.getByRole('button', { name: 'Cari' }).click();
+        await page.getByRole('button', { name: 'Cari', exact: true }).click();
         await expect(tableRow(page, namaImpor)).toBeVisible();
 
         // Baris tanpa kelas_id tidak boleh ikut tersimpan.
         await page.locator('input[name="search"]').fill(namaTanpaKelas);
-        await page.getByRole('button', { name: 'Cari' }).click();
+        await page.getByRole('button', { name: 'Cari', exact: true }).click();
         await expect(page.locator('tr', { hasText: namaTanpaKelas })).toHaveCount(0);
 
         // Bersihkan agar keadaan database kembali seperti semula.
         await page.locator('input[name="search"]').fill(namaImpor);
-        await page.getByRole('button', { name: 'Cari' }).click();
+        await page.getByRole('button', { name: 'Cari', exact: true }).click();
         await tableRow(page, namaImpor).getByRole('button', { name: 'Delete' }).click();
+        await expect(page.getByText('Data siswa berhasil dihapus.').first()).toBeVisible();
+
+        // Import XLSX: template dapat diunduh (dropdown kelas + ID), lalu file
+        // terisi bisa diimpor dan baris tanpa kelas tetap dilaporkan per baris.
+        await page.goto('/guru/students');
+        await page.getByRole('button', { name: 'Import Excel/CSV' }).click();
+        await expect(page.getByRole('link', { name: /unduh template excel/i })).toBeVisible();
+        const [download] = await Promise.all([
+            page.waitForEvent('download'),
+            page.getByRole('link', { name: /unduh template excel/i }).click(),
+        ]);
+        const suggested = download.suggestedFilename();
+        expect(suggested.toLowerCase()).toContain('template');
+        expect(suggested.toLowerCase()).toMatch(/\.xlsx$/);
+
+        const fixture = path.join(projectRoot, 'storage', 'app', 'e2e-import-siswa.xlsx');
+        const out = spawnSync('php', [
+            path.join(projectRoot, 'tests', 'e2e', 'scripts', 'make-student-import-fixture.php'),
+            fixture,
+        ], {
+            cwd: projectRoot,
+            env: { ...process.env, ...e2eEnv },
+            stdio: 'inherit',
+            shell: true,
+        });
+        expect(out.status).toBe(0);
+
+        await page.goto('/guru/students');
+        await page.getByRole('button', { name: 'Import Excel/CSV' }).click();
+        const formXlsx = formByAction(page, '/guru/students/import');
+        await formXlsx.locator('input[name="import_file"]').setInputFiles(fixture);
+        await formXlsx.getByRole('button', { name: 'Upload dan import' }).click();
+
+        await expect(page.getByText(/Import selesai\./).first()).toBeVisible();
+        await expect(page.getByText('Baris 3: kelas_id wajib diisi.').first()).toBeVisible();
+
+        await page.goto('/guru/students');
+        await page.locator('input[name="search"]').fill('Siswa Impor Xlsx');
+        await page.getByRole('button', { name: 'Cari', exact: true }).click();
+        await expect(page.getByText(/Siswa Impor Xlsx/).first()).toBeVisible();
+
+        // Tanggal lahir pada sel .xlsx (angka serial) harus terbaca benar.
+        await expect(tableRow(page, /Siswa Impor Xlsx/)).toContainText('15 Sep 2008');
+
+        await page.getByText(/Siswa Impor Xlsx/).first().locator('..').locator('..').getByRole('button', { name: 'Delete' }).click();
         await expect(page.getByText('Data siswa berhasil dihapus.').first()).toBeVisible();
     });
 
@@ -124,7 +173,8 @@ test.describe('Guru — Manajemen Data & Layanan', () => {
 
         const teks = uniqueValue('Seberapa yakin kamu memahami materi?');
 
-        await page.getByRole('button', { name: 'Tambah pertanyaan' }).click();
+        // Ada dua tombol "Tambah pertanyaan" (header + empty state).
+        await page.getByRole('button', { name: 'Tambah pertanyaan' }).first().click();
         const form = formByAction(page, '/guru/master-pertanyaan');
         await form.locator('select[name="kategori"]').selectOption('tryout');
         await form.locator('select[name="tipe_input"]').selectOption('skala');
@@ -209,7 +259,12 @@ test.describe('Guru — Manajemen Data & Layanan', () => {
 
         if (chosenIndex >= 0 && chosenClassId) {
             await form.locator('select[name="class_id"]').selectOption(chosenClassId);
-            await studentLabels.nth(chosenIndex)
+
+            // Label siswa baru tampil setelah Alpine mengevaluasi ulang
+            // x-show="cocokSiswa(...)" terhadap kelas yang baru dipilih.
+            const chosenLabel = studentLabels.nth(chosenIndex);
+            await expect(chosenLabel).toBeVisible();
+            await chosenLabel
                 .locator('input[type="radio"]')
                 .check({ force: true });
             // Verifikasi input tersembunyi benar-benar terisi oleh Alpine.

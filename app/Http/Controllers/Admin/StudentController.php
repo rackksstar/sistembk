@@ -8,10 +8,13 @@ use App\Http\Requests\Admin\UpdateStudentRequest;
 use App\Models\Kelas;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\StudentImporter;
 use App\Support\ActivityLogger;
+use App\Support\StudentSpreadsheet;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StudentController extends Controller
 {
@@ -66,6 +69,52 @@ class StudentController extends Controller
         ActivityLogger::log('student.updated', $student);
 
         return back()->with('success', 'Data siswa berhasil diperbarui.');
+    }
+
+    /**
+     * Unduh template Excel berisi judul kolom beserta dropdown seluruh kelas.
+     *
+     * Admin mencakup semua sekolah sehingga daftarnya tidak disaring.
+     */
+    public function template(): StreamedResponse
+    {
+        return StudentSpreadsheet::download(
+            StudentSpreadsheet::label(Kelas::query()->orderBy('nama')->get()),
+            'template-import-siswa.xlsx'
+        );
+    }
+
+    /**
+     * Impor data siswa dari CSV/XLSX. Baris tanpa kelas valid ditolak per
+     * baris dengan pesan, bukan disimpan dengan kelas kosong.
+     */
+    public function import(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'import_file' => ['required', 'file', 'max:2048', 'extensions:csv,txt,xlsx'],
+        ], [
+            'import_file.required' => 'Pilih file terlebih dahulu.',
+            'import_file.extensions' => 'File harus berformat .csv atau .xlsx.',
+        ]);
+
+        $hasil = app(StudentImporter::class)->run(
+            $request->file('import_file')->getRealPath(),
+            Kelas::query()->pluck('id')->all(),
+        );
+
+        $skipped = count($hasil['errors']);
+
+        ActivityLogger::log('siswa.imported', null, [
+            'file' => $request->file('import_file')->getClientOriginalName(),
+            'baru' => $hasil['created'],
+            'diperbarui' => $hasil['updated'],
+            'dilewati' => $skipped,
+            'oleh' => 'admin',
+        ]);
+
+        return back()
+            ->with('success', "Import selesai. {$hasil['created']} data baru, {$hasil['updated']} data diperbarui, {$skipped} baris dilewati.")
+            ->with('import_errors', $hasil['errors']);
     }
 
     /**
