@@ -1,6 +1,6 @@
 # Laporan Pengujian End-to-End (Playwright)
 
-> Tanggal pelaksanaan : 18–20 Oktober 2026
+> Tanggal pelaksanaan : 18–21 Oktober 2026
 > Branch              : `yola_new`
 > Kerangka pengujian  : Playwright Test (Chromium, desktop 1440x1024)
 
@@ -10,11 +10,11 @@
 
 | Metrik | Nilai |
 | --- | --- |
-| Total skenario | **83** |
-| Lulus | **83** |
+| Total skenario | **89** |
+| Lulus | **89** |
 | Gagal | **0** |
 | Di-skip | **0** |
-| Waktu eksekusi | 4,3–6 menit (berfluktuasi antar run) |
+| Waktu eksekusi | 4–9 menit (berfluktuasi antar run) |
 | Kode keluaran | `0` |
 
 Rincian per modul:
@@ -22,13 +22,14 @@ Rincian per modul:
 | # | Berkas uji | Peran | Jumlah | Lulus |
 | --- | --- | --- | ---: | ---: |
 | 1 | `tests/e2e/01-auth.spec.mjs` | Auth & otorisasi (semua role) | 16 | 16 |
-| 2 | `tests/e2e/02-admin-master-data.spec.mjs` | Admin — data master | 11 | 11 |
+| 2 | `tests/e2e/02-admin-master-data.spec.mjs` | Admin — data master | 12 | 12 |
 | 3 | `tests/e2e/03-admin-content.spec.mjs` | Admin — referensi & konten | 18 | 18 |
 | 4 | `tests/e2e/04-guru-manajemen.spec.mjs` | Guru — data & layanan | 12 | 12 |
 | 5 | `tests/e2e/05-guru-konseling.spec.mjs` | Guru — konseling, laporan & rapor | 6 | 6 |
 | 6 | `tests/e2e/06-siswa.spec.mjs` | Siswa — layanan & instrumen | 16 | 16 |
 | 7 | `tests/e2e/07-modal-viewport.spec.mjs` | Regresi tampilan modal | 4 | 4 |
-| | | **Total** | **83** | **83** |
+| 8 | `tests/e2e/08-navigasi.spec.mjs` | Navigasi — sidebar & palet perintah | 5 | 5 |
+| | | **Total** | **89** | **89** |
 
 ---
 
@@ -56,14 +57,20 @@ menjalankan `migrate:fresh` + seeder pada database khusus uji (lihat §3).
 ### 2.2 Perintah
 
 ```bash
-npm run test:e2e                     # seluruh suite (83 skenario)
+npm run test:e2e                     # seluruh suite (89 skenario)
 npm run test:e2e:ui                  # mode UI interaktif
 npm run test:e2e:report              # buka laporan HTML
 
 # Menjalankan per modul
 npx playwright test 01-auth --reporter=list
 npx playwright test 06-siswa --reporter=list
+npx playwright test 08-navigasi --reporter=list
 ```
+
+Port server uji adalah **8765** (bukan 8000) dan `npm run test:e2e` selalu
+menjalankan *preflight* lebih dulu untuk membebaskan port tersebut dari
+proses yatim — lihat #K di §6. Port bisa diganti lewat `E2E_PORT` /
+`E2E_BASE_URL`.
 
 ### 2.3 Akun demo yang dipakai
 
@@ -100,14 +107,16 @@ tests/e2e/
 ├── scripts/
 │   ├── env.mjs           # definisi environment & path SQLite E2E
 │   ├── artisan.mjs       # menjalankan artisan dengan env E2E
-│   └── serve.mjs         # menjalankan server Laravel untuk uji
+│   ├── serve.mjs         # menjalankan server Laravel untuk uji
+│   └── make-student-import-fixture.php  # pembuat fixture .xlsx import siswa
 ├── 01-auth.spec.mjs              (16)
-├── 02-admin-master-data.spec.mjs (11)
+├── 02-admin-master-data.spec.mjs (12)
 ├── 03-admin-content.spec.mjs     (18)
 ├── 04-guru-manajemen.spec.mjs    (12)
 ├── 05-guru-konseling.spec.mjs    (6)
 ├── 06-siswa.spec.mjs             (16)
-└── 07-modal-viewport.spec.mjs    (2)
+├── 07-modal-viewport.spec.mjs    (4)
+└── 08-navigasi.spec.mjs          (5)
 ```
 
 Catatan penting yang dipakai berulang di seluruh uji:
@@ -142,7 +151,7 @@ Catatan penting yang dipakai berulang di seluruh uji:
 - Registrasi guru BK baru masuk status menunggu persetujuan
 - Admin dapat memperbarui profil sendiri
 
-### 4.2 Modul 02 — Admin: Data Master (11)
+### 4.2 Modul 02 — Admin: Data Master (12)
 
 - Sekolah: create, update, filter, delete
 - Sekolah: validasi nama & NPSN wajib diisi
@@ -150,6 +159,7 @@ Catatan penting yang dipakai berulang di seluruh uji:
 - Kelas: menolak jenjang di luar daftar
 - Siswa: create, update, filter, delete
 - Siswa: menolak NISN ganda dan tanggal lahir masa depan
+- Siswa: import Excel dari template (dropdown kelas) dan laporkan baris bermasalah *(baru)*
 - Guru BK: create membuat akun login, lalu update dan delete
 - Guru BK: menolak no HP yang sudah dipakai
 - Akun pengguna: create, update role/status, delete
@@ -181,6 +191,7 @@ Catatan penting yang dipakai berulang di seluruh uji:
 
 - Data Siswa: create, update, filter, delete
 - Data Siswa: import CSV menambahkan data baru **dan menolak baris tanpa `kelas_id`** (pesan per baris)
+- Data Siswa: unduh template Excel + import `.xlsx` (dropdown kelas "Nama (ID)") *(baru)*
 - Data Siswa: menolak NISN ganda
 - Master Pertanyaan: buat soal tryout untuk dipakai modul tryout
 - Soal Instrumen (Yola): create minat kerja dengan pilihan jawaban, update, delete
@@ -236,6 +247,33 @@ memeriksa bahwa modal "Tambah Siswa" yang tingginya ~947px tidak mendapat
 scrollbar pada viewport default 1440x1024. Nilai batas `90vh` (922px) akan
 membuatnya menggulir 25px tanpa perlu — persis gejala yang melahirkan
 perbaikan ini — sehingga uji ini gagal bila konvensi dikembalikan.
+
+### 4.8 Modul 08 — Navigasi: Sidebar & Palet Perintah (5) *(baru)*
+
+- Sidebar: pencarian menu menyaring item yang tidak cocok
+- Sidebar: menampilkan pesan kosong saat tidak ada menu yang cocok
+- Palet perintah: Ctrl+K mencari menu lalu Enter membukanya
+- Palet perintah: pintasan Ctrl+K membuka dan Esc menutup
+- Sidebar: status buka/tutup grup tersimpan antar halaman
+
+Skenario pertama memverifikasi bahwa kotak "Cari menu..." di sidebar
+menyaring **item** dan **grup**: item yang tidak cocok disembunyikan, grup yang
+tidak lagi punya item cocok ikut hilang, dan tombol "Bersihkan pencarian"
+mengembalikan seluruh menu seperti semula.
+
+Skenario kedua memastikan ada umpan balik saat pencarian tidak menghasilkan
+apa pun ("Menu tidak ditemukan") — tanpa itu, pengguna dapat mengira
+menunya hilang.
+
+Skenario ketiga & keempat memverifikasi alur "lompat ke menu" dari topbar:
+`Ctrl+K` membuka palet, mengetik menyaring, `Enter` membuka halaman tujuan,
+`Esc` menutupnya.
+
+Skenario kelima mengunci fitur **persistensi**: status buka/tutup grup
+disimpan di `localStorage` (kunci `sidebar:openGroups:{idUser}`), sehingga
+grup yang ditutup pengguna tetap tertutup setelah halaman dimuat ulang.
+Grup tempat halaman yang sedang aktif berada tetap dibuka otomatis, agar
+menu aktif tidak pernah tersembunyi.
 
 ---
 
@@ -324,10 +362,12 @@ kode aplikasi.
 
 ---
 
-## 6. Perbaikan Lanjutan — Sesi 19–20 Oktober 2026
+## 6. Perbaikan Lanjutan — Sesi 19–21 Oktober 2026
 
-Lima temuan laporan ditutup tanpa merusak skenario yang sudah lulus, ditambah
-dua perbaikan yang muncul dari pemeriksaan akhir (#F dan #G).
+Sembilan temuan laporan ditutup tanpa merusak skenario yang sudah lulus,
+ditambah lima perbaikan yang muncul dari pemeriksaan akhir: #F, #G, #J
+(kompatibilitas pustaka), #K (server yatim pada harness E2E), dan #L
+(tanggal `.xlsx` berupa angka serial).
 
 ### #A — `@php` inline pada file Blade panjang berisiko merusak kompilasi
 
@@ -444,6 +484,139 @@ dua perbaikan yang muncul dari pemeriksaan akhir (#F dan #G).
   memverifikasi langsung bahwa modal "Tambah Siswa" tidak ber-scrollbar
   pada 1440x1024.
 
+### #H — Impor Excel/CSV siswa + template Excel dengan dropdown kelas
+
+- **Berkas:** `app/Support/StudentSpreadsheet.php` (baru),
+  `app/Services/StudentImporter.php` (baru),
+  `app/Http/Controllers/{Admin,Guru}/StudentController.php`,
+  `routes/web.php`, `resources/views/{admin,guru}/students/index.blade.php`
+- **Latar belakang:** impor CSV guru yang sudah berjalan (lihat #D) memakai
+  kolom `kelas_id` **mentah**. Guru harus menghafal ID kelas, dan berkas CSV
+  tidak punya daftar pilihan sehingga salah ID bisa lolos sampai tersimpan.
+- **Perbaikan:**
+  - **Template Excel (.xlsx)** baru — sheet "Data Siswa" + sheet tersembunyi
+    "Daftar Kelas". Kolom `kelas` memakai **dropdown** (`dataValidation`
+    tipe `list`) yang menunjuk rentang `'Daftar Kelas'!$A$2:$A$N`. Nilai
+    yang tampil berbentuk **`Nama Kelas (ID)`** (mis. `XI IPS 2 (2)`), dan
+    ID diambil kembali dari angka di dalam kurung saat impor — guru melihat
+    nama **dan** ID sekaligus, tanpa menghafal.
+  - **Importer yang sama untuk guru & admin.** Logika baris demi baris
+    ditulis sekali di `App\Services\StudentImporter`; pembeda hanya daftar
+    kelas yang diizinkan (guru: kelas sekolahnya, admin: seluruh kelas).
+  - **Satu berkas, dua peran.** Route `template` & `import` ditambahkan pada
+    grup guru **dan** admin, diletakkan **sebelum** `Route::resource('students')`
+    agar nama route `students.template` tidak tertimpa.
+  - **Format berkas fleksibel.** `.csv` dan `.xlsx` keduanya diterima;
+    tanggal lahir dibaca dari sel Excel (tipe tanggal) maupun teks
+    (`Y-m-d`, `d/m/Y`, `d-m/Y`, `m/d/Y`); kolom NISN diformat `@` (teks)
+    agar angka nol di depan tidak hilang.
+  - **Laporan per baris** tetap dipertahankan: baris tanpa kelas ditolak
+    ("Baris N: kelas_id wajib diisi.") dan kelas di luar cakupan pengguna
+    ditolak ("Baris N: kelas {id} bukan kelas yang tersedia bagi Anda.").
+- **Uji baru:** Modul 02 (admin) & Modul 04 (guru) — unduh template, lalu
+  unggah `.xlsx` hasil impor; data valid tersimpan, baris tanpa kelas
+  dilaporkan dan tidak ikut tersimpan.
+
+### #I — Navigasi interaktif: pencarian sidebar + palet perintah (Ctrl+K)
+
+- **Berkas:** `resources/views/components/app-sidebar.blade.php`,
+  `resources/views/components/command-palette.blade.php` (baru),
+  `resources/views/layouts/app.blade.php`, `resources/css/app.css`,
+  `resources/js/app.js`, `package.json`
+- **Latar belakang:** sidebar cukup panjang (7–8 grup per peran) dan hanya
+  bisa dinavigasi dengan menggulir — untuk menu di grup terbawah pengguna
+  harus menggulir tiap kali.
+- **Perbaikan:**
+  - **Pencarian di sidebar** — kotak "Cari menu..." menyaring item **dan**
+    grup secara langsung; ada pesan "Menu tidak ditemukan" bila nihil dan
+    tombol bersihkan.
+  - **Palet perintah** — tombol "Cari menu..." di topbar (atau `Ctrl+K` /
+    `Cmd+K`) membuka dialog berisi seluruh menu peran aktif; ketik untuk
+    menyaring, `Enter` membuka, `Esc` menutup.
+  - **Status grup bisa dilipat** dan **diingat** di `localStorage`
+    (kunci `sidebar:openGroups:{idUser}`). Grup halaman yang sedang aktif
+    tetap dibuka otomatis agar menu aktif tidak pernah tersembunyi.
+  - Animasi buka/tutup memakai plugin Alpine `@alpinejs/collapse`.
+  - **Logika "menu aktif" yang sudah ada tidak diubah** — penanganan khusus
+    `category`/`module` (instrumen Yola vs Key), pola `match` array, section
+    `main/core/yola/key/platform`, divider "Tim lain"/"Modul Key", serta
+    `$hasProfile` (hanya admin & guru) semuanya dipertahankan apa adanya.
+- **Uji baru:** Modul 08 — 5 skenario (§4.8).
+
+### #J — Kompatibilitas pustaka: PhpSpreadsheet 5 & Laravel 13
+
+- **Berkas:** `app/Support/StudentSpreadsheet.php`,
+  `app/Http/Controllers/{Admin,Guru}/StudentController.php`, `composer.json`
+- **Gejala:** unduh template Excel dan import `.xlsx` membalas **500**.
+- **Akar masalah & perbaikan** (tiga titik sekaligus):
+  1. `PhpOffice\PhpSpreadsheet\Worksheet\DataValidation` **dipindahkan** ke
+     `PhpOffice\PhpSpreadsheet\Cell\DataValidation` pada PhpSpreadsheet 5.
+  2. Metode `setErrorMessage()` diganti `setError()` pada kelas yang sama.
+  3. `Illuminate\Http\StreamedResponse` **dihapus** pada Laravel 13 —
+     digantikan `Symfony\Component\HttpFoundation\StreamedResponse`
+     (atau `response()->streamDownload()`).
+  4. String formula dropdown memakai interpolasi ganda sehingga `$A$2`
+     dibaca sebagai variabel PHP (`Undefined variable $A`) — diperbaiki
+     dengan `\$A\$2`.
+- **Perbaikan:** berkas template & unduhan ditulis ulang mengikuti API
+  terbaru; `response()->streamDownload()` dipakai agar `Content-Disposition`
+  attachment tetap benar.
+
+### #K — Harness E2E: server yatim menyebabkan pengujian berjalan terhadap database yang salah
+
+- **Berkas:** `tests/e2e/scripts/serve.mjs`, `tests/e2e/scripts/port.mjs`
+  (baru), `tests/e2e/scripts/preflight.mjs` (baru),
+  `tests/e2e/scripts/env.mjs`, `playwright.config.js`, `package.json`
+- **Gejala:** sebuah modul gagal **hanya ketika dijalankan terpisah**
+  (mis. `02` + `04`), padahal berhasil saat seluruh suite berjalan.
+  Contoh: halaman Master Pertanyaan menampilkan *"Belum ada pertanyaan"*
+  padahal `master_questions` berisi 13 baris (terverifikasi langsung ke
+  database saat itu). Akibatnya, skenario "Master Pertanyaan" gagal dengan
+  *strict mode violation* (dua tombol "Tambah pertanyaan" — header dan
+  *empty state*), dan skenario tryout ikut gagal karena master soal tidak
+  ada.
+- **Akar masalah:** `php artisan serve` menjalankan proses anak `php -S`.
+  Saat Playwright menghentikan `webServer`, proses induknya dibunuh tetapi
+  anak `php -S` **tetap hidup** (yatim) dan terus memegang port 8000. Run
+  berikutnya memakai `reuseExistingServer: true`, sehingga **diam-diam
+  memakai server lama itu** — yang masih memegang koneksi ke database
+  SQLite versi sebelum `migrate:fresh --seed`. Urutan di Playwright
+  adalah *web server hidup → global setup (reset DB) → skenario*,
+  sehingga reset database terjadi **di bawah** server yang sudah
+  terhubung dan tidak terlihat olehnya.
+- **Perbaikan:**
+  1. **Port E2E dipisah** dari port development: `8765` (bukan `8000`).
+     Port ini aman untuk dibersihkan otomatis tanpa mengganggu server
+     development milik pengguna.
+  2. **Pohon proses dihentikan penuh** saat server uji berhenti —
+     `taskkill /T /F` di Windows, kill process group di POSIX — sehingga
+     tidak ada proses `php -S` yatim tertinggal.
+  3. **`reuseExistingServer: false`** — server lama tidak pernah dipakai
+     ulang; kegagalan karena port terisi ditampilkan sebagai pesan
+     jelas, bukan hasil uji yang menyesatkan.
+  4. **Preflight** (`npm run test:e2e`) membebaskan port E2E sebelum
+     Playwright berjalan.
+- **Uji baru:** tidak ada skenario produk baru; yang dijaga adalah
+  **determinisme** — modul yang sama harus menghasilkan hasil yang sama
+  baik dijalankan sendiri maupun bersama suite.
+
+### #L — Tanggal pada sel `.xlsx` dibaca sebagai angka serial Excel
+
+- **Berkas:** `app/Support/StudentSpreadsheet.php`
+- **Gejala (belum terdeteksi pengguna):** tanggal lahir yang diketik di
+  Excel disimpan sebagai **angka serial** (mis. `39706` untuk
+  15 September 2008). Pembacaan lama mengambil nilai mentah sel, sehingga
+  tanggal terbaca sebagai `"39706"` dan baris tersebut ditolak sebagai
+  tanggal tidak valid.
+- **Perbaikan:** pembaca sel kini memeriksa format kolom; bila formatnya
+  memang format tanggal, angka serial diterjemahkan menjadi objek
+  tanggal memakai `PhpSpreadsheet\Shared\Date`. Kolom NISN (format teks
+  `@`) dan kolom angka biasa tidak ikut diterjemahkan.
+- **Uji:** fixture `.xlsx` pada skenario import kini menulis tanggal
+  sebagai angka serial + format `dd/mm/yyyy` (persis seperti yang ditulis
+  Excel), dan skenario memverifikasi tanggal lahir siswa yang terimpor
+  tampil sebagai `15 Sep 2008`.
+
 ---
 
 ## 7. Temuan Perilaku Aplikasi (Diterima, Tidak Diubah)
@@ -486,13 +659,15 @@ kategori **eksplisit** yang tidak berlaku tetap dipertahankan.
 | 1 | `StoreInterestCategoryRequest` memakai `strtoupper` | Kode kategori dinormalkan otomatis (diuji pada Modul 03: *"kode dinormalkan otomatis menjadi huruf kapital"*). |
 | 2 | Guru tanpa `sekolah_id` kini wajib memilih kelas | Dampak samping perbaikan #D di §6. Semua akun guru pada seeder punya sekolah sehingga tidak berdampak pada data uji, tetapi guru produksi tanpa profil sekolah kini dipaksa memilih satu kelas yang tersedia. |
 | 3 | Browser uji baru Chromium | Belum ada Firefox/WebKit (lihat §9). |
+| 4 | Dropdown kelas pada template Excel bergantung dukungan data validation Excel/LibreOffice | Berkas tetap bisa diisi manual (label `Nama (ID)` di ketik bebas) bila dropdown tidak didukung aplikasi spreadsheet tertentu; importer mem-parsing label yang sama untuk keduanya. |
+| 5 | Import admin mencakup seluruh sekolah | Admin boleh mengimpor kelas dari sekolah mana pun; guru tetap terbatas pada kelas sekolahnya. Ini perbedaan cakupan yang disengaja. |
 
 Temuan minor sebelumnya yang **sudah ditutup**:
 
 - *Pola `@php` inline + blok di 5 file Blade* → perbaikan #A di §6.
 - *Import CSV menghasilkan siswa tanpa `kelas_id`* → perbaikan #D di §6.
 - *Modal UI tanpa scroll pada viewport pendek* → perbaikan #C di §6.
-- *Flash sukses hilang di halaman hasil Masalah & Strategi Belajar* → perbaikan #F di §6.
+- *Flash sukses hilang di halaman hasil Masalah dan Strategi Belajar* → perbaikan #F di §6.
 
 ---
 
@@ -570,31 +745,88 @@ resources/views/guru/tryout/show.blade.php                 # #G
 
 ```
 playwright.config.js
-tests/e2e/…           # 7 berkas uji + helpers + global-setup + scripts
+tests/e2e/…           # 8 berkas uji + helpers + global-setup + scripts
 .gitignore            # ignore /storage/e2e, /test-results, /playwright-report
 package.json          # skrip test:e2e, test:e2e:ui, test:e2e:report
+```
+
+**Fitur baru — Sesi 21 Oktober 2026**
+
+```
+composer.json                                        # + phpoffice/phpspreadsheet ^5.10
+package.json                                          # + @alpinejs/collapse
+app/Support/StudentSpreadsheet.php                   # #H template Excel + pembaca CSV/XLSX
+app/Services/StudentImporter.php                     # #H logika import baris demi baris
+app/Http/Controllers/Admin/StudentController.php     # #H template() + import()
+app/Http/Controllers/Guru/StudentController.php      # #H template() + import()
+routes/web.php                                        # #H 4 route (template/import × admin/guru)
+resources/views/admin/students/index.blade.php        # #H modal import admin
+resources/views/guru/students/index.blade.php         # #H modal import guru + unduh template
+resources/views/components/command-palette.blade.php  # #I palet perintah Ctrl+K
+resources/views/components/app-sidebar.blade.php      # #I pencarian + lipat grup persisten
+resources/views/layouts/app.blade.php                 # #I $paletteItems + <x-command-palette>
+resources/css/app.css                                 # #I gaya sidebar search / topbar
+resources/js/app.js                                   # #I Alpine.plugin(collapse)
+tests/e2e/scripts/make-student-import-fixture.php     # pembuat fixture .xlsx untuk uji
+tests/e2e/02-admin-master-data.spec.mjs              # +1 skenario import admin
+tests/e2e/04-guru-manajemen.spec.mjs                 # +1 skenario unduh template & import xlsx
+tests/e2e/08-navigasi.spec.mjs                       # (baru) 5 skenario navigasi
+docs/LAPORAN-E2E.md                                   # laporan ini
+```
+
+**Perbaikan harness E2E — Sesi 21 Oktober 2026**
+
+```
+tests/e2e/scripts/port.mjs            # (baru) daftar & hentikan proses di port
+tests/e2e/scripts/preflight.mjs       # (baru) bebaskan port sebelum suite jalan
+tests/e2e/scripts/serve.mjs           # #K matikan pohon proses + bebaskan port
+tests/e2e/scripts/env.mjs             # #K port E2E 8765 (terpisah dari dev 8000)
+playwright.config.js                  # #K reuseExistingServer: false
+package.json                          # #K preflight pada test:e2e & test:e2e:ui
+app/Support/StudentSpreadsheet.php     # #L tanggal .xlsx (angka serial → objek tanggal)
+tests/e2e/scripts/make-student-import-fixture.php  # #L tanggal ditulis sebagai angka serial
+tests/e2e/04-guru-manajemen.spec.mjs  # #L verifikasi tanggal impor + tombol .first()
 ```
 
 ---
 
 ## 11. Kesimpulan
 
-Seluruh **83 skenario lulus tanpa kegagalan dan tanpa skip**, mencakup
+Seluruh **89 skenario lulus tanpa kegagalan dan tanpa skip**, mencakup
 alur CRUD pada modul autentikasi/otorisasi, data master dan konten admin,
 manajemen data serta layanan guru, konseling/laporan/rapor guru, seluruh
-layanan siswa, serta regresi tampilan modal pada viewport rendah.
+layanan siswa, regresi tampilan modal pada viewport rendah, serta navigasi
+interaktif (pencarian sidebar, palet perintah, dan status lipatan grup yang
+diingat).
 
-Dua belas perbaikan kode diterapkan sepanjang dua sesi — empat di antaranya
+Lima belas perbaikan kode diterapkan sepanjang tiga sesi — empat di antaranya
 menutup kasus **HTTP 500** (route parameter rusak, import `Rule` yang hilang,
 `@php` inline yang merusak kompilasi Blade, dan manifest Vite basi), ditambah
 satu bypass validasi bentrok jadwal, kegagalan tombol Simpan pada modal di
 layar pendek, penyeragaman batas tinggi seluruh 46 kontainer modal, siswa
 impor tanpa kelas yang tak pernah muncul bagi guru BK, default kategori
-instrumen yang mengunci siswa SMA pada 404, dan konfirmasi "jawaban
-tersimpan" yang dibisukan di dua halaman hasil. Enam temuan laporan sesi
-pertama kini sudah ditutup (lihat §6).
+instrumen yang mengunci siswa SMA pada 404, konfirmasi "jawaban tersimpan"
+yang dibisukan di dua halaman hasil, fitur import Excel/CSV lengkap dengan
+template berbdropdown, navigasi sidebar & palet perintah `Ctrl+K`, serta
+kompatibilitas PhpSpreadsheet 5 dan Laravel 13.
 
-Seluruh perbaikan terbukti lulus oleh suite. **Satu perubahan perilaku
-berdampak produk** — `kelas_id` kini wajib pada form siswa guru dan baris
-impor CSV, sehingga baris tanpa kelas yang dulu ikut tersimpan kini ditolak
-dengan pesan per baris — ditandai pada §8 dan menunggu konfirmasi Anda.
+Ditambah **dua perbaikan kualitas harness** (§6 #K dan #L): server uji yang
+tertinggal yatim tidak lagi diam-diam dipakai run berikutnya (yang membuat
+hasil pengujian tidak deterministik), dan tanggal pada sel `.xlsx` kini
+dibaca benar walau Excel menyimpannya sebagai angka serial.
+
+Sembilan temuan laporan sesi pertama & kedua kini sudah ditutup (lihat §6).
+**Satu perubahan perilaku berdampak produk** — `kelas_id` kini wajib pada
+form siswa guru dan baris impor, sehingga baris tanpa kelas yang dulu ikut
+tersimpan kini ditolak dengan pesan per baris — ditandai pada §8 dan
+menunggu konfirmasi Anda.
+
+### Perubahan yang perlu Anda ketahui
+
+| Perubahan | Dampak |
+| --- | --- |
+| Kolom `kelas` pada template Excel berisi dropdown "Nama Kelas (ID)" | Guru/admin memilih kelas dari daftar, bukan mengetik ID. Impor lama yang memakai kolom `kelas_id` mentah **tetap jalan** (kolom `kelas_id` masih dikenali). |
+| Import kini tersedia juga untuk **admin** | Admin dapat mengunggah data siswa untuk seluruh sekolah, bukan hanya guru BK. |
+| Sidebar & topbar punya pencarian menu | purely tampilan; tidak ada perubahan pada hak akses — palet hanya menampilkan menu milik peran aktif. |
+| Status lipatan grup disimpan di `localStorage` per pengguna | Preferensi lokal perangkat; dapat dihapus dengan mengosongkan `localStorage`. |
+| Server E2E berjalan di port **8765**, bukan 8000 | Port 8000 kini khusus server development. `E2E_PORT`/`E2E_BASE_URL` dapat mengubahnya. |

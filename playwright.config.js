@@ -47,7 +47,11 @@ export default defineConfig({
     webServer: {
         command: 'node tests/e2e/scripts/serve.mjs',
         url: baseUrl,
-        reuseExistingServer: !process.env.CI,
+        // Server yang sudah ada TIDAK boleh dipakai ulang: server lama bisa
+        // masih memegang koneksi database lama (proses `php -S` yang yatim),
+        // sehingga `migrate:fresh --seed` pada global-setup tidak terlihat
+        // olehnya. Port E2E juga terpisah dari port development (8000).
+        reuseExistingServer: false,
         timeout: 180_000,
     },
 });
