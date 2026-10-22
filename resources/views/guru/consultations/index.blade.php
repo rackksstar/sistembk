@@ -161,7 +161,7 @@
 
     @foreach($consultations as $consultation)
         <div x-show="detailOpen === {{ $consultation->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="detailOpen = null" class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <div x-on:click.outside="detailOpen = null" class="max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <x-section-title title="Detail Konseling" :description="$consultation->subject" />
                 <dl class="mt-6 grid gap-4 text-sm sm:grid-cols-2">
                     <div class="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4"><dt class="font-semibold">Siswa</dt><dd class="mt-1 text-slate-600 dark:text-slate-400">{{ $consultation->student?->name }}</dd></div>
@@ -204,7 +204,7 @@
         </div>
 
         <div x-show="rejectOpen === {{ $consultation->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="rejectOpen = null" class="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <div x-on:click.outside="rejectOpen = null" class="w-full max-w-lg max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <x-section-title title="Tolak pengajuan" description="Berikan alasan agar siswa memahami keputusan." />
                 <form method="POST" action="{{ route('guru.consultations.reject', $consultation) }}" class="mt-6 space-y-4">
                     @csrf @method('PATCH')
@@ -218,7 +218,7 @@
         </div>
 
         <div x-show="scheduleOpen === {{ $consultation->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="scheduleOpen = null" class="w-full max-w-xl rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <div x-on:click.outside="scheduleOpen = null" class="w-full max-w-xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <x-section-title title="Penjadwalan Konseling" description="Sistem mengecek bentrok jadwal otomatis." />
                 <form method="POST" action="{{ route('guru.consultations.schedule', $consultation) }}" class="mt-6 space-y-4">
                     @csrf @method('PATCH')
@@ -240,7 +240,7 @@
         </div>
 
         <div x-show="reportOpen === {{ $consultation->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="reportOpen = null" class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <div x-on:click.outside="reportOpen = null" class="max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <x-section-title title="Laporan Konseling" description="Isi detail pelaksanaan, hasil, dan evaluasi sesi." />
                 <form method="POST" action="{{ route('guru.consultations.report', $consultation) }}" class="mt-6 space-y-4">
                     @csrf @method('PATCH')

@@ -205,6 +205,59 @@
         @apply hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:hover:border-rose-500/50 dark:hover:bg-rose-950/40 dark:hover:text-rose-300;
     }
 
+    /* ── Sidebar: brand, pencarian, dan state aktif ── */
+    .app-sidebar__brand-mark {
+        @apply inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 to-sky-500 text-white shadow-md shadow-blue-500/25 transition duration-200 group-hover:scale-105;
+    }
+
+    .app-sidebar__brand-name {
+        @apply block truncate text-sm font-semibold tracking-tight text-slate-900 dark:text-white;
+    }
+
+    .app-sidebar__brand-role {
+        @apply mt-0.5 inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-blue-700 dark:bg-blue-950/50 dark:text-blue-300;
+    }
+
+    .app-sidebar__search {
+        @apply shrink-0 border-b border-slate-200/90 px-3 py-3 dark:border-slate-800;
+    }
+
+    .app-sidebar__search-wrap {
+        @apply relative flex items-center;
+    }
+
+    .app-sidebar__search-icon {
+        @apply pointer-events-none absolute left-3 h-4 w-4 text-slate-400 dark:text-slate-500;
+    }
+
+    .app-sidebar__search-input {
+        @apply w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-8 text-sm text-slate-800 outline-hidden transition placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-blue-500 dark:focus:bg-slate-900 dark:focus:ring-blue-900/50;
+    }
+
+    .app-sidebar__search-input::-webkit-search-cancel-button {
+        display: none;
+    }
+
+    .app-sidebar__search-clear {
+        @apply absolute right-2 inline-flex h-6 w-6 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200;
+    }
+
+    .app-sidebar__group-wrapper {
+        @apply mb-1;
+    }
+
+    .app-sidebar__group-toggle--active {
+        @apply text-slate-900 dark:text-white;
+    }
+
+    .app-sidebar__count--active {
+        @apply bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300;
+    }
+
+    .app-sidebar__badge {
+        @apply inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-rose-100 px-1.5 text-[10px] font-bold tabular-nums text-rose-700 dark:bg-rose-900/50 dark:text-rose-300;
+    }
+
     /* ── Layout ── */
     .app-layout {
         @apply min-h-screen bg-slate-100 dark:bg-slate-950 lg:pl-[17rem];
@@ -248,6 +301,18 @@
 
     .app-topbar__logout {
         @apply rounded-xl border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 focus:outline-hidden focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:text-slate-300 dark:hover:border-rose-500/50 dark:hover:bg-rose-950/40 dark:hover:text-rose-300;
+    }
+
+    .app-topbar__search-btn {
+        @apply hidden h-9 items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 pl-3 pr-2 text-sm text-slate-500 transition hover:border-blue-300 hover:bg-white hover:text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-blue-600 dark:hover:bg-slate-800 dark:hover:text-slate-200 md:inline-flex;
+    }
+
+    .app-topbar__search-btn-text {
+        @apply pr-6 text-left;
+    }
+
+    .app-topbar__search-kbd {
+        @apply rounded-md border border-slate-200 bg-white px-1.5 py-0.5 font-mono text-[10px] font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500;
     }
 
     .app-main {

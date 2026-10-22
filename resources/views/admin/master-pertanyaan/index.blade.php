@@ -87,7 +87,7 @@
     </section>
 
     <div x-show="createOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-        <div x-on:click.outside="createOpen = false" class="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+        <div x-on:click.outside="createOpen = false" class="max-h-[calc(100vh-2rem)] w-full max-w-xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
             <x-section-title title="Tambah Pertanyaan" description="Isi kategori, tipe input, dan teks pertanyaan." />
             <form method="POST" action="{{ route($routePrefix.'.store') }}" class="mt-6 space-y-4">
                 @csrf
@@ -99,7 +99,7 @@
 
     @foreach($questions as $q)
         <div x-show="editOpen === {{ $q->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="editOpen = null" class="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <div x-on:click.outside="editOpen = null" class="max-h-[calc(100vh-2rem)] w-full max-w-xl overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <x-section-title title="Edit Pertanyaan" description="Perbarui pertanyaan yang sudah ada." />
                 <form method="POST" action="{{ route($routePrefix.'.update', $q) }}" class="mt-6 space-y-4">
                     @csrf

@@ -45,9 +45,18 @@ class InstrumentSubmissionController extends Controller
             return redirect()->route('siswa.minat-bakat.index');
         }
 
-        $category = $rawCategory !== ''
-            ? $rawCategory
-            : InstrumentQuestion::CATEGORY_MINAT_KERJA;
+        // Tanpa `category`, arahkan ke kategori yang memang berlaku bagi jenjang
+        // siswa: `minat_kerja` khusus SMK, sedangkan `kepribadian` berlaku untuk
+        // semua jenjang. Sebelumnya default selalu `minat_kerja`, sehingga siswa
+        // SMA yang membuka URL polos /siswa/instruments menerima 404 dari
+        // minatKerjaIndex(). Kategori eksplisit yang tidak berlaku tetap 404.
+        if ($rawCategory !== '') {
+            $category = $rawCategory;
+        } elseif ($this->resolveProfileJenjang() === 'SMK') {
+            $category = InstrumentQuestion::CATEGORY_MINAT_KERJA;
+        } else {
+            $category = InstrumentQuestion::CATEGORY_KEPRIBADIAN;
+        }
         abort_unless(InstrumentQuestion::isYolaCategory($category), 404);
 
         $latestSubmissions = InstrumentSubmission::query()

@@ -40,7 +40,9 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                         @foreach($submissions as $submission)
-                            @php($scores = collect($submission->riasecScores())->keyBy('code'))
+                            @php
+                                $scores = collect($submission->riasecScores())->keyBy('code');
+                            @endphp
                             <tr>
                                 <td class="px-5 py-4">
                                     <p class="font-semibold text-slate-900 dark:text-slate-100">{{ $submission->student?->name }}</p>
@@ -50,7 +52,9 @@
                                     {{ $submission->student?->classModel?->name ?? '-' }}
                                 </td>
                                 @foreach($riasecCodes as $code => $label)
-                                    @php($pct = $scores[$code]['percentage'] ?? 0)
+                                    @php
+                                        $pct = $scores[$code]['percentage'] ?? 0;
+                                    @endphp
                                     <td class="px-3 py-4 text-center">
                                         <span
                                             class="inline-flex h-9 w-12 items-center justify-center rounded-lg text-xs font-bold text-slate-900 dark:text-white"

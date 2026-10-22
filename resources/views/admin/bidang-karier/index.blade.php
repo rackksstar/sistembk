@@ -80,7 +80,7 @@
     </section>
 
     <div x-show="createOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-        <div x-on:click.outside="createOpen = false" class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+        <div x-on:click.outside="createOpen = false" class="w-full max-w-2xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
             <x-section-title title="Tambah Bidang Karier" description="Lengkapi data bidang karier dan tautkan kategori minat." />
             <form method="POST" action="{{ route('admin.bidang-karier.store') }}" class="mt-6 space-y-4">
                 @csrf
@@ -92,7 +92,7 @@
 
     @foreach($careerFields as $item)
         <div x-show="editOpen === {{ $item->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="editOpen = null" class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <div x-on:click.outside="editOpen = null" class="w-full max-w-2xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <x-section-title title="Edit Bidang Karier" description="Perbarui data bidang karier dan relasi kategori minat." />
                 <form method="POST" action="{{ route('admin.bidang-karier.update', $item) }}" class="mt-6 space-y-4">
                     @csrf

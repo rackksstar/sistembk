@@ -211,11 +211,15 @@ return [
                 ['label' => 'Angket BK', 'route' => 'siswa.angket.index', 'active' => 'siswa.angket.*', 'icon' => 'clipboard'],
                 ['label' => 'Tryout', 'route' => 'siswa.tryout.index', 'active' => 'siswa.tryout.*', 'icon' => 'academic'],
                 ['label' => 'Artikel BK', 'route' => 'siswa.postingan.index', 'active' => 'siswa.postingan.*', 'icon' => 'newspaper'],
+                ['label' => 'Sosiometri', 'route' => 'siswa.sociometry.index', 'active' => 'siswa.sociometry.*', 'icon' => 'chart'],
             ],
         ],
         [
-            'group' => 'Siap Kerja (Yola)',
+            // Label tanpa kode internal modul: siswa cukup melihat "Siap Kerja".
+            // `divider` null menonaktifkan divider "Tim lain" milik menu guru/admin.
+            'group' => 'Siap Kerja',
             'section' => 'yola',
+            'divider' => null,
             'icon' => 'beaker',
             'items' => [
                 [
@@ -259,16 +263,9 @@ return [
             ],
         ],
         [
-            'group' => 'Sosiometri',
-            'section' => 'main',
-            'icon' => 'chart',
-            'items' => [
-                ['label' => 'Sosiometri', 'route' => 'siswa.sociometry.index', 'active' => 'siswa.sociometry.*', 'icon' => 'chart'],
-            ],
-        ],
-        [
-            'group' => 'Lanjut Kuliah (Key)',
+            'group' => 'Lanjut Kuliah',
             'section' => 'key',
+            'divider' => null,
             'icon' => 'academic',
             'items' => [
                 [

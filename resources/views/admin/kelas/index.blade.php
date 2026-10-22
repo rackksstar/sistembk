@@ -81,7 +81,7 @@
     </section>
 
     <div x-show="createOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-        <div x-on:click.outside="createOpen = false" class="w-full max-w-xl rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+        <div x-on:click.outside="createOpen = false" class="w-full max-w-xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
             <x-section-title title="Tambah Kelas" description="Pilih sekolah lalu isi identitas kelas." />
             <form method="POST" action="{{ route('admin.kelas.store') }}" class="mt-6 space-y-4">
                 @csrf
@@ -93,7 +93,7 @@
 
     @foreach($kelas as $item)
         <div x-show="editOpen === {{ $item->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="editOpen = null" class="w-full max-w-xl rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <div x-on:click.outside="editOpen = null" class="w-full max-w-xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <x-section-title title="Edit Kelas" description="Perbarui identitas kelas." />
                 <form method="POST" action="{{ route('admin.kelas.update', $item) }}" class="mt-6 space-y-4">
                     @csrf

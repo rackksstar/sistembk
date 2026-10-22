@@ -6,14 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Kelas;
 use App\Models\Student;
 use App\Services\CounselorStudentService;
+use App\Services\StudentImporter;
 use App\Support\ActivityLogger;
-use Carbon\Carbon;
+use App\Support\StudentSpreadsheet;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StudentController extends Controller
 {
@@ -61,80 +62,29 @@ class StudentController extends Controller
     public function import(Request $request): RedirectResponse
     {
         $request->validate([
-            'csv_file' => ['required', 'file', 'mimes:csv,txt', 'max:2048'],
+            'import_file' => ['required', 'file', 'max:2048', 'extensions:csv,txt,xlsx'],
         ], [
-            'csv_file.required' => 'Pilih file CSV terlebih dahulu.',
-            'csv_file.mimes' => 'File harus berformat CSV.',
+            'import_file.required' => 'Pilih file terlebih dahulu.',
+            'import_file.extensions' => 'File harus berformat .csv atau .xlsx.',
         ]);
 
-        $file = fopen($request->file('csv_file')->getRealPath(), 'r');
-        $headers = fgetcsv($file);
+        $hasil = app(StudentImporter::class)->run(
+            $request->file('import_file')->getRealPath(),
+            $this->kelasForCounselor()->pluck('id')->all(),
+        );
 
-        if (! $headers) {
-            throw ValidationException::withMessages([
-                'csv_file' => 'File CSV kosong atau tidak dapat dibaca.',
-            ]);
-        }
-
-        $headers = array_map(fn ($header) => Str::of($header)->lower()->trim()->replace(' ', '_')->toString(), $headers);
-        $created = 0;
-        $updated = 0;
-        $skipped = 0;
-        $allowedKelasIds = $this->kelasForCounselor()->pluck('id');
-
-        while (($row = fgetcsv($file)) !== false) {
-            $data = array_combine($headers, array_slice(array_pad($row, count($headers), null), 0, count($headers)));
-
-            if (! $data) {
-                $skipped++;
-                continue;
-            }
-
-            $name = trim($data['nama'] ?? $data['name'] ?? '');
-            $nisn = trim($data['nisn'] ?? '');
-            $birthDate = $this->parseCsvDate($data['tanggal_lahir'] ?? $data['birth_date'] ?? null);
-            $school = trim($data['sekolah'] ?? $data['school'] ?? '') ?: null;
-            $kelasId = isset($data['kelas_id']) && $data['kelas_id'] !== ''
-                ? (int) $data['kelas_id']
-                : null;
-
-            if ($name === '' || $nisn === '' || ! $birthDate) {
-                $skipped++;
-                continue;
-            }
-
-            if ($kelasId && ! $allowedKelasIds->contains($kelasId)) {
-                $kelasId = null;
-            }
-
-            $payload = [
-                'name' => $name,
-                'birth_date' => $birthDate,
-                'school' => $school,
-            ];
-
-            if ($kelasId) {
-                $payload['kelas_id'] = $kelasId;
-            }
-
-            $student = Student::updateOrCreate(
-                ['nisn' => $nisn],
-                $payload
-            );
-
-            $student->wasRecentlyCreated ? $created++ : $updated++;
-        }
-
-        fclose($file);
+        $skipped = count($hasil['errors']);
 
         ActivityLogger::log('siswa.imported', null, [
-            'file' => $request->file('csv_file')->getClientOriginalName(),
-            'baru' => $created,
-            'diperbarui' => $updated,
+            'file' => $request->file('import_file')->getClientOriginalName(),
+            'baru' => $hasil['created'],
+            'diperbarui' => $hasil['updated'],
             'dilewati' => $skipped,
         ]);
 
-        return back()->with('success', "Import selesai. {$created} data baru, {$updated} data diperbarui, {$skipped} baris dilewati.");
+        return back()
+            ->with('success', "Import selesai. {$hasil['created']} data baru, {$hasil['updated']} data diperbarui, {$skipped} baris dilewati.")
+            ->with('import_errors', $hasil['errors']);
     }
 
     public function update(Request $request, Student $student): RedirectResponse
@@ -167,8 +117,6 @@ class StudentController extends Controller
 
     private function validatedData(Request $request, ?Student $student = null): array
     {
-        $user = auth()->user()->loadMissing('guruBkProfile');
-        $sekolahId = $user->guruBkProfile?->sekolah_id;
         $allowedKelasIds = $this->kelasForCounselor()->pluck('id')->all();
 
         return $request->validate([
@@ -181,9 +129,7 @@ class StudentController extends Controller
             ],
             'birth_date' => ['required', 'date', 'before:today'],
             'school' => ['nullable', 'string', 'max:255'],
-            'kelas_id' => $sekolahId
-                ? ['required', 'integer', Rule::in($allowedKelasIds)]
-                : ['nullable', 'integer', Rule::in($allowedKelasIds)],
+            'kelas_id' => ['required', 'integer', Rule::in($allowedKelasIds)],
         ], [
             'nisn.unique' => 'NISN sudah digunakan siswa lain.',
             'birth_date.before' => 'Tanggal lahir harus valid dan sebelum hari ini.',
@@ -207,22 +153,15 @@ class StudentController extends Controller
         return $query->get(['id', 'nama', 'sekolah_id']);
     }
 
-    private function parseCsvDate(?string $value): ?string
+    /**
+     * Unduh template Excel berisi judul kolom beserta dropdown kelas yang
+     * memang tersedia bagi guru tersebut (disaring per sekolah).
+     */
+    public function template(): StreamedResponse
     {
-        $value = trim((string) $value);
-
-        if ($value === '') {
-            return null;
-        }
-
-        foreach (['Y-m-d', 'd/m/Y', 'd-m-Y'] as $format) {
-            try {
-                return Carbon::createFromFormat($format, $value)->toDateString();
-            } catch (\Throwable) {
-                //
-            }
-        }
-
-        return null;
+        return StudentSpreadsheet::download(
+            StudentSpreadsheet::label($this->kelasForCounselor()),
+            'template-import-siswa.xlsx'
+        );
     }
 }

@@ -68,14 +68,87 @@
     };
 
     $shownDividers = [];
+
+    // Grup yang terbuka secara default: grup aktif + section yang selalu
+    // terbuka (main, core, yola, key, platform) agar fitur tidak "hilang".
+    $defaultOpenGroups = [];
+    $activeGroupIndex = null;
+    foreach ($menuGroups as $idx => $group) {
+        $section = $group['section'] ?? 'main';
+        $groupActive = collect($group['items'] ?? [])->contains(fn ($item) => $isItemActive($item));
+
+        if ($groupActive && $activeGroupIndex === null) {
+            $activeGroupIndex = $idx;
+        }
+
+        if ($groupActive || in_array($section, ['main', 'core', 'yola', 'key', 'platform'], true)) {
+            $defaultOpenGroups[] = $idx;
+        }
+    }
 @endphp
 
 <aside
     {{ $attributes->merge(['class' => 'app-sidebar']) }}
     aria-label="Menu navigasi"
+    x-data="{
+        search: '',
+        openGroups: @js($defaultOpenGroups),
+        init() {
+            // Pilihan buka/tutup milik pengguna disimpan agar tidak terulang
+            // setiap kali halaman dimuat. Grup halaman yang sedang aktif tetap
+            // dibuka supaya tidak pernah tersembunyi.
+            const bawaan = @js($defaultOpenGroups);
+            const grupAktif = @js($activeGroupIndex);
+
+            try {
+                const simpan = localStorage.getItem('sidebar:openGroups:{{ $user?->id ?? 'anon' }}');
+                if (simpan) {
+                    const parsed = JSON.parse(simpan);
+                    if (Array.isArray(parsed)) {
+                        this.openGroups = grupAktif === null
+                            ? [...new Set(parsed)]
+                            : [...new Set([...parsed, grupAktif])];
+                    }
+                }
+            } catch (e) {
+                // localStorage tidak tersedia (mode privat) — pakai bawaan.
+                this.openGroups = bawaan;
+            }
+            this.$nextTick(() => {
+                const aktifLink = this.$el.querySelector('.app-sidebar__link--active');
+                if (aktifLink) {
+                    setTimeout(() => aktifLink.scrollIntoView({ block: 'nearest' }), 120);
+                }
+            });
+        },
+        toggleGroup(idx) {
+            this.openGroups = this.openGroups.includes(idx)
+                ? this.openGroups.filter((i) => i !== idx)
+                : [...this.openGroups, idx];
+            try {
+                localStorage.setItem('sidebar:openGroups:{{ $user?->id ?? 'anon' }}', JSON.stringify(this.openGroups));
+            } catch (e) {}
+        },
+        isOpen(idx) {
+            if (this.search !== '') return true;
+            return this.openGroups.includes(idx);
+        },
+        clearSearch() {
+            this.search = '';
+        },
+        grupAda(label) {
+            if (this.search === '') return true;
+            return String(label).toLowerCase().includes(this.search.toLowerCase());
+        },
+        itemAda(label) {
+            if (this.search === '') return true;
+            return String(label).toLowerCase().includes(this.search.toLowerCase());
+        }
+    }"
+    @keydown.escape="clearSearch()"
 >
     <div class="app-sidebar__header">
-        <a href="{{ $dashboardRoute }}" class="app-sidebar__brand" x-on:click="$dispatch('close-sidebar')">
+        <a href="{{ $dashboardRoute }}" class="app-sidebar__brand" x-on:click="$dispatch('close-sidebar')" title="Kembali ke Dashboard">
             <span class="app-sidebar__logo" aria-hidden="true">
                 <span>BK</span>
             </span>
@@ -94,6 +167,33 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
             </svg>
         </button>
+    </div>
+
+    <div class="app-sidebar__search">
+        <div class="app-sidebar__search-wrap">
+            <svg class="app-sidebar__search-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/>
+            </svg>
+            <input
+                type="search"
+                x-model.debounce.200ms="search"
+                placeholder="Cari menu..."
+                class="app-sidebar__search-input"
+                autocomplete="off"
+                aria-label="Cari menu navigasi"
+            >
+            <button
+                x-show="search !== ''"
+                x-on:click="clearSearch()"
+                class="app-sidebar__search-clear"
+                type="button"
+                aria-label="Bersihkan pencarian"
+            >
+                <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"/>
+                </svg>
+            </button>
+        </div>
     </div>
 
     <nav class="app-sidebar__nav" aria-label="Menu utama">
@@ -115,7 +215,11 @@
                 $isKey = $section === 'key';
                 $isOther = $section === 'other';
                 $dividerLabel = null;
-                if ($isYola || $isOther) {
+                if (array_key_exists('divider', $group)) {
+                    // Config bisa menonaktifkan divider (null) atau memberi label
+                    // sendiri agar tidak memakai istilah internal seperti "Tim lain".
+                    $dividerLabel = $group['divider'];
+                } elseif ($isYola || $isOther) {
                     if (! in_array('Tim lain', $shownDividers, true)) {
                         $shownDividers[] = 'Tim lain';
                         $dividerLabel = 'Tim lain';
@@ -134,13 +238,14 @@
 
             <div
                 class="app-sidebar__group"
-                x-data="{ open: {{ $defaultOpen ? 'true' : 'false' }} }"
+                x-show="grupAda(@js($group['group'] ?? '')) || {{ Js::from(collect($group['items'] ?? [])->pluck('label')->all()) }}.some(l => String(l).toLowerCase().includes(search.toLowerCase()))"
             >
                 <button
                     type="button"
                     class="app-sidebar__group-toggle"
-                    x-on:click="open = !open"
-                    :aria-expanded="open.toString()"
+                    x-on:click="toggleGroup({{ $groupIndex }})"
+                    :aria-expanded="isOpen({{ $groupIndex }}).toString()"
+                    :class="{ 'app-sidebar__group-toggle--active': {{ $groupActive ? 'true' : 'false' }} && search === '' }"
                     aria-controls="sidebar-group-{{ $groupIndex }}"
                 >
                     <span class="flex min-w-0 items-center gap-2.5">
@@ -151,14 +256,17 @@
                         ])>
                             <x-nav-icon :name="$groupIcon" class="h-[1.05rem] w-[1.05rem] shrink-0" />
                         </span>
-                        <span class="truncate">{{ $group['group'] }}</span>
+                        <span class="truncate flex-1">{{ $group['group'] }}</span>
                         @if(count($group['items'] ?? []) > 1)
-                            <span class="app-sidebar__count">{{ count($group['items']) }}</span>
+                            <span
+                                class="app-sidebar__count"
+                                :class="{ 'app-sidebar__count--active': {{ $groupActive ? 'true' : 'false' }} && search === '' }"
+                            >{{ count($group['items']) }}</span>
                         @endif
                     </span>
                     <svg
-                        class="h-4 w-4 shrink-0 text-slate-400 transition duration-200 dark:text-slate-500"
-                        :class="{ 'rotate-180 text-blue-600 dark:text-blue-400': open }"
+                        class="h-4 w-4 shrink-0 text-slate-400 transition-transform duration-200 ease-in-out dark:text-slate-500"
+                        :class="{ 'rotate-180 text-blue-600 dark:text-blue-400': isOpen({{ $groupIndex }}) }"
                         viewBox="0 0 20 20"
                         fill="currentColor"
                         aria-hidden="true"
@@ -170,13 +278,8 @@
                 <ul
                     id="sidebar-group-{{ $groupIndex }}"
                     @if(! $defaultOpen) x-cloak @endif
-                    x-show="open"
-                    x-transition:enter="transition ease-out duration-150"
-                    x-transition:enter-start="opacity-0 -translate-y-1"
-                    x-transition:enter-end="opacity-100 translate-y-0"
-                    x-transition:leave="transition ease-in duration-100"
-                    x-transition:leave-start="opacity-100"
-                    x-transition:leave-end="opacity-0"
+                    x-show="isOpen({{ $groupIndex }})"
+                    x-collapse.duration.200ms
                     class="app-sidebar__list"
                 >
                     @foreach($group['items'] as $item)
@@ -186,8 +289,9 @@
                                 ? route($item['route'], $item['params'] ?? [])
                                 : $dashboardRoute;
                             $icon = $item['icon'] ?? NavigationIcons::forRoute($item['route'] ?? '');
+                            $label = $item['label'] ?? '';
                         @endphp
-                        <li>
+                        <li x-show="itemAda(@js($label))">
                             <a
                                 href="{{ $href }}"
                                 x-on:click="$dispatch('close-sidebar')"
@@ -200,13 +304,24 @@
                                 @if($active) aria-current="page" @endif
                             >
                                 <x-nav-icon :name="$icon" class="h-[1.125rem] w-[1.125rem] shrink-0" />
-                                <span class="truncate">{{ $item['label'] }}</span>
+                                <span class="truncate flex-1">{{ $item['label'] }}</span>
                             </a>
                         </li>
                     @endforeach
                 </ul>
             </div>
         @endforeach
+
+        <div
+            x-show="search !== '' && @js(collect($menuGroups)->flatMap(fn ($g) => collect($g['items'] ?? [])->pluck('label'))->all()).filter(l => String(l).toLowerCase().includes(search.toLowerCase())).length === 0"
+            class="px-4 py-8 text-center"
+        >
+            <svg class="mx-auto h-8 w-8 text-slate-400 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+            </svg>
+            <p class="mt-3 text-xs font-semibold text-slate-600 dark:text-slate-400">Menu tidak ditemukan</p>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-500">Coba kata kunci lain</p>
+        </div>
     </nav>
 
     <div class="app-sidebar__footer">

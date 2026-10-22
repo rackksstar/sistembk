@@ -97,7 +97,7 @@
     </section>
 
     <div x-show="createOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-        <div x-on:click.outside="createOpen = false" class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+        <div x-on:click.outside="createOpen = false" class="w-full max-w-2xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
             <x-section-title title="Tambah Program Studi" description="Lengkapi data prodi dan tautkan kategori minat." />
             <form method="POST" action="{{ route('admin.program-studi.store') }}" class="mt-6 space-y-4">
                 @csrf
@@ -109,7 +109,7 @@
 
     @foreach($programStudis as $item)
         <div x-show="editOpen === {{ $item->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="editOpen = null" class="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
+            <div x-on:click.outside="editOpen = null" class="w-full max-w-2xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <x-section-title title="Edit Program Studi" description="Perbarui data prodi dan relasi kategori minat." />
                 <form method="POST" action="{{ route('admin.program-studi.update', $item) }}" class="mt-6 space-y-4">
                     @csrf

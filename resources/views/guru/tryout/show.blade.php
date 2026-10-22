@@ -57,7 +57,16 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                     @forelse($tryout->details as $detail)
-                        @php($pending = $detail->belumDinilaiCount($soal->pluck('id')))
+                        {{-- Bagian ini WAJIB memakai bentuk blok, bukan bentuk
+                             inline singkat. BladeCompiler::storePhpBlocks()
+                             memakai regex lazy yang mencocokkan pembuka php
+                             pertama sampai penutup php pertama. Bentuk inline
+                             tanpa penutup akan "melahap" segalanya sampai
+                             penutup php berikutnya, sehingga if/foreach di
+                             antaranya tidak terkompilasi dan halaman error 500. --}}
+                        @php
+                            $pending = $detail->belumDinilaiCount($soal->pluck('id'));
+                        @endphp
                         <tr>
                             <td class="px-5 py-4 font-semibold text-slate-900 dark:text-slate-100">{{ $detail->student->user?->name ?? $detail->student->name }}</td>
                             <td class="px-5 py-4 text-slate-600 dark:text-slate-400">{{ $detail->student->kelas?->nama ?? '—' }}</td>
@@ -84,7 +93,7 @@
 
     @foreach($tryout->details as $detail)
         <div x-show="gradeOpen === {{ $detail->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
-            <div x-on:click.outside="gradeOpen = null" class="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
+            <div x-on:click.outside="gradeOpen = null" class="max-h-[calc(100vh-2rem)] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl dark:bg-slate-900">
                 <x-section-title
                     title="Penilaian {{ $detail->student->user?->name ?? $detail->student->name }}"
                     description="Edit nilai per soal (0–100). Isian/esai wajib dinilai Guru BK."

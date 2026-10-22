@@ -24,7 +24,7 @@
 
 <div class="space-y-2">
     <label class="block text-sm font-semibold text-slate-900 dark:text-slate-100" for="kelas-{{ $student?->id ?? 'create' }}">Kelas BK</label>
-    <select id="kelas-{{ $student?->id ?? 'create' }}" name="kelas_id" class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
+    <select id="kelas-{{ $student?->id ?? 'create' }}" name="kelas_id" required class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 px-4 py-3 text-sm focus:border-blue-400 focus:outline-hidden focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/50">
         <option value="">— Pilih kelas —</option>
         @foreach($kelasList ?? [] as $kelas)
             <option value="{{ $kelas->id }}" @selected((string) old('kelas_id', $student?->kelas_id) === (string) $kelas->id)>

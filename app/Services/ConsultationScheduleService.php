@@ -20,11 +20,20 @@ class ConsultationScheduleService
         string $time,
         ?int $excludeConsultationId = null
     ): bool {
+        // Input selalu "HH:MM" (validasi date_format:H:i), tetapi format nilai
+        // tersimpan bergantung driver: MySQL menormalkan kolom `time` menjadi
+        // "HH:MM:00", sementara SQLite menyimpan nilai mentah "HH:MM".
+        // Cocokkan keduanya agar deteksi bentrok tetap akurat di semua driver.
+        $candidateTimes = array_values(array_unique([
+            $time,
+            $this->normalizeTime($time),
+        ]));
+
         return ConsultationRequest::query()
             ->where('counselor_id', $counselorId)
             ->whereIn('status', self::ACTIVE_SLOT_STATUSES)
             ->whereDate('consultation_date', $date)
-            ->where('consultation_time', $this->normalizeTime($time))
+            ->whereIn('consultation_time', $candidateTimes)
             ->when($excludeConsultationId, fn ($query) => $query->where('id', '!=', $excludeConsultationId))
             ->exists();
     }
