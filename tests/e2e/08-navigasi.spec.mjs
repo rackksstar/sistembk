@@ -80,4 +80,34 @@ test.describe('Navigasi — Sidebar & Palet Perintah', () => {
         await sidebar.locator('.app-sidebar__group-toggle', { hasText: 'Data Master' }).click();
         await expect(sidebar.getByRole('link', { name: 'Sekolah', exact: true })).toBeVisible();
     });
+
+    test('Sidebar siswa SMA: label asesmen diri tanpa divider internal', async ({ page }) => {
+        await loginAs(page, 'siswa');
+        await page.goto('/siswa/dashboard');
+
+        const sidebar = page.locator('.app-sidebar');
+
+        // Label disesuaikan untuk SMA: tidak ada asesmen jalur kerja.
+        await expect(sidebar.getByText('Asesmen Diri', { exact: true })).toBeVisible();
+        await expect(sidebar.getByRole('link', { name: 'Minat Bakat Kerja', exact: true })).toHaveCount(0);
+
+        // Istilah internal "Tim lain" / "Modul Key" tidak muncul sebagai divider.
+        await expect(sidebar.locator('.app-sidebar__divider')).toHaveCount(0);
+        await expect(sidebar.getByText('Tim lain', { exact: true })).toHaveCount(0);
+
+        // Sosiometri tetap terjangkau meski grup satu item dihapus.
+        await expect(sidebar.getByRole('link', { name: 'Sosiometri', exact: true })).toBeVisible();
+    });
+
+    test('Sidebar siswa SMK: label siap kerja dan divider internal tidak tampil', async ({ page }) => {
+        await loginAs(page, 'siswaSmk');
+        await page.goto('/siswa/dashboard');
+
+        const sidebar = page.locator('.app-sidebar');
+
+        await expect(sidebar.getByText('Siap Kerja', { exact: true })).toBeVisible();
+        await expect(sidebar.getByRole('link', { name: 'Minat Bakat Kerja', exact: true })).toBeVisible();
+        await expect(sidebar.locator('.app-sidebar__divider')).toHaveCount(0);
+        await expect(sidebar.getByText('Modul Key', { exact: true })).toHaveCount(0);
+    });
 });

@@ -215,7 +215,11 @@
                 $isKey = $section === 'key';
                 $isOther = $section === 'other';
                 $dividerLabel = null;
-                if ($isYola || $isOther) {
+                if (array_key_exists('divider', $group)) {
+                    // Config bisa menonaktifkan divider (null) atau memberi label
+                    // sendiri agar tidak memakai istilah internal seperti "Tim lain".
+                    $dividerLabel = $group['divider'];
+                } elseif ($isYola || $isOther) {
                     if (! in_array('Tim lain', $shownDividers, true)) {
                         $shownDividers[] = 'Tim lain';
                         $dividerLabel = 'Tim lain';

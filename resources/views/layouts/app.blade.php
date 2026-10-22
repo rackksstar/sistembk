@@ -53,6 +53,12 @@
                     ->values()
                     ->all();
 
+                // SMA tidak memakai asesmen jalur kerja, jadi label "Siap Kerja"
+                // diganti dengan istilah yang sesuai: asesmen diri.
+                if (($group['section'] ?? '') === 'yola') {
+                    $group['group'] = 'Asesmen Diri';
+                }
+
                 return $group;
             })->all();
         }

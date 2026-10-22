@@ -10,8 +10,8 @@
 
 | Metrik | Nilai |
 | --- | --- |
-| Total skenario | **89** |
-| Lulus | **89** |
+| Total skenario | **91** |
+| Lulus | **91** |
 | Gagal | **0** |
 | Di-skip | **0** |
 | Waktu eksekusi | 4–9 menit (berfluktuasi antar run) |
@@ -28,8 +28,8 @@ Rincian per modul:
 | 5 | `tests/e2e/05-guru-konseling.spec.mjs` | Guru — konseling, laporan & rapor | 6 | 6 |
 | 6 | `tests/e2e/06-siswa.spec.mjs` | Siswa — layanan & instrumen | 16 | 16 |
 | 7 | `tests/e2e/07-modal-viewport.spec.mjs` | Regresi tampilan modal | 4 | 4 |
-| 8 | `tests/e2e/08-navigasi.spec.mjs` | Navigasi — sidebar & palet perintah | 5 | 5 |
-| | | **Total** | **89** | **89** |
+| 8 | `tests/e2e/08-navigasi.spec.mjs` | Navigasi — sidebar & palet perintah | 7 | 7 |
+| | | **Total** | **91** | **91** |
 
 ---
 
@@ -57,7 +57,7 @@ menjalankan `migrate:fresh` + seeder pada database khusus uji (lihat §3).
 ### 2.2 Perintah
 
 ```bash
-npm run test:e2e                     # seluruh suite (89 skenario)
+npm run test:e2e                     # seluruh suite (91 skenario)
 npm run test:e2e:ui                  # mode UI interaktif
 npm run test:e2e:report              # buka laporan HTML
 
@@ -116,7 +116,7 @@ tests/e2e/
 ├── 05-guru-konseling.spec.mjs    (6)
 ├── 06-siswa.spec.mjs             (16)
 ├── 07-modal-viewport.spec.mjs    (4)
-└── 08-navigasi.spec.mjs          (5)
+└── 08-navigasi.spec.mjs          (7)
 ```
 
 Catatan penting yang dipakai berulang di seluruh uji:
@@ -248,13 +248,15 @@ scrollbar pada viewport default 1440x1024. Nilai batas `90vh` (922px) akan
 membuatnya menggulir 25px tanpa perlu — persis gejala yang melahirkan
 perbaikan ini — sehingga uji ini gagal bila konvensi dikembalikan.
 
-### 4.8 Modul 08 — Navigasi: Sidebar & Palet Perintah (5) *(baru)*
+### 4.8 Modul 08 — Navigasi: Sidebar & Palet Perintah (7) *(baru)*
 
 - Sidebar: pencarian menu menyaring item yang tidak cocok
 - Sidebar: menampilkan pesan kosong saat tidak ada menu yang cocok
 - Palet perintah: Ctrl+K mencari menu lalu Enter membukanya
 - Palet perintah: pintasan Ctrl+K membuka dan Esc menutup
 - Sidebar: status buka/tutup grup tersimpan antar halaman
+- Sidebar siswa SMA: label asesmen diri tanpa divider internal
+- Sidebar siswa SMK: label siap kerja dan divider internal tidak tampil
 
 Skenario pertama memverifikasi bahwa kotak "Cari menu..." di sidebar
 menyaring **item** dan **grup**: item yang tidak cocok disembunyikan, grup yang
@@ -274,6 +276,11 @@ disimpan di `localStorage` (kunci `sidebar:openGroups:{idUser}`), sehingga
 grup yang ditutup pengguna tetap tertutup setelah halaman dimuat ulang.
 Grup tempat halaman yang sedang aktif berada tetap dibuka otomatis, agar
 menu aktif tidak pernah tersembunyi.
+
+Skenario keenam & ketujuh mengunci penyesuaian sidebar **khusus siswa**:
+divider internal "Tim lain"/"Modul Key" tidak lagi tampil, label grup memakai
+istilah siswa ("Asesmen Diri" untuk SMA, "Siap Kerja" untuk SMK), dan menu
+Sosiometri dipindahkan ke grup Layanan BK agar tidak menjadi grup satu item.
 
 ---
 
@@ -792,12 +799,12 @@ tests/e2e/04-guru-manajemen.spec.mjs  # #L verifikasi tanggal impor + tombol .fi
 
 ## 11. Kesimpulan
 
-Seluruh **89 skenario lulus tanpa kegagalan dan tanpa skip**, mencakup
+Seluruh **91 skenario lulus tanpa kegagalan dan tanpa skip**, mencakup
 alur CRUD pada modul autentikasi/otorisasi, data master dan konten admin,
 manajemen data serta layanan guru, konseling/laporan/rapor guru, seluruh
 layanan siswa, regresi tampilan modal pada viewport rendah, serta navigasi
-interaktif (pencarian sidebar, palet perintah, dan status lipatan grup yang
-diingat).
+interaktif (pencarian sidebar, palet perintah, status lipatan grup yang
+diingat, dan label sidebar siswa per jenjang).
 
 Lima belas perbaikan kode diterapkan sepanjang tiga sesi — empat di antaranya
 menutup kasus **HTTP 500** (route parameter rusak, import `Rule` yang hilang,
