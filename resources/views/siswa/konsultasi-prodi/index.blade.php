@@ -6,7 +6,7 @@
         <div class="bg-gradient-to-r from-indigo-500 to-blue-600 px-6 py-5 text-center sm:text-left">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100">Modul Key · Lanjut Kuliah</p>
+                    <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100">Lanjut Kuliah</p>
                     <h1 class="mt-1 text-lg font-bold text-white sm:text-xl">Layanan Konsultasi Prodi Kuliah</h1>
                     <p class="mt-1 text-sm text-indigo-50/90">
                         Diskusikan pilihan program studi PCR dengan Guru BK — topik, prodi minat, dan jadwal bimbingan.

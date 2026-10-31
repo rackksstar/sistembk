@@ -602,7 +602,7 @@ def sistem_bk_answer(message: str) -> str | None:
 
     if "minat bakat" in lowered or "riasec" in lowered:
         return with_guidance_closing(
-            "Di Sistem BK, asesmen **Minat Bakat Kuliah** ada di menu **Lanjut Kuliah (Key)**.\n\n"
+            "Di Sistem BK, asesmen **Minat Bakat Kuliah** ada di menu **Lanjut Kuliah**.\n\n"
             "Alurnya: jawab soal RIASEC → dapat **Kode Minat** (3 huruf) → lihat rekomendasi "
             "**prodi PCR** (SMA) atau **bidang karier** (SMK). Hasil bisa diunduh PDF. "
             "Kalau sudah ada rekomendasi, kamu bisa lanjut **Konsultasi Prodi** ke Guru BK."

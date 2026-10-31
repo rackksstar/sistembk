@@ -211,22 +211,12 @@
                     'platform' => 'grid',
                     default => 'home',
                 };
-                $isYola = $section === 'yola';
-                $isKey = $section === 'key';
                 $isOther = $section === 'other';
                 $dividerLabel = null;
                 if (array_key_exists('divider', $group)) {
-                    // Config bisa menonaktifkan divider (null) atau memberi label
-                    // sendiri agar tidak memakai istilah internal seperti "Tim lain".
+                    // Config bisa menonaktifkan divider (null) atau memberi label kustom.
+                    // Jangan tampilkan istilah internal seperti Key / Yola / Tim lain.
                     $dividerLabel = $group['divider'];
-                } elseif ($isYola || $isOther) {
-                    if (! in_array('Tim lain', $shownDividers, true)) {
-                        $shownDividers[] = 'Tim lain';
-                        $dividerLabel = 'Tim lain';
-                    }
-                } elseif ($isKey && ! in_array('Modul Key', $shownDividers, true)) {
-                    $shownDividers[] = 'Modul Key';
-                    $dividerLabel = 'Modul Key';
                 }
             @endphp
 

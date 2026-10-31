@@ -52,7 +52,7 @@ return [
             ],
         ],
         [
-            'group' => 'Karier Lanjut Kuliah (Key)',
+            'group' => 'Karier Lanjut Kuliah',
             'section' => 'key',
             'icon' => 'academic',
             'items' => [
@@ -117,6 +117,7 @@ return [
         [
             'group' => 'Jurnal BK',
             'section' => 'yola',
+            'divider' => null,
             'icon' => 'calendar',
             'items' => [
                 ['label' => 'Jurnal Bulanan', 'route' => 'guru.journals.index', 'active' => 'guru.journals.*', 'icon' => 'calendar'],
@@ -168,8 +169,9 @@ return [
             ],
         ],
         [
-            'group' => 'Lanjut Kuliah (Key)',
+            'group' => 'Lanjut Kuliah',
             'section' => 'key',
+            'divider' => null,
             'icon' => 'academic',
             'items' => [
                 [

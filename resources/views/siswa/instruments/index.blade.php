@@ -14,7 +14,7 @@
     $useTalentsLikert = ! empty($useTalentsLikert);
     $activeLabel = $categories[$category] ?? 'Instrumen';
     $categoryHints = [
-        \App\Models\InstrumentQuestion::CATEGORY_MINAT_KERJA => 'Talents Mapping seperti referensi Yola: 99 kegiatan, skala 1–5, lalu Kode Minat Holland + rekomendasi karier.',
+        \App\Models\InstrumentQuestion::CATEGORY_MINAT_KERJA => 'Talents Mapping: 99 kegiatan, skala 1–5, lalu Kode Minat Holland + rekomendasi karier.',
         \App\Models\InstrumentQuestion::CATEGORY_GAYA_BELAJAR => 'Tiga bagian: Perencanaan, Eksekusi, dan Refleksi belajar.',
         \App\Models\InstrumentQuestion::CATEGORY_KEPRIBADIAN => 'Gambaran singkat pola diri dalam situasi sehari-hari.',
         \App\Models\InstrumentQuestion::CATEGORY_ANGKET_MASALAH => 'Empat bidang: Pribadi (1–20), Sosial (21–31), Belajar (32–43), dan Karir (44–50).',
@@ -25,14 +25,14 @@
         <div class="bg-linear-to-r from-emerald-500 to-teal-600 px-6 py-5 text-center sm:text-left">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-100">Modul Yola · Siap Kerja</p>
+                    <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-100">Siap Kerja</p>
                     <h1 class="mt-1 text-lg font-bold text-white sm:text-xl">Instrumen Asesmen</h1>
                     <p class="mt-1 text-sm text-emerald-50/90">
                         Asesmen kesiapan kerja dan pemahaman diri (minat kerja, strategi belajar, kepribadian, masalah).
                     </p>
                 </div>
                 <span class="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-xs">
-                    Yola
+                    Asesmen
                 </span>
             </div>
         </div>
@@ -45,7 +45,7 @@
 
             <div class="mt-1 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 text-sm leading-6 text-slate-700 dark:border-blue-900/40 dark:bg-blue-950/20 dark:text-slate-300">
                 <p class="font-semibold text-slate-950 dark:text-white">Mau lanjut kuliah?</p>
-                <p class="mt-1">Pakai asesmen Key untuk Kode Minat yang sama, lalu rekomendasi program studi PCR.</p>
+                <p class="mt-1">Pakai asesmen Minat Bakat Kuliah untuk Kode Minat yang sama, lalu rekomendasi program studi PCR.</p>
                 <a href="{{ route('siswa.minat-bakat.index') }}" class="mt-2 inline-flex text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300">
                     Buka Minat Bakat Kuliah →
                 </a>

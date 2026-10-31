@@ -13,13 +13,13 @@
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         <div class="flex flex-wrap items-start justify-between gap-3">
             <x-section-title
-                :title="$module === 'key' ? 'Hasil Minat Bakat Kuliah (Key)' : 'Hasil Instrumen Siap Kerja (Yola)'"
+                :title="$module === 'key' ? 'Hasil Minat Bakat Kuliah' : 'Hasil Instrumen Siap Kerja'"
                 :description="$module === 'key'
                     ? 'Pantau Kode Minat Holland dan skor RIASEC untuk rekomendasi lanjut kuliah.'
                     : 'Pantau hasil Minat Bakat Kerja, strategi belajar, kepribadian, dan masalah.'"
             />
             <span class="rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] {{ $module === 'key' ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' }}">
-                {{ $module === 'key' ? 'Key · Kuliah' : 'Yola · Kerja' }}
+                {{ $module === 'key' ? 'Lanjut Kuliah' : 'Siap Kerja' }}
             </span>
         </div>
         <form method="GET" action="{{ route('guru.instrument-results.index') }}" class="mt-6 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">

@@ -112,7 +112,7 @@ class YolaInstrumentFlowTest extends TestCase
             ->get(route('siswa.instruments.index'))
             ->assertOk()
             ->assertSee('Minat Bakat Kerja')
-            ->assertSee('Modul Yola');
+            ->assertSee('Siap Kerja');
     }
 
     public function test_alias_minat_bakat_diarahkan_ke_key(): void

@@ -43,7 +43,7 @@
 
     <section class="overflow-hidden rounded-3xl border border-slate-200 shadow-xs dark:border-slate-700">
         <div class="bg-linear-to-r from-emerald-500 to-teal-600 px-6 py-5 text-center">
-            <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-100">Modul Yola</p>
+            <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-100">Hasil Asesmen</p>
             <h1 class="mt-1 text-lg font-bold text-white">Hasil {{ $categoryLabel }}</h1>
         </div>
 

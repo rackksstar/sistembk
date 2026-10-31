@@ -6,14 +6,14 @@
         <div class="bg-linear-to-r from-indigo-500 to-blue-600 px-6 py-5 text-center sm:text-left">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100">Modul Key · Lanjut Kuliah</p>
+                    <p class="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100">Lanjut Kuliah</p>
                     <h1 class="mt-1 text-lg font-bold text-white sm:text-xl">Minat Bakat Kuliah — Talents Mapping</h1>
                     <p class="mt-1 text-sm text-indigo-50/90">
                         Asesmen RIASEC (99 item) → Kode Minat Holland + rekomendasi prodi PCR (SMA) atau bidang karier (SMK).
                     </p>
                 </div>
                 <span class="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-xs">
-                    Key
+                    RIASEC
                 </span>
             </div>
         </div>
@@ -26,7 +26,7 @@
 
             <div class="mt-1 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm leading-6 text-slate-700 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-slate-300">
                 <p class="font-semibold text-slate-950 dark:text-white">Mau fokus jalur kerja dulu?</p>
-                <p class="mt-1">Pakai asesmen Yola (Minat Bakat Kerja) untuk eksplorasi minat dan kesiapan diri menuju dunia kerja.</p>
+                <p class="mt-1">Pakai asesmen Minat Bakat Kerja untuk eksplorasi minat dan kesiapan diri menuju dunia kerja.</p>
                 <a href="{{ route('siswa.instruments.index', ['category' => 'minat_kerja']) }}" class="mt-2 inline-flex text-sm font-semibold text-emerald-700 hover:text-emerald-800 dark:text-emerald-300">
                     Buka Minat Bakat Kerja →
                 </a>
@@ -50,7 +50,7 @@
             @endif
 
             <p class="mt-5 text-xs leading-5 text-slate-500 dark:text-slate-400">
-                Modul Yola lain (strategi belajar, kepribadian, masalah):
+                Asesmen lain (strategi belajar, kepribadian, masalah):
                 <a href="{{ route('siswa.instruments.index', ['category' => 'gaya_belajar']) }}" class="font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-300">buka Instrumen Asesmen</a>.
             </p>
         </div>
@@ -58,7 +58,7 @@
 
     <section class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-xs">
         @if(! empty($jenjangBlocked))
-            <x-empty-state title="Asesmen tidak tersedia" description="Asesmen Minat Bakat Key untuk siswa SMA/SMK." />
+            <x-empty-state title="Asesmen tidak tersedia" description="Asesmen Minat Bakat Kuliah untuk siswa SMA/SMK." />
         @elseif(! empty($needsJenjangChooser) && ! $jenjang && ! request()->boolean('start'))
             <div class="mx-auto max-w-xl space-y-5 text-center">
                 <x-section-title title="Mulai Asesmen Minat Bakat" description="Pilih jenjang agar rekomendasi sesuai (prodi PCR untuk SMA, bidang karier untuk SMK)." />
