@@ -1,0 +1,896 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\CareerInfo;
+use App\Models\ConsultationRequest;
+use App\Models\GuidanceClass;
+use App\Models\GuruBk;
+use App\Models\InstrumentAnswer;
+use App\Models\InstrumentQuestion;
+use App\Models\InstrumentSubmission;
+use App\Models\Kelas;
+use App\Models\MonthlyJournal;
+use App\Models\Rpl;
+use App\Models\School;
+use App\Models\SchoolClass;
+use App\Models\Sekolah;
+use App\Models\ServiceFeedback;
+use App\Models\SiswaSmk;
+use App\Models\SociometryResponse;
+use App\Models\Student;
+use App\Models\User;
+use App\Support\Mbti;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+
+class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $school = School::query()->updateOrCreate(
+            ['npsn' => '20260001'],
+            [
+                'name' => 'SMA Negeri 1 Contoh',
+                'address' => 'Jl. Pendidikan No. 10',
+            ]
+        );
+
+        $classXiiIpa = SchoolClass::query()->updateOrCreate(
+            ['school_id' => $school->id, 'name' => 'XII IPA 1'],
+            ['level' => 'XII']
+        );
+
+        $classXiIps = SchoolClass::query()->updateOrCreate(
+            ['school_id' => $school->id, 'name' => 'XI IPS 2'],
+            ['level' => 'XI']
+        );
+
+        // --- SMA ---
+        $sekolah = Sekolah::query()->updateOrCreate(
+            ['nama' => 'SMA Negeri 1 Contoh'],
+            [
+                'npsn' => '20260001',
+                'alamat' => 'Jl. Pendidikan No. 10',
+                'is_mou' => true,
+                'paket_aktif' => 'Basic',
+                'tanggal_aktivasi' => now()->toDateString(),
+                'is_active' => true,
+            ]
+        );
+
+        $kelasXiiIpa = Kelas::query()->updateOrCreate(
+            ['sekolah_id' => $sekolah->id, 'nama' => 'XII IPA 1'],
+            [
+                'jenjang' => 'SMA',
+                'tingkatan' => 'XII',
+            ]
+        );
+
+        $kelasXiIps = Kelas::query()->updateOrCreate(
+            ['sekolah_id' => $sekolah->id, 'nama' => 'XI IPS 2'],
+            [
+                'jenjang' => 'SMA',
+                'tingkatan' => 'XI',
+            ]
+        );
+
+        // --- SMK ---
+        $schoolSmk = School::query()->updateOrCreate(
+            ['npsn' => '20260002'],
+            [
+                'name' => 'SMK Negeri 1 Contoh',
+                'address' => 'Jl. Pendidikan No. 10',
+            ]
+        );
+
+        $classSmkRpl = SchoolClass::query()->updateOrCreate(
+            ['school_id' => $schoolSmk->id, 'name' => 'XII RPL 1'],
+            ['level' => 'XII']
+        );
+
+        $sekolahSmk = Sekolah::query()->updateOrCreate(
+            ['nama' => 'SMK Negeri 1 Contoh'],
+            [
+                'npsn' => '20260002',
+                'alamat' => 'Jl. Pendidikan No. 10',
+                'is_mou' => true,
+                'paket_aktif' => 'Basic',
+                'tanggal_aktivasi' => now()->toDateString(),
+                'is_active' => true,
+            ]
+        );
+
+        $kelasXiiRpl = Kelas::query()->updateOrCreate(
+            ['sekolah_id' => $sekolahSmk->id, 'nama' => 'XII RPL 1'],
+            [
+                'jenjang' => 'SMK',
+                'tingkatan' => 'XII',
+            ]
+        );
+
+        $admin = User::query()->updateOrCreate(
+            ['email' => 'admin@bk.test'],
+            [
+                'name' => 'Admin BK',
+                'password' => Hash::make('password'),
+                'school' => $school->name,
+                'school_id' => $school->id,
+                'role' => User::ROLE_ADMIN,
+                'status' => User::STATUS_APPROVED,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Admin SMK — pemisahan akun per jenjang (SMA vs SMK).
+        User::query()->updateOrCreate(
+            ['email' => 'admin.demo@bk.test'],
+            [
+                'name' => 'Admin Demo',
+                'password' => Hash::make('password'),
+                'school' => $schoolSmk->name,
+                'school_id' => $schoolSmk->id,
+                'role' => User::ROLE_ADMIN,
+                'status' => User::STATUS_APPROVED,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $guru = User::query()->updateOrCreate(
+            ['username' => '081234567890'],
+            [
+                'name' => 'Ibu Rina Guru BK',
+                'email' => null,
+                'password' => Hash::make('password'),
+                'school' => $school->name,
+                'school_id' => $school->id,
+                'role' => User::ROLE_GURU,
+                'status' => User::STATUS_APPROVED,
+                'email_verified_at' => null,
+            ]
+        );
+
+        GuruBk::query()->updateOrCreate(
+            ['user_id' => $guru->id],
+            [
+                'sekolah_id' => $sekolah->id,
+                'no_hp' => '081234567890',
+                'nip' => '1987654321001',
+                'jabatan' => 'Guru BK',
+                'bidang_studi' => 'Bimbingan Konseling',
+            ]
+        );
+
+        $siswa = User::query()->updateOrCreate(
+            ['email' => 'siswa@bk.test'],
+            [
+                'name' => 'Andi Siswa',
+                'password' => Hash::make('password'),
+                'school' => $school->name,
+                'school_id' => $school->id,
+                'class_id' => $classXiiIpa->id,
+                'role' => User::ROLE_SISWA,
+                'status' => User::STATUS_APPROVED,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $pendingGuru = User::query()->updateOrCreate(
+            ['username' => '081234567891'],
+            [
+                'name' => 'Pak Dimas Guru Pending',
+                'email' => null,
+                'password' => Hash::make('password'),
+                'school' => $schoolSmk->name,
+                'school_id' => $schoolSmk->id,
+                'role' => User::ROLE_GURU,
+                'status' => User::STATUS_PENDING,
+                'email_verified_at' => null,
+            ]
+        );
+
+        GuruBk::query()->updateOrCreate(
+            ['user_id' => $pendingGuru->id],
+            [
+                'sekolah_id' => $sekolahSmk->id,
+                'no_hp' => '081234567891',
+                'nip' => '1987654321002',
+                'jabatan' => 'Guru BK',
+                'bidang_studi' => 'Bimbingan Konseling',
+            ]
+        );
+
+        // Siswa SMK (XII RPL 1)
+        $siswaSmkUser = User::query()->updateOrCreate(
+            ['email' => 'siswa.smk@bk.test'],
+            [
+                'name' => 'Rina SMK',
+                'password' => Hash::make('password'),
+                'school' => $schoolSmk->name,
+                'school_id' => $schoolSmk->id,
+                'class_id' => $classSmkRpl->id,
+                'role' => User::ROLE_SISWA,
+                'status' => User::STATUS_APPROVED,
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $studentProfileSmk = Student::query()->updateOrCreate(
+            ['nisn' => '0061234601'],
+            [
+                'user_id' => $siswaSmkUser->id,
+                'kelas_id' => $kelasXiiRpl->id,
+                'name' => $siswaSmkUser->name,
+                'birth_date' => '2008-04-12',
+                'school' => $sekolahSmk->nama,
+                'jenis_kelamin' => 'P',
+                'status_biodata' => 'lengkap',
+            ]
+        );
+
+        ConsultationRequest::query()->updateOrCreate(
+            ['student_id' => $siswa->id, 'subject' => 'Persiapan ujian akhir'],
+            [
+                'counselor_id' => $guru->id,
+                'case_category' => ConsultationRequest::CASE_BELAJAR,
+                'preferred_time' => 'Senin pagi',
+                'details' => 'Saya ingin berdiskusi tentang manajemen waktu belajar sebelum ujian.',
+                'status' => ConsultationRequest::STATUS_APPROVED,
+                'consultation_date' => now()->addDays(3)->toDateString(),
+                'consultation_time' => '09:00',
+                'scheduled_at' => now()->addDays(3)->setTime(9, 0),
+                'notes' => 'Sesi awal sudah dijadwalkan.',
+                'result' => 'Siswa memahami hambatan utama berupa distraksi gawai dan belum memiliki jadwal belajar harian.',
+                'evaluation' => 'Siswa aktif menyusun prioritas kegiatan dan bersedia mencoba jadwal belajar selama satu minggu.',
+                'follow_up' => 'Pantau jurnal belajar siswa pada sesi berikutnya.',
+            ]
+        );
+
+        ConsultationRequest::query()->updateOrCreate(
+            ['student_id' => $siswa->id, 'subject' => 'Latihan komunikasi dengan teman sebaya'],
+            [
+                'counselor_id' => $guru->id,
+                'case_category' => ConsultationRequest::CASE_SOSIAL,
+                'preferred_time' => 'Kamis siang',
+                'details' => 'Siswa ingin lebih percaya diri saat kerja kelompok.',
+                'status' => ConsultationRequest::STATUS_SELESAI,
+                'consultation_date' => now()->subDays(6)->toDateString(),
+                'consultation_time' => '10:00',
+                'scheduled_at' => now()->subDays(6)->setTime(10, 0),
+                'notes' => 'Sesi selesai.',
+                'result' => 'Siswa dapat menyebutkan contoh kalimat asertif untuk menyampaikan pendapat.',
+                'evaluation' => 'Siswa perlu latihan bertahap dalam kelompok kecil.',
+                'follow_up' => 'Libatkan siswa dalam bimbingan kelompok komunikasi asertif.',
+            ]
+        );
+
+        ConsultationRequest::query()->updateOrCreate(
+            ['student_id' => $siswa->id, 'subject' => 'Konsultasi pemilihan jurusan'],
+            [
+                'counselor_id' => null,
+                'case_category' => ConsultationRequest::CASE_KARIER,
+                'preferred_time' => 'Rabu siang',
+                'details' => 'Butuh arahan untuk memilih jurusan yang sesuai minat.',
+                'status' => ConsultationRequest::STATUS_PENDING,
+                'scheduled_at' => null,
+                'notes' => null,
+            ]
+        );
+
+        $studentProfile = Student::query()->updateOrCreate(
+            ['nisn' => '0061234567'],
+            [
+                'user_id' => $siswa->id,
+                'kelas_id' => $kelasXiiIpa->id,
+                'name' => $siswa->name,
+                'birth_date' => '2008-05-14',
+                'school' => $sekolah->nama,
+                'jenis_kelamin' => 'L',
+                'status_biodata' => 'lengkap',
+            ]
+        );
+
+        SiswaSmk::query()->updateOrCreate(
+            ['student_id' => $studentProfileSmk->id],
+            [
+                'user_id' => $siswaSmkUser->id,
+                'name' => $studentProfileSmk->name,
+                'nisn' => $studentProfileSmk->nisn,
+                'sekolah' => $sekolahSmk->nama,
+                'jurusan' => 'Rekayasa Perangkat Lunak',
+                'kelas' => $kelasXiiRpl->nama,
+                'tahun_lulus' => now()->year,
+                'nomor_hp' => '081234567899',
+                'email' => $siswaSmkUser->email,
+                'alamat' => 'Jl. Pendidikan No. 10',
+                'keahlian' => ['HTML', 'CSS', 'Laravel', 'UI dasar'],
+                'pengalaman' => 'Pernah membuat aplikasi pencatatan sederhana.',
+                'status_kerja' => 'mencari_kerja',
+                'siap_dihubungi' => true,
+            ]
+        );
+
+        // Pemisahan SMA/SMK: profil pencari kerja SMK (SiswaSmk) hanya untuk
+        // siswa SMK. Hapus bila sebelumnya sempat dibuat untuk siswa SMA.
+        SiswaSmk::query()->where('student_id', $studentProfile->id)->delete();
+
+        $guidanceClass = GuidanceClass::query()->updateOrCreate(
+            ['name' => 'Kelas Bimbingan Karier XII'],
+            [
+                'code' => 'BK-KARIER',
+                'description' => 'Kelompok bimbingan untuk persiapan studi lanjut dan pilihan karier.',
+            ]
+        );
+
+        $guidanceClass->students()->syncWithoutDetaching([$studentProfile->id]);
+
+        $studentUsers = collect([$siswa]);
+
+        foreach ([
+            ['name' => 'Alya Putri', 'email' => 'alya@bk.test', 'nisn' => '0061234568', 'birth_date' => '2008-06-20', 'jenis_kelamin' => 'P'],
+            ['name' => 'Bima Pratama', 'email' => 'bima@bk.test', 'nisn' => '0061234569', 'birth_date' => '2008-08-02', 'jenis_kelamin' => 'L'],
+            ['name' => 'Citra Lestari', 'email' => 'citra@bk.test', 'nisn' => '0061234570', 'birth_date' => '2008-09-11', 'jenis_kelamin' => 'P'],
+            ['name' => 'Dimas Arya', 'email' => 'dimas@bk.test', 'nisn' => '0061234571', 'birth_date' => '2008-10-21', 'jenis_kelamin' => 'L'],
+        ] as $index => $item) {
+            $schoolClass = $index < 2 ? $classXiiIpa : $classXiIps;
+
+            $studentUser = User::query()->updateOrCreate(
+                ['email' => $item['email']],
+                [
+                    'name' => $item['name'],
+                    'password' => Hash::make('password'),
+                    'school' => $school->name,
+                    'school_id' => $school->id,
+                    'class_id' => $schoolClass->id,
+                    'role' => User::ROLE_SISWA,
+                    'status' => User::STATUS_APPROVED,
+                    'email_verified_at' => now(),
+                ]
+            );
+
+            $profile = Student::query()->updateOrCreate(
+                ['nisn' => $item['nisn']],
+                [
+                    'user_id' => $studentUser->id,
+                    'kelas_id' => ($index < 2 ? $kelasXiiIpa : $kelasXiIps)->id,
+                    'name' => $studentUser->name,
+                    'birth_date' => $item['birth_date'],
+                    'school' => $school->name,
+                    'jenis_kelamin' => $item['jenis_kelamin'],
+                    'status_biodata' => 'lengkap',
+                ]
+            );
+
+            $guidanceClass->students()->syncWithoutDetaching([$profile->id]);
+            $studentUsers->push($studentUser);
+        }
+
+        // Minat Bakat Kerja memakai bank soal RIASEC (kategori minat_bakat) — nonaktifkan
+        // soal klasik placeholder lama agar tidak bentrok dengan Talents Mapping.
+        $legacyMinatKerja = [
+            'Saya bersemangat saat mengerjakan aktivitas yang membutuhkan ide baru.',
+            'Saya mudah menikmati pelajaran atau kegiatan yang menantang kemampuan berpikir.',
+            'Saya memiliki aktivitas favorit yang ingin saya dalami sebagai rencana masa depan.',
+        ];
+        InstrumentQuestion::query()
+            ->where('category', InstrumentQuestion::CATEGORY_MINAT_KERJA)
+            ->whereIn('question', $legacyMinatKerja)
+            ->update(['is_active' => false]);
+
+        // Bank soal Asesmen Masalah: 50 pernyataan, 4 bidang.
+        // 1-20 Pribadi, 21-31 Sosial, 32-43 Belajar, 44-50 Karir.
+        $masalahQuestions = [
+            ['section' => 1, 'question' => 'Saya merasa belum disiplin dalam beribadah pada Tuhan YME.'],
+            ['section' => 1, 'question' => 'Saya kadang-kadang berperilaku dan bertutur kata tidak jujur.'],
+            ['section' => 1, 'question' => 'Saya merasa bersalah bila meninggalkan ibadah.'],
+            ['section' => 1, 'question' => 'Saya merasa belum bisa mengendalikan emosi dengan baik.'],
+            ['section' => 1, 'question' => 'Saya belum paham tentang sikap dan perilaku asertif.'],
+            ['section' => 1, 'question' => 'Saya belum tahu cara mengenal dan memahami diri sendiri.'],
+            ['section' => 1, 'question' => 'Saya belum bisa menerima kritikan.'],
+            ['section' => 1, 'question' => 'Saya tidak mengakui kesalahan yang saya perbuat.'],
+            ['section' => 1, 'question' => 'Saya tidak bisa mengatasi masalah yang saya alami.'],
+            ['section' => 1, 'question' => 'Saya kurang memiliki rasa percaya diri.'],
+            ['section' => 1, 'question' => 'Saya kadang kurang menjaga kesehatan diri.'],
+            ['section' => 1, 'question' => 'Saya belum mengetahui gejala-gejala gangguan mental.'],
+            ['section' => 1, 'question' => 'Saya merasa kurang memiliki tanggung jawab pada diri sendiri.'],
+            ['section' => 1, 'question' => 'Saya kesulitan mengatur waktu belajar dan bermain.'],
+            ['section' => 1, 'question' => 'Kondisi orang tua saya sedang tidak harmonis.'],
+            ['section' => 1, 'question' => 'Saya merasa tidak betah tinggal di rumah sendiri.'],
+            ['section' => 1, 'question' => 'Saya mempunyai masalah dengan anggota keluarga di rumah.'],
+            ['section' => 1, 'question' => 'Saya belum bisa menjadi pribadi yang mandiri.'],
+            ['section' => 1, 'question' => 'Saya sedang memiliki konflik pribadi.'],
+            ['section' => 1, 'question' => 'Saya belum memahami norma cara membangun keluarga.'],
+            ['section' => 2, 'question' => 'Saya belum mengenali lingkungan sekolah baru.'],
+            ['section' => 2, 'question' => 'Saya belum mengetahui tentang dampak atau bahaya rokok.'],
+            ['section' => 2, 'question' => 'Saya belum banyak mengenal tentang perilaku sosial yang bertanggung jawab.'],
+            ['section' => 2, 'question' => 'Saya membutuhkan edukasi tentang seks, pacaran dan perkawinan.'],
+            ['section' => 2, 'question' => 'Saya belum tahu tentang bullying dan cara menyikapinya.'],
+            ['section' => 2, 'question' => 'Saya sukar bergaul dengan teman-teman di sekolah.'],
+            ['section' => 2, 'question' => 'Saya dianggap tidak sopan pada orang lain.'],
+            ['section' => 2, 'question' => 'Saya kurang memahami dampak dan etika sosial.'],
+            ['section' => 2, 'question' => 'Saya jarang bermain/berteman di lingkungan tempat saya tinggal.'],
+            ['section' => 2, 'question' => 'Saya lebih banyak berinteraksi di media sosial dibanding interaksi langsung.'],
+            ['section' => 2, 'question' => 'Saya kurang suka berkomunikasi dengan teman lawan jenis.'],
+            ['section' => 3, 'question' => 'Saya belum tahu cara belajar yang baik dan benar.'],
+            ['section' => 3, 'question' => 'Saya lebih sering menggunakan HP untuk bermain daripada belajar.'],
+            ['section' => 3, 'question' => 'Saya belum paham tentang gaya belajar dan strategi yang sesuai dengan saya.'],
+            ['section' => 3, 'question' => 'Orang tua saya tidak peduli dengan kegiatan belajar saya.'],
+            ['section' => 3, 'question' => 'Saya masih sering menunda-nunda tugas sekolah/pekerjaan rumah (PR).'],
+            ['section' => 3, 'question' => 'Saya merasa kesulitan dalam memahami pelajaran tertentu.'],
+            ['section' => 3, 'question' => 'Saya belum tahu cara memanfaatkan sumber belajar.'],
+            ['section' => 3, 'question' => 'Saya belajarnya jika akan ada tes atau ujian saja.'],
+            ['section' => 3, 'question' => 'Saya malas belajar karena fasilitas tidak memadai.'],
+            ['section' => 3, 'question' => 'Saya sering mengantuk saat belajar.'],
+            ['section' => 3, 'question' => 'Saya belum terbiasa belajar bersama atau belajar kelompok.'],
+            ['section' => 3, 'question' => 'Saya belum dapat memanfaatkan teknologi informasi untuk belajar.'],
+            ['section' => 4, 'question' => 'Saya menyukai kegiatan yang berhubungan dengan kewirausahaan.'],
+            ['section' => 4, 'question' => 'Saya belum tahu cara memperoleh bantuan pendidikan (beasiswa).'],
+            ['section' => 4, 'question' => 'Saya terpaksa harus bekerja untuk mencukupi kebutuhan hidup.'],
+            ['section' => 4, 'question' => 'Saya merasa bingung memilih kegiatan ekstrakurikuler di sekolah.'],
+            ['section' => 4, 'question' => 'Saya merasa belum mantap pada pilihan peminatan yang diambil.'],
+            ['section' => 4, 'question' => 'Saya merasa belum paham hubungan antara hobi, bakat, minat, kemampuan dan karir.'],
+            ['section' => 4, 'question' => 'Saya merasa belum mantap pada pilihan jurusan yang diambil.'],
+        ];
+
+        $instrumentQuestions = [
+            InstrumentQuestion::CATEGORY_SOSIOMETRI => [
+                'Saya mudah memilih teman untuk bekerja sama dalam kelompok belajar.',
+                'Saya merasa diterima dalam pergaulan kelas.',
+                'Saya memiliki teman yang dapat dipercaya saat mengalami kesulitan.',
+            ],
+        ];
+
+        $defaultOptions = [
+            ['label' => 'Sangat Tidak Sesuai', 'score' => 1],
+            ['label' => 'Tidak Sesuai', 'score' => 2],
+            ['label' => 'Cukup Sesuai', 'score' => 3],
+            ['label' => 'Sesuai', 'score' => 4],
+            ['label' => 'Sangat Sesuai', 'score' => 5],
+        ];
+
+        foreach ($instrumentQuestions as $category => $questions) {
+            foreach ($questions as $questionText) {
+                InstrumentQuestion::query()->updateOrCreate(
+                    ['category' => $category, 'question' => $questionText],
+                    [
+                        'section' => null,
+                        'options' => $defaultOptions,
+                        'is_active' => true,
+                        'created_by' => $guru->id,
+                    ]
+                );
+            }
+        }
+
+        foreach ($masalahQuestions as $item) {
+            InstrumentQuestion::query()->updateOrCreate(
+                ['category' => InstrumentQuestion::CATEGORY_ANGKET_MASALAH, 'question' => $item['question']],
+                [
+                    'section' => $item['section'],
+                    'options' => $defaultOptions,
+                    'is_active' => true,
+                    'created_by' => $guru->id,
+                ]
+            );
+        }
+
+        // Tes Kepribadian ala 16Personalities: setiap soal adalah SATU pernyataan
+        // yang dinilai dengan skala Likert persetujuan 1-5 (sama seperti
+        // instrumen minat bakat). Tiap soal menyimpan dimensi + kutub yang
+        // didukung jawaban "Setuju".
+        $mbtiStatements = [
+            'EI' => [
+                ['Saya rutin mendapatkan teman baru.', 'E'],
+                ['Saya menikmati berpartisipasi dalam kegiatan berbasis tim.', 'E'],
+                ['Saya jarang khawatir akan membuat kesan yang baik saat bertemu orang lain.', 'E'],
+                ['Saya merasa nyaman untuk mendekati seseorang yang menurut saya menarik dan memulai percakapan.', 'E'],
+                ['Saya biasanya lebih suka berada di sekitar orang lain daripada sendirian.', 'E'],
+                ['Teman-teman saya menggambarkan diri saya sebagai orang yang energik dan ramah.', 'E'],
+                ['Saya mudah berinteraksi dengan orang yang baru dikenal.', 'E'],
+                ['Saya lebih tertarik pada suasana ramai dan sibuk daripada tempat tenang dan akrab.', 'E'],
+                ['Saya jarang merasa tidak percaya diri.', 'E'],
+                ['Saya yakin bahwa segalanya akan berjalan dengan baik.', 'E'],
+                ['Saya menghindari melakukan panggilan telepon.', 'I'],
+                ['Saat ada acara sosial, saya biasanya menunggu orang lain untuk memperkenalkan diri terlebih dahulu.', 'I'],
+                ['Saya merasa konsep berjejaring atau memperkenalkan diri saya kepada orang asing sangat menakutkan.', 'I'],
+                ['Saya akan menyukai pekerjaan yang mengharuskan untuk lebih banyak bekerja sendiri.', 'I'],
+            ],
+            'SN' => [
+                ['Saya merasa bosan atau kehilangan minat saat diskusi menjadi terlalu teoretis.', 'S'],
+                ['Saya tidak terlalu tertarik dalam diskusi tentang berbagai interpretasi karya kreatif.', 'S'],
+                ['Saya tidak terlalu tertarik untuk membahas teori tentang masa depan dunia.', 'S'],
+                ['Saya percaya bahwa merenungkan pertanyaan filosofis abstrak hanya membuang-buang waktu.', 'S'],
+                ['Saya senang menggali ide dan sudut pandang yang kurang dikenal.', 'N'],
+                ['Saya menikmati bereksperimen dengan pendekatan baru dan belum teruji.', 'N'],
+                ['Saya tertarik pada berbagai bentuk ekspresi kreatif, seperti menulis.', 'N'],
+                ['Ide-ide kompleks dan baru lebih membuat saya bersemangat daripada yang sederhana dan terang-terangan.', 'N'],
+                ['Saya lebih menyukai tugas yang memerlukan solusi kreatif daripada mengikuti prosedur yang sudah ditentukan.', 'N'],
+                ['Jika saya merasa itulah keputusan yang terbaik, saya sering bertindak berdasarkan pertimbangan tersebut tanpa memerlukan bukti lebih lanjut.', 'N'],
+            ],
+            'TF' => [
+                ['Saya tidak mudah terpengaruh oleh argumen yang berlandaskan emosi.', 'T'],
+                ['Saya senang berdebat tentang dilema etika.', 'T'],
+                ['Saya mengutamakan fakta daripada perasaan orang ketika menentukan langkah tindakan.', 'T'],
+                ['Saat terjadi perselisihan, saya lebih mengutamakan membuktikan pendapat saya daripada menjaga perasaan orang lain.', 'T'],
+                ['Saya biasanya membuat pilihan berdasarkan fakta objektif daripada kesan emosional.', 'T'],
+                ['Saya lebih mengutamakan untuk bersikap peka daripada sepenuhnya jujur.', 'F'],
+                ['Kisah dan penghayatan emosi seseorang mempunyai dampak lebih signifikan bagi saya daripada angka atau data.', 'F'],
+                ['Saya biasanya merasa lebih terpengaruh oleh apa yang beresonansi secara emosional dengan saya daripada oleh argumen faktual.', 'F'],
+                ['Saat ada pertentangan antara kenyataan dan perasaan, saya biasanya lebih memilih untuk mengikuti kata hati.', 'F'],
+                ['Saat mengambil keputusan, saya lebih mempertimbangkan perasaan orang-orang yang terkena dampak keputusan itu daripada mempertimbangkan apa yang paling logis atau efisien.', 'F'],
+                ['Saat membuat pilihan, saya lebih cenderung mengandalkan intuisi emosional daripada penalaran logis.', 'F'],
+            ],
+            'JP' => [
+                ['Ruang hidup dan kerja saya bersih dan terorganisir.', 'J'],
+                ['Saya memprioritaskan dan merencanakan tugas dengan efektif, seringkali menyelesaikannya jauh sebelum tenggat waktu.', 'J'],
+                ['Saya jarang mempertanyakan keputusan yang telah saya buat.', 'J'],
+                ['Saya suka menyusun daftar tugas sehari-hari.', 'J'],
+                ['Jika rencana saya terganggu, prioritas utama saya adalah kembali ke rencana tersebut secepat mungkin.', 'J'],
+                ['Saya menyelesaikan berbagai hal menurut metode tanpa melewatkan langkah apa pun.', 'J'],
+                ['Saya suka menggunakan alat pengorganisasian seperti jadwal dan daftar tugas.', 'J'],
+                ['Saya kesulitan memenuhi tenggat waktu.', 'P'],
+                ['Saya sering membiarkan hari berlalu tanpa jadwal sama sekali.', 'P'],
+                ['Saya sering menunda pekerjaan hingga detik-detik terakhir.', 'P'],
+                ['Bagi saya, menjaga konsistensi jadwal kerja atau belajar adalah sebuah tantangan.', 'P'],
+                ['Gaya kerja pribadi saya lebih mendekati letupan energi spontan daripada upaya yang teratur dan konsisten.', 'P'],
+            ],
+        ];
+
+        // Soal kepribadian format lama (Likert tanpa dimensi, maupun pilihan
+        // paksa dua kutub) dimatikan supaya tidak ikut terhitung dalam
+        // skoring baru; riwayat jawaban lama tetap dipertahankan.
+        InstrumentQuestion::query()
+            ->where('category', InstrumentQuestion::CATEGORY_KEPRIBADIAN)
+            ->where('is_active', true)
+            ->where(function ($query) {
+                $query->whereNull('mbti_axis')->orWhereNull('mbti_pole');
+            })
+            ->get(['id', 'options'])
+            ->filter(fn ($question) => ! $question->isMbtiLikert())
+            ->each(fn ($question) => $question->update(['is_active' => false]));
+
+        foreach ($mbtiStatements as $axis => $statements) {
+            foreach ($statements as [$statement, $pole]) {
+                InstrumentQuestion::query()->updateOrCreate(
+                    ['category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN, 'question' => $statement],
+                    [
+                        'section' => null,
+                        'mbti_axis' => $axis,
+                        'mbti_pole' => $pole,
+                        'options' => InstrumentQuestion::KEPRIBADIAN_LIKERT_OPTIONS,
+                        'is_active' => true,
+                        'created_by' => $guru->id,
+                    ]
+                );
+            }
+        }
+
+        // Nonaktifkan pernyataan bank lama yang sudah tidak dipakai lagi.
+        $activeStatements = collect($mbtiStatements)->flatten(1)->map(fn ($row) => $row[0])->all();
+
+        InstrumentQuestion::query()
+            ->where('category', InstrumentQuestion::CATEGORY_KEPRIBADIAN)
+            ->where('is_active', true)
+            ->whereNotIn('question', $activeStatements)
+            ->update(['is_active' => false]);
+
+        // Strategi Belajar: 3 bagian (Perencanaan / Eksekusi / Refleksi) — selaras referensi.
+        $strategiBelajarSections = [
+            1 => [
+                'Saya mempunyai tujuan belajar yang ingin saya capai.',
+                'Saya mempunyai cara atau metode belajar saya sendiri.',
+                'Ketika belajar, saya membuat target yang ingin saya capai, misalnya menyelesaikan 10 soal latihan dalam 1 jam.',
+                'Ketika belajar, saya membuat daftar (to-do list) apa saja yang harus saya kerjakan.',
+                'Saya percaya bahwa saya mampu memperoleh nilai yang bagus di sekolah.',
+                'Nilai yang saya dapatkan di sekolah biasanya sesuai dengan apa yang saya perkirakan.',
+                'Saya tahu apa yang akan saya dapatkan di masa depan jika saya belajar dengan baik sekarang.',
+                'Saya menyukai sebagian besar aktivitas pembelajaran dan tugas yang diberikan di sekolah.',
+                'Tujuan saya belajar adalah untuk meningkatkan kemampuan saya, tidak hanya mengejar nilai.',
+                'Bagi saya, memperoleh nilai yang lebih baik dari teman-teman saya tidak begitu penting.',
+            ],
+            2 => [
+                'Saat mengerjakan soal Matematika, saya selalu mengikuti langkah-langkah penyelesainnya secara bertahap.',
+                'Saat membaca sebuah bacaan, saya memastikan saya mengerti bacaan tersebut dengan menggarisbawahi bagian penting atau memastikan gagasan utamanya.',
+                'Saya sering membuat mindmap, peta konsep, atau catatan/rangkuman untuk membantu memahami konsep yang dipelajari.',
+                'Saya membuat jadwal belajar secara teratur untuk mengulang kembali materi dan mengerjakan tugas sekolah.',
+                'Sebelum mulai belajar, saya memastikan lingkungan saya mendukung konsentrasi belajar saya.',
+                'Ketika ada materi yang tidak saya mengerti, saya tahu harus bertanya apa dan kepada siapa.',
+                'Ketika saya bosan, saya mencoba membuat tugas saya lebih menarik, misalnya dengan mengajak teman saya belajar bersama.',
+                'Saya memberikan reward kepada diri saya saat belajar, misalnya saya boleh membuka media sosial setelah tugas saya selesai.',
+                'Ketika saya mencoba sebuah cara belajar baru, saya memonitor seberapa tinggi nilai yang saya peroleh setelah menerapkan cara belajar tersebut.',
+                'Saya membuat catatan konsep-konsep apa saja yang belum saya kuasai dan perlu saya pelajari kembali.',
+            ],
+            3 => [
+                'Menurut saya, pembelajaran saya berhasil jika nilai yang saya dapatkan bisa mencapai atau lebih dari target nilai yang sudah saya tentukan.',
+                'Saya selalu memonitor perkembangan nilai saya dari waktu ke waktu.',
+                'Ketika saya mendapat nilai yang kurang memuaskan, saya bisa mengidentifikasi apa penyebabnya.',
+                'Ketika saya mendapat nilai yang kurang memuaskan, saya akan menurunkan target nilai saya untuk tugas/ulangan berikutnya.',
+                'Ketika saya mendapat nilai yang kurang memuaskan, saya akan mengubah cara belajar saya.',
+                'Saya merasa saya sebenarnya mampu, meskipun kadang nilai saya kurang memuaskan.',
+                'Saya merasa puas dengan cara belajar saya saat ini.',
+                'Ketika sebuah strategi belajar telah memberikan nilai yang memuaskan, maka saya akan melanjutkan strategi tersebut.',
+                'Saya merasa jika saya belajar, maka nilai saya akan lebih bagus daripada jika saya tidak belajar.',
+                'Saya jarang menunda-nunda belajar karena saya suka belajar.',
+            ],
+        ];
+
+        $strategiTexts = [];
+        foreach ($strategiBelajarSections as $section => $questions) {
+            foreach ($questions as $questionText) {
+                $strategiTexts[] = $questionText;
+                InstrumentQuestion::query()->updateOrCreate(
+                    ['category' => InstrumentQuestion::CATEGORY_GAYA_BELAJAR, 'question' => $questionText],
+                    [
+                        'section' => $section,
+                        'options' => $defaultOptions,
+                        'is_active' => true,
+                        'created_by' => $guru->id,
+                    ]
+                );
+            }
+        }
+
+        // Nonaktifkan soal gaya belajar lama yang bukan bagian Strategi Belajar 3 sesi.
+        InstrumentQuestion::query()
+            ->where('category', InstrumentQuestion::CATEGORY_GAYA_BELAJAR)
+            ->whereNotIn('question', $strategiTexts)
+            ->update(['is_active' => false]);
+
+        $sampleQuestions = InstrumentQuestion::query()
+            ->where('category', InstrumentQuestion::CATEGORY_MINAT_KERJA)
+            ->where('is_active', true)
+            ->get();
+
+        if ($sampleQuestions->isNotEmpty()) {
+            DB::transaction(function () use ($sampleQuestions, $siswa) {
+                $submission = InstrumentSubmission::query()->updateOrCreate(
+                    ['student_id' => $siswa->id, 'category' => InstrumentQuestion::CATEGORY_MINAT_KERJA],
+                    [
+                        'total_score' => 10,
+                        'percentage' => 66.67,
+                        'result_label' => 'Sangat Menonjol',
+                        'result_description' => 'Potensi atau kecenderungan siswa terlihat kuat pada instrumen ini.',
+                        'submitted_at' => now(),
+                    ]
+                );
+
+                foreach ($sampleQuestions as $question) {
+                    InstrumentAnswer::query()->updateOrCreate(
+                        [
+                            'instrument_submission_id' => $submission->id,
+                            'instrument_question_id' => $question->id,
+                        ],
+                        [
+                            'answer_label' => 'Sesuai',
+                            'score' => 3,
+                        ]
+                    );
+                }
+            });
+        }
+
+        $personalityQuestions = InstrumentQuestion::query()
+            ->where('category', InstrumentQuestion::CATEGORY_KEPRIBADIAN)
+            ->where('is_active', true)
+            ->whereNotNull('mbti_axis')
+            ->whereNotNull('mbti_pole')
+            ->oldest()
+            ->get()
+            ->values();
+
+        if ($personalityQuestions->isNotEmpty()) {
+            $likertOptions = InstrumentQuestion::KEPRIBADIAN_LIKERT_OPTIONS;
+
+            foreach ($studentUsers->take(3) as $studentUser) {
+                // Jawaban demo yang deterministik per siswa supaya kode MBTI
+                // tiap akun berbeda-beda tapi tetap konsisten saat di-seed ulang.
+                $ballots = [];
+                $answerLabels = [];
+
+                foreach ($personalityQuestions as $idx => $question) {
+                    $score = (($studentUser->id + $idx) % 5) + 1;
+                    $ballots[] = ['pole' => $question->mbti_pole, 'score' => $score];
+                    $answerLabels[$question->id] = [
+                        'label' => $likertOptions[$score - 1]['label'],
+                        'score' => $score,
+                    ];
+                }
+
+                $mbti = Mbti::scoreLikert($ballots);
+
+                $submission = InstrumentSubmission::query()->updateOrCreate(
+                    ['student_id' => $studentUser->id, 'category' => InstrumentQuestion::CATEGORY_KEPRIBADIAN],
+                    [
+                        'total_score' => array_sum(array_column($ballots, 'score')),
+                        'category_scores' => [
+                            'code' => $mbti['code'],
+                            'type' => $mbti['type'],
+                            'tally' => $mbti['tally'],
+                            'detail' => Mbti::detailFor($mbti['code']),
+                        ],
+                        'percentage' => $mbti['confidence'],
+                        'result_label' => $mbti['code'].' — '.$mbti['type']['name'],
+                        'result_description' => $mbti['type']['description'],
+                        'submitted_at' => now()->subDays(rand(1, 8)),
+                    ]
+                );
+
+                foreach ($personalityQuestions as $question) {
+                    InstrumentAnswer::query()->updateOrCreate(
+                        [
+                            'instrument_submission_id' => $submission->id,
+                            'instrument_question_id' => $question->id,
+                        ],
+                        [
+                            'answer_label' => $answerLabels[$question->id]['label'] ?? '',
+                            'score' => $answerLabels[$question->id]['score'] ?? 0,
+                        ]
+                    );
+                }
+            }
+        }
+
+        SociometryResponse::query()->updateOrCreate(
+            ['student_id' => $siswa->id, 'relation_type' => SociometryResponse::TYPE_CLOSE_FRIEND],
+            [
+                'chosen_student_id' => $studentUsers[1]->id,
+                'reason' => 'Sering berdiskusi dan saling membantu saat belajar.',
+                'submitted_at' => now(),
+            ]
+        );
+
+        SociometryResponse::query()->updateOrCreate(
+            ['student_id' => $siswa->id, 'relation_type' => SociometryResponse::TYPE_STUDY_FRIEND],
+            [
+                'chosen_student_id' => $studentUsers[2]->id,
+                'reason' => 'Cocok untuk kerja kelompok.',
+                'submitted_at' => now(),
+            ]
+        );
+
+        SociometryResponse::query()->updateOrCreate(
+            ['student_id' => $studentUsers[1]->id, 'relation_type' => SociometryResponse::TYPE_CLOSE_FRIEND],
+            [
+                'chosen_student_id' => $siswa->id,
+                'reason' => 'Mudah diajak komunikasi.',
+                'submitted_at' => now(),
+            ]
+        );
+
+        $rplIndividu = Rpl::query()->updateOrCreate(
+            ['teacher_id' => $guru->id, 'title' => 'RPL Individu Manajemen Waktu Belajar'],
+            [
+                'type' => Rpl::TYPE_INDIVIDU,
+                'class_id' => $classXiiIpa->id,
+                'student_id' => $siswa->id,
+                'service_date' => now()->addWeek()->toDateString(),
+                'target' => 'Andi Siswa',
+                'tujuan' => 'Siswa mampu mengenali hambatan manajemen waktu dan menyusun jadwal belajar realistis.',
+                'materi' => 'Prioritas kegiatan, teknik membuat jadwal, dan evaluasi kebiasaan belajar.',
+                'metode' => 'Konseling individu, refleksi terarah, dan penyusunan rencana aksi.',
+                'evaluasi' => 'Siswa menunjukkan jadwal belajar mingguan dan merefleksikan pelaksanaannya pada pertemuan berikutnya.',
+            ]
+        );
+
+        MonthlyJournal::query()->updateOrCreate(
+            ['teacher_id' => $guru->id, 'month' => now()->month, 'year' => now()->year],
+            [
+                'title' => 'Jurnal Layanan BK Bulan Ini',
+                'individual_services' => 8,
+                'group_services' => 3,
+                'classical_services' => 4,
+                'summary' => 'Layanan bulan ini berfokus pada manajemen belajar, komunikasi sosial, dan kesiapan karier siswa.',
+                'evaluation' => 'Sebagian besar siswa mampu mengikuti layanan dengan aktif, namun beberapa siswa masih perlu pendampingan individual.',
+                'follow_up' => 'Menjadwalkan sesi lanjutan untuk siswa prioritas dan memperkuat layanan kelompok komunikasi asertif.',
+            ]
+        );
+
+        ServiceFeedback::query()->updateOrCreate(
+            ['student_id' => $siswa->id, 'service_type' => 'Konseling Individu'],
+            [
+                'consultation_request_id' => ConsultationRequest::query()
+                    ->where('student_id', $siswa->id)
+                    ->where('status', ConsultationRequest::STATUS_SELESAI)
+                    ->value('id'),
+                'rating' => 5,
+                'message' => 'Saya merasa lebih terbantu menyusun langkah belajar dan lebih tenang setelah konseling.',
+                'suggestion' => 'Sesi lanjutan bisa dibuat lebih sering saat mendekati ujian.',
+            ]
+        );
+
+        $rplKelompok = Rpl::query()->updateOrCreate(
+            ['teacher_id' => $guru->id, 'title' => 'RPL Kelompok Komunikasi Asertif'],
+            [
+                'type' => Rpl::TYPE_KELOMPOK,
+                'class_id' => $classXiiIpa->id,
+                'service_date' => now()->addWeeks(2)->toDateString(),
+                'target' => 'Kelompok siswa kelas bimbingan karier',
+                'tujuan' => 'Siswa mampu menyampaikan pendapat secara jelas, sopan, dan menghargai orang lain.',
+                'materi' => 'Konsep komunikasi asertif, contoh kalimat asertif, dan latihan respons sosial.',
+                'metode' => 'Bimbingan kelompok, diskusi, permainan peran, dan umpan balik.',
+                'evaluasi' => 'Guru BK mengamati partisipasi siswa dan meminta refleksi singkat setelah kegiatan.',
+            ]
+        );
+
+        // Anggota kelompok demo: Alya + Bima (kelas XII IPA 1).
+        $rplKelompok->groupStudents()->sync(
+            $studentUsers->slice(1, 2)->pluck('id')->all()
+        );
+
+        unset($rplIndividu);
+
+        // Akun demo tambahan bergantian SMA/SMK agar terpisah per jenjang.
+        User::factory()
+            ->count(6)
+            ->sequence(
+                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED, 'school' => $school->name, 'school_id' => $school->id, 'class_id' => $classXiiIpa->id],
+                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED, 'school' => $schoolSmk->name, 'school_id' => $schoolSmk->id, 'class_id' => $classSmkRpl->id],
+                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED, 'school' => $school->name, 'school_id' => $school->id, 'class_id' => $classXiIps->id],
+                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED, 'school' => $schoolSmk->name, 'school_id' => $schoolSmk->id, 'class_id' => $classSmkRpl->id],
+                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED, 'school' => $school->name, 'school_id' => $school->id, 'class_id' => $classXiIps->id],
+                ['role' => User::ROLE_SISWA, 'status' => User::STATUS_APPROVED, 'school' => $schoolSmk->name, 'school_id' => $schoolSmk->id, 'class_id' => $classSmkRpl->id],
+            )
+            ->create();
+
+        CareerInfo::query()->updateOrCreate(
+            ['title' => 'Software Engineer'],
+            [
+                'description' => 'Merancang, membangun, dan memelihara aplikasi digital. Cocok untuk siswa yang senang logika, problem solving, dan teknologi.',
+                'category' => 'Teknologi',
+            ]
+        );
+
+        CareerInfo::query()->updateOrCreate(
+            ['title' => 'Konselor Pendidikan'],
+            [
+                'description' => 'Membantu siswa memahami potensi diri, pilihan studi, serta strategi belajar yang lebih sehat dan terarah.',
+                'category' => 'Pendidikan',
+            ]
+        );
+
+        CareerInfo::query()->updateOrCreate(
+            ['title' => 'Desainer UI/UX'],
+            [
+                'description' => 'Menciptakan pengalaman aplikasi yang mudah digunakan, indah, dan sesuai kebutuhan pengguna.',
+                'category' => 'Kreatif',
+            ]
+        );
+
+        CareerInfo::query()->updateOrCreate(
+            ['title' => 'Teknisi Mekatronika'],
+            [
+                'description' => 'Mengintegrasikan mekanik, elektronika, dan otomasi pada sistem industri modern.',
+                'category' => 'Teknik',
+            ]
+        );
+
+        CareerInfo::query()->updateOrCreate(
+            ['title' => 'Spesialis Digital Marketing'],
+            [
+                'description' => 'Merancang kampanye digital, menganalisis data audiens, dan mengoptimalkan konversi bisnis online.',
+                'category' => 'Bisnis',
+            ]
+        );
+
+        CareerInfo::query()->updateOrCreate(
+            ['title' => 'Akuntan Perpajakan'],
+            [
+                'description' => 'Mengelola laporan keuangan dan kepatuhan pajak untuk perusahaan maupun klien.',
+                'category' => 'Bisnis',
+            ]
+        );
+
+        $this->call([
+            InterestCategorySeeder::class,
+            MinatQuestionSeeder::class,
+            SociometryQuestionSeeder::class,
+            ProgramStudiPcrSeeder::class,
+            CareerFieldSeeder::class,
+            MasterQuestionSeeder::class,
+            MultiSchoolTestingSeeder::class,
+        ]);
+
+        unset($admin);
+    }
+}
