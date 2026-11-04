@@ -53,12 +53,21 @@ use App\Http\Controllers\Siswa\ProdiConsultationController;
 use App\Http\Controllers\Siswa\ServiceFeedbackController;
 use App\Http\Controllers\Siswa\SociometryController;
 use App\Http\Controllers\SociometryQuestionController;
+use App\Models\Kelas;
+use App\Models\Sekolah;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome', [
         'requiresLogoutConfirmation' => Auth::check(),
+        'statistics' => [
+            'schools' => Sekolah::query()->where('is_active', true)->count(),
+            'teachers' => User::query()->where('role', User::ROLE_GURU)->count(),
+            'students' => User::query()->where('role', User::ROLE_SISWA)->count(),
+            'classes' => Kelas::query()->count(),
+        ],
     ]);
 });
 
