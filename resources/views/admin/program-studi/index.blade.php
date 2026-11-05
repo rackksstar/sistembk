@@ -11,7 +11,7 @@
         <x-alert class="mt-5" type="success" :message="session('success')" />
         <x-alert class="mt-5" type="error" :message="session('error')" />
 
-        <form method="GET" action="{{ route('admin.program-studi.index') }}" class="mt-6 grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_160px_140px_auto_auto]">
+        <form method="GET" action="{{ route($routePrefix.'program-studi.index') }}" class="mt-6 grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_160px_140px_auto_auto]">
             <input name="search" value="{{ $search }}" class="ui-input js-select2" placeholder="Cari nama, institusi, atau jurusan..." />
             <select name="jurusan" class="ui-input js-select2" data-placeholder="Semua jurusan">
                 <option value="">Semua jurusan</option>
@@ -70,7 +70,7 @@
                                 <td class="px-5 py-4">
                                     <div class="flex justify-end gap-2">
                                         <button type="button" x-on:click="openEdit({{ $item->id }})" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:hover:bg-slate-800/60">Edit</button>
-                                        <form method="POST" action="{{ route('admin.program-studi.destroy', $item) }}" onsubmit="return confirm('Hapus program studi ini?')">
+                                        <form method="POST" action="{{ route($routePrefix.'program-studi.destroy', $item) }}" onsubmit="return confirm('Hapus program studi ini?')">
                                             @csrf
                                             @method('DELETE')
                                             <button class="rounded-2xl bg-red-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-500">Delete</button>
@@ -99,7 +99,7 @@
     <div x-show="createOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
         <div x-on:click.outside="createOpen = false" class="w-full max-w-2xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
             <x-section-title title="Tambah Program Studi" description="Lengkapi data prodi dan tautkan kategori minat." />
-            <form method="POST" action="{{ route('admin.program-studi.store') }}" class="mt-6 space-y-4">
+            <form method="POST" action="{{ route($routePrefix.'program-studi.store') }}" class="mt-6 space-y-4">
                 @csrf
                 <input type="hidden" name="form_context" value="create">
                 @include('admin.program-studi.partials.form', ['programStudi' => null, 'interestCategories' => $interestCategories, 'submit' => 'Simpan program studi'])
@@ -111,7 +111,7 @@
         <div x-show="editOpen === {{ $item->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
             <div x-on:click.outside="editOpen = null" class="w-full max-w-2xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <x-section-title title="Edit Program Studi" description="Perbarui data prodi dan relasi kategori minat." />
-                <form method="POST" action="{{ route('admin.program-studi.update', $item) }}" class="mt-6 space-y-4">
+                <form method="POST" action="{{ route($routePrefix.'program-studi.update', $item) }}" class="mt-6 space-y-4">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="form_context" value="edit">

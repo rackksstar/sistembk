@@ -13,6 +13,8 @@ use Illuminate\View\View;
 
 class InterestCategoryController extends Controller
 {
+    protected string $routePrefix = 'admin.';
+
     public function index(Request $request): View
     {
         $search = $request->string('search')->toString();
@@ -30,7 +32,11 @@ class InterestCategoryController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.interest-categories.index', compact('categories', 'search'));
+        return view('admin.interest-categories.index', [
+            'categories' => $categories,
+            'search' => $search,
+            'routePrefix' => $this->routePrefix,
+        ]);
     }
 
     public function store(StoreInterestCategoryRequest $request): RedirectResponse

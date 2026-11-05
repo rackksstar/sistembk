@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 /**
  * Menu sidebar vertikal untuk dashboard admin, Guru BK, dan siswa.
@@ -174,6 +174,24 @@ return [
             'divider' => null,
             'icon' => 'academic',
             'items' => [
+                [
+                    'label' => 'Kategori Minat RIASEC',
+                    'route' => 'guru.interest-categories.index',
+                    'active' => 'guru.interest-categories.*',
+                    'icon' => 'tag',
+                ],
+                [
+                    'label' => 'Program Studi PCR',
+                    'route' => 'guru.program-studi.index',
+                    'active' => 'guru.program-studi.*',
+                    'icon' => 'academic',
+                ],
+                [
+                    'label' => 'Bidang Karier',
+                    'route' => 'guru.bidang-karier.index',
+                    'active' => 'guru.bidang-karier.*',
+                    'icon' => 'briefcase',
+                ],
                 [
                     'label' => 'Soal Minat Bakat Kuliah',
                     'route' => 'guru.instrument-questions.index',

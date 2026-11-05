@@ -14,6 +14,8 @@ use Illuminate\View\View;
 
 class ProgramStudiController extends Controller
 {
+    protected string $routePrefix = 'admin.';
+
     public function index(Request $request): View
     {
         $search = $request->string('search')->toString();
@@ -50,15 +52,16 @@ class ProgramStudiController extends Controller
             ->orderBy('kode')
             ->get();
 
-        return view('admin.program-studi.index', compact(
-            'programStudis',
-            'interestCategories',
-            'jurusanOptions',
-            'search',
-            'jurusan',
-            'verified',
-            'active',
-        ));
+        return view('admin.program-studi.index', [
+            'programStudis' => $programStudis,
+            'interestCategories' => $interestCategories,
+            'jurusanOptions' => $jurusanOptions,
+            'search' => $search,
+            'jurusan' => $jurusan,
+            'verified' => $verified,
+            'active' => $active,
+            'routePrefix' => $this->routePrefix,
+        ]);
     }
 
     public function store(StoreProgramStudiRequest $request): RedirectResponse

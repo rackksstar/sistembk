@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AdminApprovalController;
@@ -23,14 +23,17 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\GuruRegistrationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Guru\AngketController;
+use App\Http\Controllers\Guru\CareerFieldController as GuruCareerFieldController;
 use App\Http\Controllers\Guru\ConsultationController as GuruConsultationController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
 use App\Http\Controllers\Guru\GroupConsultationReportController;
 use App\Http\Controllers\Guru\InstrumentQuestionController;
 use App\Http\Controllers\Guru\InstrumentResultController;
+use App\Http\Controllers\Guru\InterestCategoryController as GuruInterestCategoryController;
 use App\Http\Controllers\Guru\MasterQuestionController as GuruMasterQuestionController;
 use App\Http\Controllers\Guru\MonthlyJournalController;
 use App\Http\Controllers\Guru\PenilaianController;
+use App\Http\Controllers\Guru\ProgramStudiController as GuruProgramStudiController;
 use App\Http\Controllers\Guru\RaporController;
 use App\Http\Controllers\Guru\RplController;
 use App\Http\Controllers\Guru\ServiceFeedbackController as GuruServiceFeedbackController;
@@ -144,6 +147,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->except(['create', 'show', 'edit']);
         Route::get('/instrument-results', [InstrumentResultController::class, 'index'])->name('instrument-results.index');
         Route::get('/instrument-results/matriks-bakat', [InstrumentResultController::class, 'talentMatrix'])->name('instrument-results.talent-matrix');
+        Route::resource('interest-categories', GuruInterestCategoryController::class)
+            ->parameters(['interest-categories' => 'interestCategory'])
+            ->except(['create', 'show', 'edit']);
+        Route::resource('program-studi', GuruProgramStudiController::class)
+            ->parameters(['program-studi' => 'programStudi'])
+            ->except(['create', 'show', 'edit']);
+        Route::resource('bidang-karier', GuruCareerFieldController::class)
+            ->parameters(['bidang-karier' => 'careerField'])
+            ->except(['create', 'show', 'edit']);
 
         // Modul Yola ΓÇö sosiometri, RPL, laporan individu/kelompok, jurnal
         Route::get('/sociometry', [SociometryMapController::class, 'index'])->name('sociometry.index');
