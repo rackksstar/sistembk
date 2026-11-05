@@ -11,7 +11,7 @@
         <x-alert class="mt-5" type="success" :message="session('success')" />
         <x-alert class="mt-5" type="error" :message="session('error')" />
 
-        <form method="GET" action="{{ route('admin.bidang-karier.index') }}" class="mt-6 grid gap-3 md:grid-cols-[1fr_160px_auto_auto]">
+        <form method="GET" action="{{ route($routePrefix.'bidang-karier.index') }}" class="mt-6 grid gap-3 md:grid-cols-[1fr_160px_auto_auto]">
             <input name="search" value="{{ $search }}" class="ui-input js-select2" placeholder="Cari nama atau deskripsi..." />
             <select name="active" class="ui-input js-select2" data-placeholder="Semua status">
                 <option value="">Semua status</option>
@@ -53,7 +53,7 @@
                                 <td class="px-5 py-4">
                                     <div class="flex justify-end gap-2">
                                         <button type="button" x-on:click="openEdit({{ $item->id }})" class="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:hover:bg-slate-800/60">Edit</button>
-                                        <form method="POST" action="{{ route('admin.bidang-karier.destroy', $item) }}" onsubmit="return confirm('Hapus bidang karier ini?')">
+                                        <form method="POST" action="{{ route($routePrefix.'bidang-karier.destroy', $item) }}" onsubmit="return confirm('Hapus bidang karier ini?')">
                                             @csrf
                                             @method('DELETE')
                                             <button class="rounded-2xl bg-red-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-red-500">Delete</button>
@@ -82,7 +82,7 @@
     <div x-show="createOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
         <div x-on:click.outside="createOpen = false" class="w-full max-w-2xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
             <x-section-title title="Tambah Bidang Karier" description="Lengkapi data bidang karier dan tautkan kategori minat." />
-            <form method="POST" action="{{ route('admin.bidang-karier.store') }}" class="mt-6 space-y-4">
+            <form method="POST" action="{{ route($routePrefix.'bidang-karier.store') }}" class="mt-6 space-y-4">
                 @csrf
                 <input type="hidden" name="form_context" value="create">
                 @include('admin.bidang-karier.partials.form', ['careerField' => null, 'interestCategories' => $interestCategories, 'submit' => 'Simpan bidang karier'])
@@ -94,7 +94,7 @@
         <div x-show="editOpen === {{ $item->id }}" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
             <div x-on:click.outside="editOpen = null" class="w-full max-w-2xl max-h-[calc(100vh-2rem)] overflow-y-auto rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-2xl">
                 <x-section-title title="Edit Bidang Karier" description="Perbarui data bidang karier dan relasi kategori minat." />
-                <form method="POST" action="{{ route('admin.bidang-karier.update', $item) }}" class="mt-6 space-y-4">
+                <form method="POST" action="{{ route($routePrefix.'bidang-karier.update', $item) }}" class="mt-6 space-y-4">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="form_context" value="edit">

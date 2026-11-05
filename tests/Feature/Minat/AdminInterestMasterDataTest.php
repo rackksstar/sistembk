@@ -286,6 +286,19 @@ class AdminInterestMasterDataTest extends TestCase
         }
     }
 
+    public function test_admin_dapat_membuka_halaman_master_key(): void
+    {
+        $admin = $this->buatAdmin();
+
+        foreach ([
+            'admin.interest-categories.index',
+            'admin.program-studi.index',
+            'admin.bidang-karier.index',
+        ] as $route) {
+            $this->actingAs($admin)->get(route($route))->assertOk();
+        }
+    }
+
     private function buatAdmin(): User
     {
         return User::factory()->create([

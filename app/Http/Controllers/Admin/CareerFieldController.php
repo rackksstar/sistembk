@@ -14,6 +14,8 @@ use Illuminate\View\View;
 
 class CareerFieldController extends Controller
 {
+    protected string $routePrefix = 'admin.';
+
     public function index(Request $request): View
     {
         $search = $request->string('search')->toString();
@@ -37,12 +39,13 @@ class CareerFieldController extends Controller
             ->orderBy('kode')
             ->get();
 
-        return view('admin.bidang-karier.index', compact(
-            'careerFields',
-            'interestCategories',
-            'search',
-            'active',
-        ));
+        return view('admin.bidang-karier.index', [
+            'careerFields' => $careerFields,
+            'interestCategories' => $interestCategories,
+            'search' => $search,
+            'active' => $active,
+            'routePrefix' => $this->routePrefix,
+        ]);
     }
 
     public function store(StoreCareerFieldRequest $request): RedirectResponse
